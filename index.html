@@ -3,123 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flow App</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>Flow App · Werksicht</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#070707;--card:#111;--card2:#161616;--border:#252525;--text:#ddd;--muted:#888;--dim:#555}
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+:root{--bg:#070707;--card:#111;--c2:#161616;--brd:#252525;--txt:#ddd;--mut:#888;--dim:#555}
+body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
 .B{font-family:'Bebas Neue',sans-serif}
-.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px}
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:28px 18px 60px}
 .screen.active{display:flex}
-.inp{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-size:15px;outline:none;font-family:'Inter',sans-serif;transition:border-color .2s}
+.inp{width:100%;background:var(--c2);border:1px solid var(--brd);border-radius:8px;padding:11px 14px;color:var(--txt);font-size:15px;outline:none;font-family:'Inter',sans-serif;transition:border-color .2s}
 .inp:focus{border-color:#444}
-select.inp{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath fill='%23888' d='M5 7L0 0h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
-.inp-label{font-size:10px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
-.btn-p{width:100%;padding:13px;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-weight:600;font-size:15px;cursor:pointer;transition:opacity .15s;color:#000}
+.inp-sm{padding:8px 12px;font-size:14px}
+.lbl{font-size:10px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.btn-p{width:100%;padding:12px;border:none;border-radius:9px;font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer;color:#000;transition:opacity .15s}
 .btn-p:active{opacity:.85}
-.btn-g{background:var(--card2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:9px 18px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
-.btn-g:hover{color:var(--text);border-color:#444}
-.btn-d{background:#1a0a0a;border:1px solid #5c1a1a;color:#f87171;border-radius:8px;padding:9px 18px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
+.btn-g{background:var(--c2);border:1px solid var(--brd);color:var(--mut);border-radius:8px;padding:8px 16px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-g:hover{color:var(--txt);border-color:#444}
+.btn-d{background:#1a0a0a;border:1px solid #5c1a1a;color:#f87171;border-radius:8px;padding:7px 14px;font-size:12px;font-family:'Inter',sans-serif;cursor:pointer}
 .btn-d:hover{background:#2a0f0f}
+.card{background:var(--card);border:1px solid var(--brd);border-radius:13px;padding:17px 19px}
 .err{color:#f87171;font-size:13px;min-height:18px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
-.section-lbl{font-size:10px;color:var(--dim);letter-spacing:3px;text-transform:uppercase}
-
-/* SETUP */
-#s-setup{gap:24px}
-.setup-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:14px}
-.setup-desc{font-size:13px;color:var(--muted);line-height:1.75}
-.setup-desc a{color:#60a5fa;text-decoration:none}
-.setup-desc code{background:#1a1a1a;padding:2px 6px;border-radius:4px;font-size:12px;color:#bbb}
 
 /* MODE */
-#s-mode{gap:28px}
-.mode-cards{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;max-width:520px}
-.mc{flex:1 1 190px;padding:26px 22px;background:var(--card);border:1px solid var(--border);border-radius:16px;cursor:pointer;transition:all .2s;text-align:center}
-.mc:hover{border-color:#444;background:var(--card2);transform:translateY(-2px)}
-.mc-icon{font-size:30px;margin-bottom:10px}
-.mc-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;margin-bottom:6px}
-.mc-desc{font-size:12px;color:var(--muted);line-height:1.6}
+#s-mode{gap:26px}
+.mcs{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:500px}
+.mc{flex:1 1 180px;padding:24px 20px;background:var(--card);border:1px solid var(--brd);border-radius:15px;cursor:pointer;transition:all .2s;text-align:center}
+.mc:hover{border-color:#444;background:var(--c2);transform:translateY(-2px)}
+.mc-icon{font-size:28px;margin-bottom:10px}
+.mc-title{font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:3px;margin-bottom:6px}
+.mc-desc{font-size:12px;color:var(--mut);line-height:1.55}
 
 /* CONTROLLER */
-#s-ctrl{justify-content:flex-start;padding-top:26px;padding-bottom:60px}
-.ctrl-hdr{width:100%;max-width:480px;display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
-.ctrl-body{width:100%;max-width:480px;display:flex;flex-direction:column;gap:13px}
-.sgrid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-.sgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.sbtn{padding:15px 6px;border-radius:10px;cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;border:1px solid;transition:all .18s;text-align:center}
+#s-ctrl{justify-content:flex-start;padding-top:24px}
+.ch{width:100%;max-width:480px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.cb{width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px}
+.sg3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.sg2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.sbtn{padding:14px 6px;border-radius:9px;cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;border:1px solid;transition:all .18s;text-align:center;line-height:1.1}
 .sbtn:active{transform:scale(.97)}
-.code-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.code-val{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:6px;color:#fff}
-.sdot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.tpair{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+.code-box{background:var(--c2);border:1px solid var(--brd);border-radius:9px;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.code-val{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:6px;color:#fff}
+.sdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.tpair{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
 .tbox .tl{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;color:var(--dim)}
-.tbox .tv{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px}
+.tbox .tv{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px}
+.watcher-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--brd);cursor:pointer;transition:background .15s}
+.watcher-item:last-child{border-bottom:none}
+.watcher-item:hover{opacity:.8}
 
 /* DISPLAY */
-#s-disp{justify-content:flex-start;padding:0;position:relative;overflow:hidden}
-.d-glow{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:80vw;height:80vw;max-width:800px;max-height:800px;border-radius:50%;pointer-events:none;transition:background 1.5s;z-index:0}
+#s-disp{justify-content:flex-start;padding:0;overflow:hidden}
+.d-glow{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:80vw;height:80vw;max-width:800px;border-radius:50%;pointer-events:none;transition:background 1.5s;z-index:0}
 .d-bar{position:fixed;left:0;right:0;height:3px;z-index:10;transition:background 1s}
-.d-inner{position:relative;z-index:1;width:100%;height:calc(100vh - 44px);display:flex;flex-direction:column}
-.d-grid{flex:1;display:grid;padding:10px;gap:10px;align-content:stretch}
-.u-card{background:#0e0e0e;border-radius:14px;padding:20px;display:flex;flex-direction:column;justify-content:center;border:1px solid #1a1a1a;position:relative;overflow:hidden;transition:border-color .6s}
-.presence-bar{background:#090909;border-top:1px solid #1a1a1a;height:44px;padding:0 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);position:fixed;bottom:0;left:0;right:0;z-index:10}
-.pdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-#d-add-btn{position:fixed;top:14px;right:14px;z-index:20;background:var(--card2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
-#d-add-btn:hover{color:var(--text);border-color:#444}
+.d-inner{position:relative;z-index:1;width:100%;height:calc(100vh - 40px);display:flex;flex-direction:column}
+.d-grid{flex:1;display:grid;padding:8px;gap:8px;align-content:stretch}
+.u-card{background:#0e0e0e;border-radius:13px;padding:18px;display:flex;flex-direction:column;justify-content:center;border:1px solid #1a1a1a;position:relative;overflow:hidden;transition:border-color .6s}
+/* timeline view */
+.d-timeline{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:0}
+.tl-header{display:flex;align-items:center;gap:12px;padding:8px 0;font-size:11px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid var(--brd);margin-bottom:8px}
+.tl-row{display:flex;align-items:stretch;gap:14px;min-height:70px}
+.tl-time-col{width:52px;flex-shrink:0;display:flex;flex-direction:column;align-items:center}
+.tl-time-lbl{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;line-height:1;padding-top:14px}
+.tl-line{flex:1;width:2px;background:var(--brd);margin:4px auto}
+.tl-dot-col{width:16px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding-top:14px}
+.tl-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.tl-line2{flex:1;width:2px;margin:4px auto}
+.tl-content{flex:1;padding:10px 0 10px 2px}
+.tl-name{font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
+.tl-status{font-family:'Bebas Neue',sans-serif;letter-spacing:2px}
+.tl-sub{font-size:12px;color:var(--mut);margin-top:2px}
+/* presence bar */
+.pbar{background:#090909;border-top:1px solid #1a1a1a;height:40px;padding:0 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mut);position:fixed;bottom:0;left:0;right:0;z-index:10;overflow:hidden}
+.pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+/* display toolbar */
+.d-toolbar{position:fixed;top:10px;right:12px;z-index:20;display:flex;gap:7px}
 
 /* OVERLAYS */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(8px)}
 .ov.show{display:flex}
-.ov-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px;animation:fadein .3s ease}
+.ov-box{background:var(--card);border:1px solid var(--brd);border-radius:15px;padding:30px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:13px;animation:fadein .3s ease}
 .ov-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px}
+.room-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--brd)}
+.room-row:last-child{border-bottom:none}
 
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes fadein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%,75%{transform:translateX(-8px)}50%{transform:translateX(8px)}}
 .pulse{animation:pulse 2.5s ease-in-out infinite}
 .shake{animation:shake .35s ease}
+select.inp{appearance:none;cursor:pointer}
 </style>
 </head>
 <body>
 
-<!-- SETUP -->
-<div class="screen" id="s-setup">
-  <div class="B" id="setup-logo" style="font-size:clamp(44px,9vw,72px);letter-spacing:5px;color:#22c55e">FLOW APP</div>
-  <div class="setup-card">
-    <div>
-      <div style="font-size:10px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">Einmalige Einrichtung</div>
-      <div style="font-size:17px;font-weight:500;margin-bottom:10px">Firebase Datenbank verbinden</div>
-      <div class="setup-desc">
-        Für geräteübergreifende Synchronisation brauchst du eine kostenlose Firebase Realtime Database.<br><br>
-        <strong style="color:var(--text)">In ca. 4 Minuten eingerichtet:</strong><br>
-        1. <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → Projekt erstellen<br>
-        2. <em>Realtime Database → Erstellen</em> wählen<br>
-        3. Unter <em>Regeln</em> eintragen: <code>{"rules":{".read":true,".write":true}}</code><br>
-        4. Datenbank-URL kopieren (Format: <code>https://xxx-rtdb.firebaseio.com</code>)
-      </div>
-    </div>
-    <div>
-      <div class="inp-label">Firebase Datenbank-URL</div>
-      <input class="inp" id="inp-db" value="https://werksicht-default-rtdb.europe-west1.firebasedatabase.app/" />
-    </div>
-    <div>
-      <div class="inp-label">Dein Name</div>
-      <input class="inp" id="inp-name-s" placeholder="z. B. Max Müller" />
-    </div>
-    <div id="setup-err" class="err"></div>
-    <button class="btn-p" id="btn-setup" style="background:#22c55e" onclick="doSetup()">Verbinden & starten</button>
-    <div id="setup-spin" style="display:none;text-align:center;color:var(--muted);font-size:13px">Verbindung wird geprüft…</div>
-  </div>
-</div>
-
 <!-- MODE -->
 <div class="screen" id="s-mode">
-  <div class="B" id="mode-logo" style="font-size:clamp(44px,9vw,72px);letter-spacing:5px">FLOW APP</div>
-  <div id="mode-greet" style="font-size:12px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px"></div>
-  <div class="mode-cards">
+  <div class="B" id="mode-logo" style="font-size:clamp(44px,9vw,72px);letter-spacing:5px;color:#22c55e">FLOW APP</div>
+  <div id="mode-greet" style="font-size:12px;color:var(--dim);letter-spacing:2px;text-transform:uppercase"></div>
+  <div class="mcs">
     <div class="mc" onclick="goCtrl()">
       <div class="mc-icon">📱</div>
       <div class="mc-title B">CONTROLLER</div>
@@ -131,36 +113,51 @@ select.inp{appearance:none;cursor:pointer;background-image:url("data:image/svg+x
       <div class="mc-desc">Vollbild-Statusanzeige für den Monitor</div>
     </div>
   </div>
-  <div style="margin-top:20px"><button class="btn-g" onclick="openSettings()">⚙ Einstellungen</button></div>
+  <div style="margin-top:16px;display:flex;gap:10px">
+    <button class="btn-g" onclick="openSettings()">⚙ Einstellungen</button>
+  </div>
 </div>
 
 <!-- CONTROLLER -->
 <div class="screen" id="s-ctrl">
-  <div class="ctrl-hdr">
+  <div class="ch">
     <div>
-      <div class="B" id="ctrl-logo" style="font-size:30px;letter-spacing:3px">CONTROLLER</div>
-      <div id="ctrl-namelbl" style="font-size:11px;color:var(--dim);letter-spacing:2px;text-transform:uppercase"></div>
+      <div class="B" id="ctrl-logo" style="font-size:28px;letter-spacing:3px">CONTROLLER</div>
+      <div id="ctrl-nl" style="font-size:11px;color:var(--dim);letter-spacing:2px;text-transform:uppercase"></div>
     </div>
-    <button class="btn-g" onclick="goMode()">← Startseite</button>
+    <button class="btn-g" onclick="goMode()">← Start</button>
   </div>
-  <div class="ctrl-body">
+  <div class="cb">
 
-    <div class="section-lbl">Arbeitsstatus</div>
-    <div class="sgrid3">
-      <button class="sbtn" id="btn-ansprechbar" onclick="setStatus('ansprechbar')">ANSPRECH-BAR</button>
-      <button class="sbtn" id="btn-anlauf"       onclick="setStatus('anlauf')">ANLAUF</button>
-      <button class="sbtn" id="btn-flow"          onclick="setStatus('flow')">FLOW</button>
+    <div class="lbl">Arbeitsstatus</div>
+    <div class="sg3">
+      <button class="sbtn" id="btn-am_platz"  onclick="setStatus('am_platz')">AM<br>PLATZ</button>
+      <button class="sbtn" id="btn-anlauf"     onclick="setStatus('anlauf')">ANLAUF</button>
+      <button class="sbtn" id="btn-flow"       onclick="setStatus('flow')">FLOW</button>
     </div>
-    <div class="sgrid2">
-      <button class="sbtn" id="btn-im_werk"         onclick="setStatus('im_werk')">IM WERK</button>
-      <button class="sbtn" id="btn-werk_verlassen"   onclick="setStatus('werk_verlassen')">WERK VERLASSEN</button>
+    <div class="sg2">
+      <button class="sbtn" id="btn-unterwegs"      onclick="setStatus('unterwegs')">UNTER-WEGS</button>
+      <button class="sbtn" id="btn-werk_verlassen"  onclick="setStatus('werk_verlassen')">WERK<br>VERLASSEN</button>
     </div>
 
-    <!-- auto-flow (shown when anlauf active) -->
-    <div class="card" id="card-af" style="display:none">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-bottom:12px;color:#f59e0b">AUTO-FLOW</div>
-      <div class="inp-label">Nach Anlauf automatisch in FLOW wechseln</div>
-      <select class="inp" id="sel-af" onchange="setAutoFlow(this.value)">
+    <!-- Im Werk bis -->
+    <div class="card" style="padding:14px 16px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;color:#a78bfa;margin-bottom:12px">IM WERK BIS</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="time" class="inp inp-sm" id="inp-bis" style="flex:1;color-scheme:dark" />
+        <button class="sbtn" id="btn-im_werk_bis" onclick="setStatus('im_werk_bis')"
+          style="flex:0 0 auto;padding:9px 14px;font-size:14px;white-space:nowrap">
+          SETZEN
+        </button>
+      </div>
+      <div style="font-size:11px;color:var(--dim);margin-top:8px">Ich bin anwesend und gehe voraussichtlich um diese Zeit.</div>
+    </div>
+
+    <!-- auto-flow (shown in anlauf) -->
+    <div class="card" id="card-af" style="display:none;padding:14px 16px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;color:#f59e0b;margin-bottom:10px">AUTO-FLOW</div>
+      <div class="lbl">Nach Anlauf automatisch in FLOW wechseln</div>
+      <select class="inp" id="sel-af" onchange="setAF(this.value)">
         <option value="0">Kein automatischer Wechsel</option>
         <option value="10">10 Minuten</option>
         <option value="15">15 Minuten</option>
@@ -171,142 +168,149 @@ select.inp{appearance:none;cursor:pointer;background-image:url("data:image/svg+x
       </select>
     </div>
 
-    <!-- unterwegs (always visible) -->
-    <div class="card">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-bottom:12px;color:#60a5fa">UNTERWEGS</div>
-      <div class="inp-label">Aufenthaltsort</div>
-      <input class="inp" id="inp-ort" placeholder="z. B. Besprechungsraum 3 · 2. OG" />
-      <div class="inp-label" style="margin-top:10px">Voraussichtlich zurück</div>
-      <input class="inp" id="inp-ret" placeholder="z. B. 14:30 · nach dem Mittagessen" />
-      <button class="btn-p" style="background:#60a5fa;margin-top:10px" onclick="setStatus('unterwegs')">Unterwegs-Status setzen</button>
-    </div>
-
     <!-- current status -->
     <div class="card">
-      <div class="section-lbl" style="margin-bottom:10px">Aktueller Status</div>
+      <div class="lbl" style="margin-bottom:10px">Aktueller Status</div>
       <div style="display:flex;align-items:center;gap:10px">
         <div class="sdot" id="c-sdot"></div>
-        <div class="B" id="c-sname" style="font-size:22px;letter-spacing:2px"></div>
+        <div class="B" id="c-sname" style="font-size:20px;letter-spacing:2px"></div>
       </div>
       <div class="tpair" id="c-timers"></div>
     </div>
 
     <!-- pairing code -->
     <div class="card">
-      <div class="section-lbl" style="margin-bottom:10px">Mein Pairing-Code</div>
+      <div class="lbl" style="margin-bottom:10px">Mein Pairing-Code</div>
       <div class="code-box">
         <div>
-          <div style="font-size:9px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">Diesen Code in die Anzeige eingeben</div>
+          <div style="font-size:9px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">In Anzeige eingeben zum Verbinden</div>
           <div class="code-val B" id="my-code"></div>
         </div>
         <button class="btn-g" id="copy-btn" onclick="copyCode()">Kopieren</button>
       </div>
-      <div style="font-size:12px;color:var(--dim);margin-top:10px;line-height:1.6">Teile diesen Code mit Kollegen, die dich in ihrer Anzeige sehen möchten.</div>
     </div>
 
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <!-- who is watching me -->
+    <div class="card">
+      <div class="lbl" style="margin-bottom:10px">Mein Status wird angezeigt bei</div>
+      <div id="watcher-list"><div style="color:var(--dim);font-size:13px">Niemand zeigt deinen Status an.</div></div>
+      <div style="font-size:11px;color:var(--dim);margin-top:10px;line-height:1.6">Klicke auf einen Namen um dich von dessen Anzeige zu entfernen (gegenseitig).</div>
+    </div>
+
+    <div style="display:flex;gap:9px;flex-wrap:wrap">
       <button class="btn-d" onclick="removeFromAll()" style="flex:1">Aus allen Anzeigen entfernen</button>
       <button class="btn-g" onclick="openSettings()">⚙</button>
     </div>
-
-    <div style="font-size:11px;color:#222;text-align:center">Sync alle 4 Sek.</div>
+    <div style="font-size:11px;color:#222;text-align:center">Sync alle 4 Sek. · Firebase Realtime DB</div>
   </div>
 </div>
 
 <!-- DISPLAY -->
 <div class="screen" id="s-disp">
   <div class="d-glow" id="d-glow"></div>
-  <div class="d-bar" id="d-bar-t" style="top:0"></div>
-  <div class="d-bar" id="d-bar-b" style="bottom:44px"></div>
+  <div class="d-bar" id="d-bt" style="top:0"></div>
+  <div class="d-bar" id="d-bb" style="bottom:40px"></div>
   <div class="d-inner">
     <div id="d-content" style="flex:1;display:flex;flex-direction:column"></div>
   </div>
-  <div class="presence-bar" id="pbar"></div>
-  <button id="d-add-btn" onclick="showAddRoom()">＋ Code hinzufügen</button>
+  <div class="pbar" id="pbar"></div>
+  <div class="d-toolbar">
+    <button class="btn-g" id="view-toggle" onclick="toggleView()" style="font-size:12px">⏱ Zeitplan</button>
+    <button class="btn-g" onclick="showAddRoom()" style="font-size:12px">＋ Person</button>
+  </div>
 </div>
 
-<!-- OVERLAY: add room -->
+<!-- OV: Name setup -->
+<div class="ov show" id="ov-name">
+  <div class="ov-box">
+    <div class="ov-title B">WILLKOMMEN</div>
+    <div style="font-size:13px;color:var(--mut)">Wie soll dein Name in der Anzeige erscheinen?</div>
+    <input class="inp" id="inp-name-setup" placeholder="z. B. Max Müller"
+      onkeydown="if(event.key==='Enter')saveName()" />
+    <div class="err" id="name-err"></div>
+    <button class="btn-p" style="background:#22c55e" onclick="saveName()">Los geht's</button>
+  </div>
+</div>
+
+<!-- OV: Add person to display -->
 <div class="ov" id="ov-room">
   <div class="ov-box" style="max-width:420px">
     <div class="ov-title B">PERSON HINZUFÜGEN</div>
-    <div style="font-size:13px;color:var(--muted)">Pairing-Code der Person eingeben (aus deren Controller-Ansicht).<br>Der Code wird nur einmalig benötigt – danach nicht mehr in der Anzeige sichtbar.</div>
+    <div style="font-size:13px;color:var(--mut)">Pairing-Code der Person eingeben. Einmalig – danach nicht mehr in der Anzeige sichtbar.<br><br>Das Tracking ist <strong style="color:var(--txt)">gegenseitig</strong>: beide sehen sich in ihren Anzeigen.</div>
     <input class="inp" id="inp-rcode" maxlength="6" placeholder="ABC123"
       style="text-transform:uppercase;letter-spacing:5px;font-size:22px;text-align:center"
       onkeydown="if(event.key==='Enter')addRoom()" />
     <div class="err" id="room-err"></div>
-    <div style="display:flex;gap:10px">
+    <div style="display:flex;gap:9px">
       <button class="btn-g" onclick="hideAddRoom()" style="flex:1">Abbrechen</button>
       <button class="btn-p" style="flex:1;background:#60a5fa" onclick="addRoom()">Hinzufügen</button>
     </div>
-    <div style="border-top:1px solid var(--border);padding-top:14px">
-      <div class="section-lbl" style="margin-bottom:10px">Aktive Personen in dieser Anzeige</div>
+    <div style="border-top:1px solid var(--brd);padding-top:13px">
+      <div class="lbl" style="margin-bottom:10px">Personen in dieser Anzeige</div>
       <div id="room-list"></div>
     </div>
   </div>
 </div>
 
-<!-- OVERLAY: PIN -->
+<!-- OV: PIN -->
 <div class="ov" id="ov-pin">
   <div class="ov-box">
-    <div class="ov-title B" id="pin-title">CONTROLLER</div>
-    <div style="font-size:13px;color:var(--muted)" id="pin-sub">PIN eingeben</div>
+    <div class="ov-title B" id="pin-title" style="color:#22c55e">CONTROLLER</div>
     <input type="password" class="inp" id="pin-inp" maxlength="8" placeholder="••••"
       style="font-size:22px;text-align:center;letter-spacing:8px"
       onkeydown="if(event.key==='Enter')checkPin()" />
     <div class="err" id="pin-err"></div>
-    <div style="display:flex;gap:10px">
+    <div style="display:flex;gap:9px">
       <button class="btn-g" onclick="hidePinOv()" style="flex:1">Abbrechen</button>
-      <button class="btn-p" id="pin-ok" style="flex:1" onclick="checkPin()">Weiter</button>
+      <button class="btn-p" id="pin-ok" style="flex:1;background:#22c55e" onclick="checkPin()">Weiter</button>
     </div>
   </div>
 </div>
 
-<!-- OVERLAY: Settings -->
-<div class="ov" id="ov-settings">
-  <div class="ov-box" style="max-width:420px">
+<!-- OV: Settings -->
+<div class="ov" id="ov-cfg">
+  <div class="ov-box" style="max-width:400px">
     <div class="ov-title B">EINSTELLUNGEN</div>
     <div>
-      <div class="inp-label">Dein Name</div>
-      <input class="inp" id="inp-name-cfg" />
+      <div class="lbl">Dein Name</div>
+      <input class="inp" id="cfg-name" />
     </div>
     <div>
-      <div class="inp-label">PIN für Controller (leer lassen = kein PIN)</div>
-      <input type="password" class="inp" id="inp-pin-cfg" placeholder="Neuer PIN eingeben" />
+      <div class="lbl">PIN für Controller (leer = kein PIN)</div>
+      <input type="password" class="inp" id="cfg-pin" placeholder="Neuen PIN eingeben" />
     </div>
-    <div>
-      <div class="inp-label">Firebase Datenbank-URL</div>
-      <input class="inp" id="inp-db-cfg" />
-    </div>
-    <div style="display:flex;gap:10px">
-      <button class="btn-g" onclick="closeSettings()" style="flex:1">Abbrechen</button>
-      <button class="btn-p" style="flex:1;background:#22c55e" onclick="saveSettings()">Speichern</button>
+    <div style="display:flex;gap:9px">
+      <button class="btn-g" onclick="closeCfg()" style="flex:1">Abbrechen</button>
+      <button class="btn-p" style="flex:1;background:#22c55e" onclick="saveCfg()">Speichern</button>
     </div>
   </div>
 </div>
 
 <script>
-// ── CONFIG ────────────────────────────────────────────────────────────────────
-const LS = { db:'fa_db', code:'fa_code', name:'fa_name', pin:'fa_pin', rooms:'fa_rooms', af:'fa_af' };
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+const DB = 'https://werksicht-default-rtdb.europe-west1.firebasedatabase.app';
 
 const ST = {
-  ansprechbar:    { lbl:'ANSPRECHBAR',    a:'#22c55e', glow:'rgba(34,197,94,.09)',   present:true  },
+  am_platz:       { lbl:'AM PLATZ',       a:'#22c55e', glow:'rgba(34,197,94,.09)',   present:true  },
   anlauf:         { lbl:'ANLAUF',          a:'#f59e0b', glow:'rgba(245,158,11,.09)',  present:true  },
   flow:           { lbl:'FLOW',            a:'#ef4444', glow:'rgba(239,68,68,.09)',   present:true  },
-  unterwegs:      { lbl:'UNTERWEGS',       a:'#60a5fa', glow:'rgba(96,165,250,.09)',  present:false },
-  im_werk:        { lbl:'IM WERK',         a:'#10b981', glow:'rgba(16,185,129,.09)',  present:true  },
-  werk_verlassen: { lbl:'WERK VERLASSEN',  a:'#f97316', glow:'rgba(249,115,22,.09)',  present:false },
+  unterwegs:      { lbl:'UNTERWEGS',       a:'#60a5fa', glow:'rgba(96,165,250,.09)',  present:true  },
+  im_werk_bis:    { lbl:'IM WERK BIS',     a:'#a78bfa', glow:'rgba(167,139,250,.09)', present:true  },
+  werk_verlassen: { lbl:'WERK VERLASSEN',  a:'#f97316', glow:'rgba(249,115,22,.09)', present:false },
 };
 
-// ── APP STATE ─────────────────────────────────────────────────────────────────
-let db       = lg(LS.db)   || '';
-let myCode   = lg(LS.code) || genCode();
-let myName   = lg(LS.name) || '';
-let pin      = lg(LS.pin)  || '';
-let watched  = JSON.parse(lg(LS.rooms)||'[]'); // [{code,nick}]
-let afMin    = parseInt(lg(LS.af)||'0');
-let myState  = { status:'ansprechbar', anlaufStart:null, flowStart:null, ort:'', rueckkehr:'', name:myName, t:Date.now() };
-let users    = {}; // code → firebase state
-let _ivDisp, _ivCtrl, _ivTick, _pinCb;
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const LS = { code:'wk_code', name:'wk_name', pin:'wk_pin', af:'wk_af' };
+let myCode  = lg(LS.code) || genCode();
+let myName  = lg(LS.name) || '';
+let pin     = lg(LS.pin)  || '';
+let afMin   = parseInt(lg(LS.af)||'0');
+let myState = { status:'am_platz', anlaufStart:null, flowStart:null, bisZeit:null, name:myName, t:Date.now() };
+let users   = {};       // code → firebase state (for display)
+let watchers= {};       // code → {name} – who is watching me (for controller)
+let watchingCodes = []; // codes I am watching (fetched from firebase)
+let _ivD, _ivC, _ivT, _pinCb;
+let dispView = 'tiles'; // 'tiles' | 'timeline'
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function lg(k){ return localStorage.getItem(k); }
@@ -319,111 +323,117 @@ function fmt(ms){
   const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;
   return h>0?`${h}:${p(m)}:${p(sc)}`:`${p(m)}:${p(sc)}`;
 }
-function clearIvs(){ clearInterval(_ivDisp);clearInterval(_ivCtrl);clearInterval(_ivTick); }
-
-// ── FIREBASE ─────────────────────────────────────────────────────────────────
-async function fbGet(path){
-  try{ const r=await fetch(`${db}${path}.json`); return r.ok?await r.json():null; }catch(e){ return null; }
-}
-async function fbPut(path,data){
-  try{ const r=await fetch(`${db}${path}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); return r.ok; }catch(e){ return false; }
-}
-async function fbDel(path){
-  try{ const r=await fetch(`${db}${path}.json`,{method:'DELETE'}); return r.ok; }catch(e){ return false; }
-}
-
-// ── SCREENS ───────────────────────────────────────────────────────────────────
+function clearIvs(){ clearInterval(_ivD);clearInterval(_ivC);clearInterval(_ivT); }
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
+// ── FIREBASE ─────────────────────────────────────────────────────────────────
+async function fbGet(p){ try{ const r=await fetch(`${DB}${p}.json`); return r.ok?await r.json():null; }catch{ return null; } }
+async function fbPut(p,d){ try{ const r=await fetch(`${DB}${p}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}); return r.ok; }catch{ return false; } }
+async function fbDel(p){ try{ const r=await fetch(`${DB}${p}.json`,{method:'DELETE'}); return r.ok; }catch{ return false; } }
+
+// ── BOOT ─────────────────────────────────────────────────────────────────────
+(async()=>{
+  if(!myName){ document.getElementById('ov-name').classList.add('show'); setTimeout(()=>document.getElementById('inp-name-setup').focus(),200); return; }
+  document.getElementById('ov-name').classList.remove('show');
+  goMode();
+})();
+
+async function saveName(){
+  const n=(document.getElementById('inp-name-setup').value||'').trim();
+  if(!n){ document.getElementById('name-err').textContent='Bitte einen Namen eingeben.'; return; }
+  myName=n; ls(LS.name,n); myState.name=n;
+  document.getElementById('ov-name').classList.remove('show');
+  goMode();
+}
+
+// ── MODE ─────────────────────────────────────────────────────────────────────
 function goMode(){
   clearIvs();
   show('s-mode');
   const a=ST[myState.status]?.a||'#22c55e';
   document.getElementById('mode-logo').style.color=a;
-  document.getElementById('mode-greet').textContent = myName?`Hallo, ${myName}`:'';
+  document.getElementById('mode-greet').textContent=myName?`Hallo, ${myName}`:'';
 }
 
-// ── SETUP ─────────────────────────────────────────────────────────────────────
-async function doSetup(){
-  const url=(document.getElementById('inp-db').value||'').trim().replace(/\/$/,'');
-  const name=(document.getElementById('inp-name-s').value||'').trim();
-  document.getElementById('setup-err').textContent='';
-  if(!url){ document.getElementById('setup-err').textContent='Bitte Firebase-URL eingeben.'; return; }
-  if(!name){ document.getElementById('setup-err').textContent='Bitte Namen eingeben.'; return; }
-  document.getElementById('btn-setup').style.display='none';
-  document.getElementById('setup-spin').style.display='block';
-  db=url; ls(LS.db,url);
-  const ok=await fbPut('/flowapp/_ping',{t:Date.now()});
-  document.getElementById('btn-setup').style.display='block';
-  document.getElementById('setup-spin').style.display='none';
-  if(!ok){ document.getElementById('setup-err').textContent='Verbindung fehlgeschlagen. URL und Firebase-Regeln prüfen.'; return; }
-  myName=name; ls(LS.name,name); myState.name=name;
-  goMode();
-}
-
-// ── CONTROLLER ────────────────────────────────────────────────────────────────
+// ── CONTROLLER ───────────────────────────────────────────────────────────────
 function goCtrl(){
-  if(pin){ _pinCb=_openCtrl; openPinOv('CONTROLLER','PIN eingeben um fortzufahren','#22c55e'); }
+  if(pin){ _pinCb=_openCtrl; openPinOv('CONTROLLER','#22c55e'); }
   else { _openCtrl(); }
 }
-function _openCtrl(){
+async function _openCtrl(){
   show('s-ctrl');
-  document.getElementById('ctrl-namelbl').textContent=myName;
+  document.getElementById('ctrl-nl').textContent=myName;
   document.getElementById('my-code').textContent=myCode;
   document.getElementById('sel-af').value=afMin;
-  document.getElementById('inp-ort').value=myState.ort||'';
-  document.getElementById('inp-ret').value=myState.rueckkehr||'';
-  renderCtrl();
-  _ivTick=setInterval(()=>renderCtrl(),1000);
-  _ivCtrl=setInterval(async()=>{ checkAF(); await pushState(); },4000);
+  if(myState.bisZeit) document.getElementById('inp-bis').value=myState.bisZeit;
+  renderCtrl(); await refreshWatchers();
+  _ivT=setInterval(()=>renderCtrl(),1000);
+  _ivC=setInterval(async()=>{ checkAF(); await pushState(); await refreshWatchers(); },4000);
 }
 
 function renderCtrl(){
   const s=myState.status, cfg=ST[s];
   document.getElementById('ctrl-logo').style.color=cfg.a;
-  // buttons
-  ['ansprechbar','anlauf','flow','im_werk','werk_verlassen'].forEach(k=>{
-    const b=document.getElementById('btn-'+k); if(!b)return;
-    const c=ST[k];
+  ['am_platz','anlauf','flow','unterwegs','werk_verlassen','im_werk_bis'].forEach(k=>{
+    const b=document.getElementById('btn-'+k); if(!b) return;
+    const c=ST[k]||{a:'#888'};
     if(k===s){ b.style.background=c.a;b.style.color='#000';b.style.borderColor=c.a; }
     else { b.style.background='#161616';b.style.color=c.a;b.style.borderColor=c.a+'55'; }
   });
-  // auto-flow card
   document.getElementById('card-af').style.display=s==='anlauf'?'block':'none';
-  // status
-  document.getElementById('c-sdot').style.background=cfg.a;
-  document.getElementById('c-sdot').style.boxShadow=`0 0 8px ${cfg.a}`;
+  document.getElementById('c-sdot').style.cssText=`width:9px;height:9px;border-radius:50%;background:${cfg.a};box-shadow:0 0 8px ${cfg.a}`;
   document.getElementById('c-sname').style.color=cfg.a;
-  document.getElementById('c-sname').textContent=cfg.lbl;
-  // timers
+  document.getElementById('c-sname').textContent=cfg.lbl+(s==='im_werk_bis'&&myState.bisZeit?' '+myState.bisZeit:'');
   let h='';
   if(myState.anlaufStart) h+=`<div class="tbox"><div class="tl">Anlauf</div><div class="tv" style="color:#777">${fmt(myState.anlaufStart)}</div></div>`;
   if(myState.flowStart)   h+=`<div class="tbox"><div class="tl" style="color:${cfg.a}">Flow</div><div class="tv" style="color:${cfg.a}">${fmt(myState.flowStart)}</div></div>`;
   document.getElementById('c-timers').innerHTML=h;
 }
 
+async function refreshWatchers(){
+  const data=await fbGet(`/flowapp/watchers/${myCode}`);
+  watchers=data||{};
+  const el=document.getElementById('watcher-list');
+  const keys=Object.keys(watchers);
+  if(!keys.length){ el.innerHTML=`<div style="color:var(--dim);font-size:13px">Niemand zeigt deinen Status an.</div>`; return; }
+  el.innerHTML=keys.map(code=>`
+    <div class="watcher-item" onclick="removeWatcher('${code}','${(watchers[code]?.name||code).replace(/'/g,"\\'")}')">
+      <div>
+        <span style="color:var(--txt);font-size:14px">${watchers[code]?.name||code}</span>
+        <span style="color:var(--dim);font-size:11px;margin-left:8px">${code}</span>
+      </div>
+      <span style="color:#f87171;font-size:12px">✕ Entfernen</span>
+    </div>`).join('');
+}
+
+async function removeWatcher(watcherCode, watcherName){
+  if(!confirm(`${watcherName} entfernen? Ihr seht euch dann gegenseitig nicht mehr.`)) return;
+  // remove watcher from my watchers list
+  await fbDel(`/flowapp/watchers/${myCode}/${watcherCode}`);
+  // remove me from watcher's watching list
+  await fbDel(`/flowapp/watching/${watcherCode}/${myCode}`);
+  await refreshWatchers();
+}
+
 async function setStatus(s){
   const now=Date.now();
   const ns={...myState,status:s};
-  if(s==='anlauf')         { ns.anlaufStart=now; ns.flowStart=null; }
-  else if(s==='flow')      { if(!myState.anlaufStart) ns.anlaufStart=now; ns.flowStart=now; }
-  else if(s==='unterwegs') { ns.anlaufStart=null;ns.flowStart=null;ns.ort=document.getElementById('inp-ort').value;ns.rueckkehr=document.getElementById('inp-ret').value; }
-  else                     { ns.anlaufStart=null;ns.flowStart=null; }
+  if(s==='anlauf')         { ns.anlaufStart=now; ns.flowStart=null; ns.bisZeit=null; }
+  else if(s==='flow')      { if(!myState.anlaufStart) ns.anlaufStart=now; ns.flowStart=now; ns.bisZeit=null; }
+  else if(s==='im_werk_bis'){ ns.anlaufStart=null; ns.flowStart=null; ns.bisZeit=document.getElementById('inp-bis').value||null; }
+  else                     { ns.anlaufStart=null; ns.flowStart=null; ns.bisZeit=null; }
   ns.name=myName; ns.t=Date.now();
-  myState=ns;
-  await pushState();
-  renderCtrl();
+  myState=ns; await pushState(); renderCtrl();
 }
 
-async function pushState(){ if(!db) return; myState.name=myName; myState.t=Date.now(); await fbPut(`/flowapp/rooms/${myCode}`,myState); }
+async function pushState(){ myState.name=myName; myState.t=Date.now(); await fbPut(`/flowapp/rooms/${myCode}`,myState); }
 
 function checkAF(){
   if(myState.status==='anlauf'&&afMin>0&&myState.anlaufStart&&Date.now()-myState.anlaufStart>=afMin*60000){
     myState.status='flow'; myState.flowStart=Date.now(); pushState();
   }
 }
-
-function setAutoFlow(v){ afMin=parseInt(v); ls(LS.af,afMin); }
+function setAF(v){ afMin=parseInt(v); ls(LS.af,afMin); }
 
 function copyCode(){
   navigator.clipboard?.writeText(myCode).then(()=>{
@@ -433,208 +443,270 @@ function copyCode(){
 }
 
 async function removeFromAll(){
-  if(!confirm('Dich aus allen Anzeigen entfernen? Dein Status wird gelöscht und ein neuer Code vergeben.')) return;
+  if(!confirm('Dich aus allen Anzeigen entfernen?\nDein Status wird gelöscht und ein neuer Code vergeben.')) return;
+  // remove me from all watchers' watching lists
+  const myWatchers=await fbGet(`/flowapp/watchers/${myCode}`)||{};
+  for(const wc of Object.keys(myWatchers)) await fbDel(`/flowapp/watching/${wc}/${myCode}`);
+  // remove all my watching from others' watcher lists
+  const myWatching=await fbGet(`/flowapp/watching/${myCode}`)||{};
+  for(const wc of Object.keys(myWatching)) await fbDel(`/flowapp/watchers/${wc}/${myCode}`);
+  // delete my data
   await fbDel(`/flowapp/rooms/${myCode}`);
+  await fbDel(`/flowapp/watchers/${myCode}`);
+  await fbDel(`/flowapp/watching/${myCode}`);
   myCode=genCode();
   document.getElementById('my-code').textContent=myCode;
+  watchers={};
+  document.getElementById('watcher-list').innerHTML=`<div style="color:var(--dim);font-size:13px">Niemand zeigt deinen Status an.</div>`;
   alert('Erfolgreich entfernt. Neuer Code: '+myCode);
 }
 
-// ── DISPLAY ───────────────────────────────────────────────────────────────────
+// ── DISPLAY ──────────────────────────────────────────────────────────────────
 async function goDisp(){
   show('s-disp');
-  await syncUsers();
+  await syncDisplay();
   renderDisp();
-  _ivTick=setInterval(()=>renderDisp(),1000);
-  _ivDisp=setInterval(async()=>{ await syncUsers(); renderDisp(); },4000);
+  _ivT=setInterval(()=>renderDisp(),1000);
+  _ivD=setInterval(async()=>{ await syncDisplay(); renderDisp(); },4000);
 }
 
-async function syncUsers(){
-  const all=await fbGet('/flowapp/rooms');
+async function syncDisplay(){
+  // fetch my watching list from firebase
+  const wdata=await fbGet(`/flowapp/watching/${myCode}`)||{};
+  watchingCodes=Object.keys(wdata).map(code=>({code,nick:wdata[code]?.name||code}));
+  // fetch each user's status
+  const rooms=await fbGet('/flowapp/rooms')||{};
   users={};
-  if(all) watched.forEach(({code})=>{ if(all[code]) users[code]=all[code]; });
+  watchingCodes.forEach(({code})=>{ if(rooms[code]) users[code]=rooms[code]; });
 }
 
 function renderDisp(){
-  const active=watched.filter(({code})=>users[code]);
+  const active=watchingCodes.filter(({code})=>users[code]);
   const cnt=active.length;
-
-  // ambient color from first user
-  const fst=cnt>0?(ST[users[active[0].code]?.status]||ST.ansprechbar):ST.ansprechbar;
+  const fst=cnt>0?(ST[users[active[0].code]?.status]||ST.am_platz):ST.am_platz;
   document.getElementById('d-glow').style.background=`radial-gradient(circle,${fst.glow} 0%,transparent 65%)`;
   const grad=`linear-gradient(90deg,transparent,${fst.a},transparent)`;
-  document.getElementById('d-bar-t').style.background=grad;
-  document.getElementById('d-bar-b').style.background=grad;
+  document.getElementById('d-bt').style.background=grad;
+  document.getElementById('d-bb').style.background=grad;
 
   const el=document.getElementById('d-content');
-
   if(cnt===0){
-    el.innerHTML=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;gap:16px">
-      <div class="B" style="font-size:clamp(44px,10vw,80px);color:#2a2a2a;letter-spacing:5px">FLOW APP</div>
-      <div style="color:var(--dim);font-size:15px">Noch keine Personen verknüpft.<br>Klicke auf <strong style="color:var(--muted)">＋ Code hinzufügen</strong> um loszulegen.</div>
+    el.innerHTML=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;gap:14px">
+      <div class="B" style="font-size:clamp(44px,10vw,80px);color:#2a2a2a;letter-spacing:5px">WERKSICHT</div>
+      <div style="color:var(--dim);font-size:15px">Noch keine Personen verknüpft.<br>Klicke auf <strong style="color:var(--mut)">＋ Person</strong> um loszulegen.</div>
     </div>`;
-    document.getElementById('pbar').innerHTML='';
-    return;
+    document.getElementById('pbar').innerHTML=''; return;
   }
 
-  // responsive sizing
-  let cols=1;
-  if(cnt===2)cols=2;
-  if(cnt>=3&&cnt<=4)cols=2;
-  if(cnt>=5)cols=3;
-  const fs = cnt===1?'clamp(72px,14vw,150px)':cnt===2?'clamp(46px,8vw,90px)':cnt<=4?'clamp(32px,5.5vw,66px)':'clamp(24px,4vw,46px)';
-  const ss = cnt===1?'clamp(14px,2vw,22px)':cnt<=2?'clamp(13px,1.7vw,18px)':cnt<=4?'14px':'12px';
+  if(dispView==='timeline') renderTimeline(active, el);
+  else renderTiles(active, cnt, el);
+  renderPresenceBar(active);
+}
 
+function renderTiles(active, cnt, el){
+  let cols=1;
+  if(cnt===2)cols=2; if(cnt>=3&&cnt<=4)cols=2; if(cnt>=5)cols=3;
+  const fs=cnt===1?'clamp(72px,14vw,150px)':cnt===2?'clamp(44px,8vw,88px)':cnt<=4?'clamp(30px,5vw,62px)':'clamp(22px,4vw,44px)';
+  const ss=cnt===1?'clamp(14px,2vw,22px)':cnt<=2?'clamp(13px,1.7vw,18px)':cnt<=4?'14px':'12px';
+  const compact=cnt>=5;
   const grid=document.createElement('div');
   grid.className='d-grid';
   grid.style.gridTemplateColumns=`repeat(${cols},1fr)`;
-
   active.forEach(({code})=>{
     const d=users[code]; if(!d) return;
-    const cfg=ST[d.status]||ST.ansprechbar;
-    const compact=cnt>=5;
+    const cfg=ST[d.status]||ST.am_platz;
     const card=document.createElement('div');
-    card.className='u-card';
-    card.style.borderColor=cfg.a+'33';
+    card.className='u-card'; card.style.borderColor=cfg.a+'33';
     card.innerHTML=`
-      <div style="position:absolute;inset:0;background:${cfg.glow};border-radius:14px;pointer-events:none"></div>
+      <div style="position:absolute;inset:0;background:${cfg.glow};border-radius:13px;pointer-events:none"></div>
       <div style="position:relative">
-        ${cnt>1?`<div style="font-size:${compact?'10px':'12px'};color:${cfg.a};letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;opacity:.85">${d.name||code}</div>`:''}
-        <div class="B" style="font-size:${fs};color:${cfg.a};letter-spacing:4px;line-height:.92;transition:color .5s">${cfg.lbl}</div>
-        ${dispDetail(d,cfg,ss,compact)}
+        ${cnt>1?`<div style="font-size:${compact?'9px':'11px'};color:${cfg.a};letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;opacity:.9">${d.name||code}</div>`:''}
+        <div class="B" style="font-size:${fs};color:${cfg.a};letter-spacing:3px;line-height:.92;transition:color .5s">${cfg.lbl}${d.status==='im_werk_bis'&&d.bisZeit?' '+d.bisZeit:''}</div>
+        ${tileDetail(d,cfg,ss,compact)}
       </div>`;
     grid.appendChild(card);
   });
-
   el.innerHTML=''; el.appendChild(grid);
-
-  // presence bar
-  const inW=active.filter(({code})=>{ const d=users[code];return d&&ST[d.status]?.present; }).map(({code})=>users[code]?.name||code);
-  const away=active.filter(({code})=>{ const d=users[code];return d&&d.status==='unterwegs'; }).map(({code})=>users[code]?.name||code);
-  const left=active.filter(({code})=>{ const d=users[code];return d&&d.status==='werk_verlassen'; }).map(({code})=>users[code]?.name||code);
-  let pb='';
-  if(inW.length)  pb+=`<span style="display:flex;align-items:center;gap:6px"><span class="pdot" style="background:#22c55e"></span><span>Im Werk: <strong style="color:var(--text)">${inW.join(', ')}</strong></span></span>`;
-  if(away.length) pb+=`<span style="display:flex;align-items:center;gap:6px"><span class="pdot" style="background:#60a5fa"></span><span>Unterwegs: <strong style="color:var(--text)">${away.join(', ')}</strong></span></span>`;
-  if(left.length) pb+=`<span style="display:flex;align-items:center;gap:6px"><span class="pdot" style="background:#f97316"></span><span>Hat Werk verlassen: <strong style="color:var(--text)">${left.join(', ')}</strong></span></span>`;
-  if(!inW.length&&!away.length) pb+=`<span style="display:flex;align-items:center;gap:6px;color:#f97316"><span class="pdot" style="background:#f97316"></span><span>⚠ Niemand im Werk!</span></span>`;
-  document.getElementById('pbar').innerHTML=pb;
 }
 
-function dispDetail(d,cfg,ss,compact){
+function tileDetail(d,cfg,ss,compact){
   const s=d.status; let h='';
-  if(s==='ansprechbar'){
-    h=`<div style="font-size:${ss};color:#aaa;margin-top:10px;font-weight:300">Ich bin verfügbar – sprich mich gerne an</div>
-       ${!compact?`<div class="pulse" style="width:10px;height:10px;border-radius:50%;background:${cfg.a};box-shadow:0 0 14px ${cfg.a};margin:16px 0 0"></div>`:''}`;
+  if(s==='am_platz'){
+    h=`<div style="font-size:${ss};color:#aaa;margin-top:9px;font-weight:300">Ich bin verfügbar – sprich mich gerne an</div>
+       ${!compact?`<div class="pulse" style="width:10px;height:10px;border-radius:50%;background:${cfg.a};box-shadow:0 0 14px ${cfg.a};margin:14px 0 0"></div>`:''}`;
   } else if(s==='anlauf'){
-    h=`<div style="font-size:${ss};color:#aaa;margin-top:8px;font-weight:300">Ich versuche in einen Flow zu kommen.<br>Bitte komm später wieder.</div>
-       <div style="display:inline-block;background:#0f0f0f;border:1px solid ${cfg.a}33;border-radius:10px;padding:10px 20px;margin-top:12px">
-         <div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">Anlauf seit</div>
-         <div class="B" style="font-size:${compact?'20px':'clamp(24px,4vw,44px)'};color:${cfg.a};letter-spacing:3px">${fmt(d.anlaufStart)}</div>
+    h=`<div style="font-size:${ss};color:#aaa;margin-top:8px;font-weight:300">Ich versuche in einen Flow zu kommen.</div>
+       <div style="display:inline-block;background:#0f0f0f;border:1px solid ${cfg.a}33;border-radius:9px;padding:9px 18px;margin-top:10px">
+         <div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">Anlauf seit</div>
+         <div class="B" style="font-size:${compact?'18px':'clamp(22px,4vw,42px)'};color:${cfg.a};letter-spacing:3px">${fmt(d.anlaufStart)}</div>
        </div>`;
   } else if(s==='flow'){
-    h=`${!compact?`<div style="font-size:${ss};color:#666;font-style:italic;margin:8px 0 4px;letter-spacing:1px">– Bin im Work-Flow –</div>`:''}
-       <div style="font-size:${compact?'13px':ss};color:#ccc;font-weight:600;margin-bottom:6px">Bitte nicht stören!</div>
-       <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
-         <div style="background:#0f0f0f;border:1px solid #222;border-radius:8px;padding:8px 12px">
-           <div style="font-size:9px;color:#444;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">Anlauf</div>
-           <div class="B" style="font-size:${compact?'16px':'clamp(18px,3vw,32px)'};color:#555;letter-spacing:2px">${fmt(d.anlaufStart)}</div>
+    h=`${!compact?`<div style="font-size:${ss};color:#555;font-style:italic;margin:7px 0 4px;letter-spacing:1px">– Bin im Work-Flow –</div>`:''}
+       <div style="font-size:${compact?'12px':ss};color:#ccc;font-weight:600;margin-bottom:5px">Bitte nicht stören!</div>
+       <div style="display:flex;gap:9px;margin-top:7px;flex-wrap:wrap">
+         <div style="background:#0f0f0f;border:1px solid #222;border-radius:7px;padding:7px 11px">
+           <div style="font-size:8px;color:#444;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Anlauf</div>
+           <div class="B" style="font-size:${compact?'15px':'clamp(16px,3vw,30px)'};color:#555;letter-spacing:2px">${fmt(d.anlaufStart)}</div>
          </div>
-         <div style="background:#0f0f0f;border:2px solid ${cfg.a}55;border-radius:8px;padding:8px 12px">
-           <div style="font-size:9px;color:${cfg.a};letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">Flow</div>
-           <div class="B" style="font-size:${compact?'16px':'clamp(18px,3vw,32px)'};color:${cfg.a};letter-spacing:2px">${fmt(d.flowStart)}</div>
+         <div style="background:#0f0f0f;border:2px solid ${cfg.a}55;border-radius:7px;padding:7px 11px">
+           <div style="font-size:8px;color:${cfg.a};letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Flow</div>
+           <div class="B" style="font-size:${compact?'15px':'clamp(16px,3vw,30px)'};color:${cfg.a};letter-spacing:2px">${fmt(d.flowStart)}</div>
          </div>
        </div>`;
   } else if(s==='unterwegs'){
-    h=`${d.ort?`<div style="font-size:${ss};color:#aaa;margin-top:8px">Du findest mich hier: <strong style="color:#eee">${d.ort}</strong></div>`:''}
-       ${d.rueckkehr?`<div style="display:inline-block;background:#0f0f0f;border:1px solid ${cfg.a}44;border-radius:10px;padding:10px 18px;margin-top:12px">
-         <div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">Voraussichtlich zurück</div>
-         <div class="B" style="font-size:${compact?'18px':'clamp(20px,4vw,40px)'};color:${cfg.a};letter-spacing:2px">${d.rueckkehr}</div>
-       </div>`:''}`;
-  } else if(s==='im_werk'){
-    h=`<div style="font-size:${ss};color:#aaa;margin-top:10px">Ist im Betrieb anwesend</div>
-       ${!compact?`<div class="pulse" style="width:10px;height:10px;border-radius:50%;background:${cfg.a};box-shadow:0 0 14px ${cfg.a};margin:16px 0 0"></div>`:''}`;
+    h=`<div style="font-size:${ss};color:#aaa;margin-top:9px">Im Werk unterwegs – nicht am Platz</div>`;
+  } else if(s==='im_werk_bis'){
+    h=`<div style="font-size:${ss};color:#aaa;margin-top:9px">Anwesend${d.bisZeit?` · geplante Abfahrt: <strong style="color:${cfg.a}">${d.bisZeit}</strong>`:''}</div>`;
   } else if(s==='werk_verlassen'){
-    h=`<div style="font-size:${ss};color:#aaa;margin-top:10px;font-weight:300">Hat das Werk verlassen</div>`;
+    h=`<div style="font-size:${ss};color:#aaa;margin-top:9px;font-weight:300">Hat das Werk verlassen</div>`;
   }
   return h;
 }
 
-// ── ADD ROOM ──────────────────────────────────────────────────────────────────
+function renderTimeline(active, el){
+  // sort: im_werk_bis with time first (ascending), then others by status priority
+  const priority={am_platz:2,anlauf:3,flow:4,unterwegs:5,im_werk_bis:1,werk_verlassen:6};
+  const sorted=[...active].sort((a,b)=>{
+    const da=users[a.code], db2=users[b.code];
+    if(!da||!db2) return 0;
+    if(da.status==='im_werk_bis'&&db2.status==='im_werk_bis'){
+      return (da.bisZeit||'99:99').localeCompare(db2.bisZeit||'99:99');
+    }
+    return (priority[da.status]||9)-(priority[db2.status]||9);
+  });
+
+  const now=new Date();
+  const nowStr=`${p(now.getHours())}:${p(now.getMinutes())}`;
+  const tl=document.createElement('div');
+  tl.className='d-timeline';
+  tl.innerHTML=`<div class="tl-header">
+    <div>ZEITPLAN · ${nowStr} Uhr</div>
+  </div>`;
+
+  sorted.forEach(({code},i)=>{
+    const d=users[code]; if(!d) return;
+    const cfg=ST[d.status]||ST.am_platz;
+    const row=document.createElement('div');
+    row.className='tl-row';
+    const timeLabel=d.status==='im_werk_bis'&&d.bisZeit?d.bisZeit:'–';
+    const isLast=i===sorted.length-1;
+    row.innerHTML=`
+      <div class="tl-time-col">
+        <div class="tl-time-lbl" style="color:${d.status==='im_werk_bis'?cfg.a:'#333'}">${timeLabel}</div>
+        ${!isLast?`<div class="tl-line" style="background:${d.status==='im_werk_bis'?cfg.a+'44':'#1e1e1e'}"></div>`:''}
+      </div>
+      <div class="tl-dot-col">
+        <div class="tl-dot" style="background:${cfg.a};box-shadow:0 0 8px ${cfg.a}44"></div>
+        ${!isLast?`<div class="tl-line2" style="background:#1e1e1e"></div>`:''}
+      </div>
+      <div class="tl-content">
+        <div class="tl-name" style="color:${cfg.a};font-size:10px">${d.name||code}</div>
+        <div class="tl-status B" style="font-size:clamp(18px,3vw,32px);color:${cfg.a};letter-spacing:2px">${cfg.lbl}${d.status==='im_werk_bis'&&d.bisZeit?' '+d.bisZeit:''}</div>
+        <div class="tl-sub">${tlSubtext(d)}</div>
+      </div>`;
+    tl.appendChild(row);
+  });
+  el.innerHTML=''; el.appendChild(tl);
+}
+
+function tlSubtext(d){
+  const s=d.status;
+  if(s==='am_platz') return 'Verfügbar · am Platz';
+  if(s==='anlauf')   return `Anlauf läuft seit ${fmt(d.anlaufStart)}`;
+  if(s==='flow')     return `Flow läuft seit ${fmt(d.flowStart)} · Bitte nicht stören`;
+  if(s==='unterwegs')return 'Im Werk unterwegs';
+  if(s==='im_werk_bis') return d.bisZeit?`Plant um ${d.bisZeit} Uhr zu gehen`:'Anwesend';
+  if(s==='werk_verlassen') return 'Hat das Werk verlassen';
+  return '';
+}
+
+function renderPresenceBar(active){
+  const inW=active.filter(({code})=>{const d=users[code];return d&&ST[d.status]?.present;}).map(({code})=>users[code]?.name||code);
+  const left=active.filter(({code})=>{const d=users[code];return d&&d.status==='werk_verlassen';}).map(({code})=>users[code]?.name||code);
+  const bisAnnounced=active.filter(({code})=>{const d=users[code];return d&&d.status==='im_werk_bis'&&d.bisZeit;}).map(({code})=>`${users[code]?.name||code} bis ${users[code].bisZeit}`);
+  let pb='';
+  if(inW.length)  pb+=`<span style="display:flex;align-items:center;gap:5px"><span class="pdot" style="background:#22c55e"></span><span>Im Werk: <strong style="color:var(--txt)">${inW.join(', ')}</strong></span></span>`;
+  if(left.length) pb+=`<span style="display:flex;align-items:center;gap:5px"><span class="pdot" style="background:#f97316"></span><span>Verlassen: <strong style="color:var(--txt)">${left.join(', ')}</strong></span></span>`;
+  if(bisAnnounced.length) pb+=`<span style="display:flex;align-items:center;gap:5px"><span class="pdot" style="background:#a78bfa"></span><span style="color:#a78bfa">${bisAnnounced.join(' · ')}</span></span>`;
+  if(!inW.length&&!left.length) pb+=`<span style="display:flex;align-items:center;gap:5px;color:#f97316"><span class="pdot" style="background:#f97316"></span><span>⚠ Niemand im Werk!</span></span>`;
+  document.getElementById('pbar').innerHTML=pb;
+}
+
+function toggleView(){
+  dispView = dispView==='tiles'?'timeline':'tiles';
+  document.getElementById('view-toggle').textContent = dispView==='tiles'?'⏱ Zeitplan':'⊞ Kacheln';
+  renderDisp();
+}
+
+// ── ADD ROOM ─────────────────────────────────────────────────────────────────
 function showAddRoom(){ document.getElementById('inp-rcode').value=''; document.getElementById('room-err').textContent=''; renderRoomList(); document.getElementById('ov-room').classList.add('show'); setTimeout(()=>document.getElementById('inp-rcode').focus(),100); }
 function hideAddRoom(){ document.getElementById('ov-room').classList.remove('show'); }
 
 async function addRoom(){
   const code=document.getElementById('inp-rcode').value.trim().toUpperCase();
   document.getElementById('room-err').textContent='';
+  if(code===myCode){ document.getElementById('room-err').textContent='Das ist dein eigener Code.'; return; }
   if(code.length<4){ document.getElementById('room-err').textContent='Code zu kurz.'; return; }
-  if(watched.find(r=>r.code===code)){ document.getElementById('room-err').textContent='Code bereits in der Liste.'; return; }
+  // check already watching
+  const already=await fbGet(`/flowapp/watching/${myCode}/${code}`);
+  if(already){ document.getElementById('room-err').textContent='Person bereits in der Liste.'; return; }
   const data=await fbGet(`/flowapp/rooms/${code}`);
   if(!data){ document.getElementById('room-err').textContent='Code nicht gefunden. Bitte prüfen.'; return; }
-  watched.push({code, nick:data.name||code});
-  ls(LS.rooms,JSON.stringify(watched));
-  await syncUsers(); renderDisp(); renderRoomList();
+  const otherName=data.name||code;
+  // mutual: I watch them, they have me as watcher
+  await fbPut(`/flowapp/watching/${myCode}/${code}`,{name:otherName, addedAt:Date.now()});
+  await fbPut(`/flowapp/watchers/${code}/${myCode}`,{name:myName, addedAt:Date.now()});
+  // also: they watch me, I have them as watcher (full mutual display)
+  await fbPut(`/flowapp/watching/${code}/${myCode}`,{name:myName, addedAt:Date.now()});
+  await fbPut(`/flowapp/watchers/${myCode}/${code}`,{name:otherName, addedAt:Date.now()});
+  await syncDisplay(); renderDisp(); renderRoomList();
   document.getElementById('inp-rcode').value='';
 }
 
-function removeRoom(code){
-  watched=watched.filter(r=>r.code!==code); delete users[code];
-  ls(LS.rooms,JSON.stringify(watched)); renderRoomList(); renderDisp();
+async function removeRoom(code){
+  const nick=(watchingCodes.find(r=>r.code===code)?.nick)||code;
+  if(!confirm(`${nick} entfernen? Ihr seht euch dann gegenseitig nicht mehr.`)) return;
+  // remove mutually
+  await fbDel(`/flowapp/watching/${myCode}/${code}`);
+  await fbDel(`/flowapp/watchers/${code}/${myCode}`);
+  await fbDel(`/flowapp/watching/${code}/${myCode}`);
+  await fbDel(`/flowapp/watchers/${myCode}/${code}`);
+  await syncDisplay(); renderDisp(); renderRoomList();
 }
 
 function renderRoomList(){
   const el=document.getElementById('room-list');
-  if(!watched.length){ el.innerHTML=`<div style="color:var(--dim);font-size:13px">Noch keine Personen hinzugefügt.</div>`; return; }
-  el.innerHTML=watched.map(({code,nick})=>`
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">
+  if(!watchingCodes.length){ el.innerHTML=`<div style="color:var(--dim);font-size:13px">Noch keine Personen hinzugefügt.</div>`; return; }
+  el.innerHTML=watchingCodes.map(({code,nick})=>`
+    <div class="room-row">
       <div>
-        <span style="color:var(--text);font-size:14px">${nick}</span>
-        <span style="color:var(--dim);font-size:11px;margin-left:8px;letter-spacing:2px">${code}</span>
+        <span style="color:var(--txt);font-size:14px">${nick}</span>
+        <span style="color:var(--dim);font-size:11px;margin-left:8px">${code}</span>
       </div>
-      <button class="btn-d" style="padding:4px 10px;font-size:12px" onclick="removeRoom('${code}')">Entfernen</button>
+      <button class="btn-d" onclick="removeRoom('${code}')">Entfernen</button>
     </div>`).join('');
 }
 
 // ── PIN ───────────────────────────────────────────────────────────────────────
-function openPinOv(title,sub,accent){
-  document.getElementById('pin-title').textContent=title; document.getElementById('pin-title').style.color=accent;
-  document.getElementById('pin-sub').textContent=sub;
-  document.getElementById('pin-ok').style.background=accent;
-  document.getElementById('pin-inp').value=''; document.getElementById('pin-err').textContent='';
-  document.getElementById('ov-pin').classList.add('show');
-  setTimeout(()=>document.getElementById('pin-inp').focus(),100);
-}
+function openPinOv(title,accent){ document.getElementById('pin-title').textContent=title; document.getElementById('pin-title').style.color=accent; document.getElementById('pin-ok').style.background=accent; document.getElementById('pin-inp').value=''; document.getElementById('pin-err').textContent=''; document.getElementById('ov-pin').classList.add('show'); setTimeout(()=>document.getElementById('pin-inp').focus(),100); }
 function hidePinOv(){ document.getElementById('ov-pin').classList.remove('show'); _pinCb=null; }
 function checkPin(){
   if(document.getElementById('pin-inp').value===pin){ hidePinOv(); if(_pinCb)_pinCb(); }
-  else {
-    document.getElementById('pin-err').textContent='Falscher PIN';
-    document.getElementById('pin-inp').classList.add('shake');
-    document.getElementById('pin-inp').value='';
-    setTimeout(()=>{ document.getElementById('pin-inp').classList.remove('shake'); document.getElementById('pin-err').textContent=''; },600);
-  }
+  else{ document.getElementById('pin-err').textContent='Falscher PIN'; document.getElementById('pin-inp').classList.add('shake'); document.getElementById('pin-inp').value=''; setTimeout(()=>{ document.getElementById('pin-inp').classList.remove('shake'); document.getElementById('pin-err').textContent=''; },600); }
 }
 
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
-function openSettings(){
-  document.getElementById('inp-name-cfg').value=myName;
-  document.getElementById('inp-pin-cfg').value='';
-  document.getElementById('inp-db-cfg').value=db;
-  document.getElementById('ov-settings').classList.add('show');
-}
-function closeSettings(){ document.getElementById('ov-settings').classList.remove('show'); }
-function saveSettings(){
-  const n=(document.getElementById('inp-name-cfg').value||'').trim();
-  const p2=document.getElementById('inp-pin-cfg').value;
-  const d2=(document.getElementById('inp-db-cfg').value||'').trim().replace(/\/$/,'');
+function openSettings(){ document.getElementById('cfg-name').value=myName; document.getElementById('cfg-pin').value=''; document.getElementById('ov-cfg').classList.add('show'); }
+function closeCfg(){ document.getElementById('ov-cfg').classList.remove('show'); }
+function saveCfg(){
+  const n=(document.getElementById('cfg-name').value||'').trim();
+  const p2=document.getElementById('cfg-pin').value;
   if(n){ myName=n; ls(LS.name,n); myState.name=n; }
   if(p2!==''){ pin=p2; ls(LS.pin,p2); }
-  if(d2){ db=d2; ls(LS.db,d2); }
-  closeSettings();
+  closeCfg();
   if(document.getElementById('s-ctrl').classList.contains('active')) renderCtrl();
+  if(document.getElementById('s-mode').classList.contains('active')) goMode();
 }
-
-// ── BOOT ──────────────────────────────────────────────────────────────────────
-(()=>{ db?goMode():show('s-setup'); })();
 </script>
 </body>
 </html>
