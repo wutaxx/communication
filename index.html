@@ -7,502 +7,634 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --accent: #22c55e;
-    --bg: #070707;
-    --card: #0f0f0f;
-    --border: #1e1e1e;
-    --muted: #444;
-    --text: #e5e5e5;
-  }
-  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
-  .B { font-family: 'Bebas Neue', sans-serif; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#070707;--card:#111;--card2:#161616;--border:#252525;--text:#ddd;--muted:#888;--dim:#555}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+.B{font-family:'Bebas Neue',sans-serif}
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px}
+.screen.active{display:flex}
+.inp{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-size:15px;outline:none;font-family:'Inter',sans-serif;transition:border-color .2s}
+.inp:focus{border-color:#444}
+select.inp{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath fill='%23888' d='M5 7L0 0h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.inp-label{font-size:10px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.btn-p{width:100%;padding:13px;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-weight:600;font-size:15px;cursor:pointer;transition:opacity .15s;color:#000}
+.btn-p:active{opacity:.85}
+.btn-g{background:var(--card2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:9px 18px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
+.btn-g:hover{color:var(--text);border-color:#444}
+.btn-d{background:#1a0a0a;border:1px solid #5c1a1a;color:#f87171;border-radius:8px;padding:9px 18px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
+.btn-d:hover{background:#2a0f0f}
+.err{color:#f87171;font-size:13px;min-height:18px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
+.section-lbl{font-size:10px;color:var(--dim);letter-spacing:3px;text-transform:uppercase}
 
-  /* ── MODE SELECTOR ── */
-  #mode-screen {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    min-height: 100vh; gap: 32px; padding: 40px 20px;
-  }
-  .mode-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(48px,10vw,90px); color: var(--accent); letter-spacing: 6px; text-align: center; }
-  .mode-subtitle { font-size: 14px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; text-align: center; }
-  .mode-cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; max-width: 600px; }
-  .mode-card {
-    flex: 1 1 220px; padding: 32px 28px; background: var(--card); border: 1px solid var(--border);
-    border-radius: 16px; cursor: pointer; transition: all .2s; text-align: center;
-  }
-  .mode-card:hover { border-color: var(--accent); background: #161616; transform: translateY(-2px); }
-  .mode-card .mc-icon { font-size: 36px; margin-bottom: 14px; }
-  .mode-card .mc-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 3px; color: var(--accent); margin-bottom: 8px; }
-  .mode-card .mc-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+/* SETUP */
+#s-setup{gap:24px}
+.setup-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:14px}
+.setup-desc{font-size:13px;color:var(--muted);line-height:1.75}
+.setup-desc a{color:#60a5fa;text-decoration:none}
+.setup-desc code{background:#1a1a1a;padding:2px 6px;border-radius:4px;font-size:12px;color:#bbb}
 
-  /* ── DISPLAY ── */
-  #display-screen {
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    min-height: 100vh; position: relative; overflow: hidden; text-align: center; padding: 40px 40px;
-  }
-  .glow {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-    width: 700px; height: 700px; border-radius: 50%;
-    background: radial-gradient(circle, var(--accent-glow, rgba(34,197,94,.1)) 0%, transparent 65%);
-    pointer-events: none; transition: background 1s;
-  }
-  .bar-top, .bar-bot {
-    position: absolute; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    transition: background 1s;
-  }
-  .bar-top { top: 0; }
-  .bar-bot { bottom: 0; }
-  .d-content { position: relative; z-index: 1; max-width: 900px; width: 100%; }
-  .d-heading { font-family: 'Bebas Neue', sans-serif; line-height: 1; letter-spacing: 6px; color: var(--accent); transition: color 1s; }
-  .d-divider { width: 80px; height: 2px; background: var(--accent); margin: 22px auto; opacity: .4; transition: background 1s; }
-  .d-sub { font-size: clamp(14px,2vw,20px); color: #666; font-weight: 300; line-height: 1.9; }
-  .d-timer-box {
-    display: inline-block; background: var(--card); border: 1px solid; border-radius: 14px;
-    padding: 18px 44px; margin-top: 36px;
-  }
-  .d-timer-label { font-size: 10px; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
-  .d-timer-val { font-family: 'Bebas Neue', sans-serif; letter-spacing: 4px; }
-  .d-timers { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 40px; }
-  .pulse-dot {
-    width: 14px; height: 14px; border-radius: 50%; background: var(--accent);
-    margin: 36px auto 0; box-shadow: 0 0 20px var(--accent);
-    animation: pulse 2.5s ease-in-out infinite;
-  }
-  .italic-sub { font-style: italic; letter-spacing: 2px; margin: 14px 0 6px; color: #484848; }
-  .d-big { font-size: clamp(18px,3vw,32px); color: #ddd; font-weight: 600; margin-bottom: 6px; }
+/* MODE */
+#s-mode{gap:28px}
+.mode-cards{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;max-width:520px}
+.mc{flex:1 1 190px;padding:26px 22px;background:var(--card);border:1px solid var(--border);border-radius:16px;cursor:pointer;transition:all .2s;text-align:center}
+.mc:hover{border-color:#444;background:var(--card2);transform:translateY(-2px)}
+.mc-icon{font-size:30px;margin-bottom:10px}
+.mc-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;margin-bottom:6px}
+.mc-desc{font-size:12px;color:var(--muted);line-height:1.6}
 
-  /* ctrl button on display */
-  #ctrl-btn {
-    position: fixed; bottom: 18px; right: 20px;
-    width: 42px; height: 42px; border-radius: 50%;
-    background: #1a1a1a; border: 1px solid #333;
-    color: #666; font-size: 18px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all .2s; z-index: 50;
-  }
-  #ctrl-btn:hover { background: #222; color: #aaa; border-color: #555; }
+/* CONTROLLER */
+#s-ctrl{justify-content:flex-start;padding-top:26px;padding-bottom:60px}
+.ctrl-hdr{width:100%;max-width:480px;display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.ctrl-body{width:100%;max-width:480px;display:flex;flex-direction:column;gap:13px}
+.sgrid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.sgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sbtn{padding:15px 6px;border-radius:10px;cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;border:1px solid;transition:all .18s;text-align:center}
+.sbtn:active{transform:scale(.97)}
+.code-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.code-val{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:6px;color:#fff}
+.sdot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.tpair{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+.tbox .tl{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;color:var(--dim)}
+.tbox .tv{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px}
 
-  /* ── CONTROLLER ── */
-  #controller-screen {
-    display: none; flex-direction: column; align-items: center;
-    padding: 28px 18px 80px; min-height: 100vh;
-  }
-  .ctrl-header { width: 100%; max-width: 480px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
-  .ctrl-title { font-family: 'Bebas Neue', sans-serif; font-size: 34px; letter-spacing: 3px; color: var(--accent); }
-  .ctrl-sub { font-size: 11px; color: #333; letter-spacing: 2px; text-transform: uppercase; }
-  .ctrl-body { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 14px; }
-  .ctrl-label { font-size: 10px; color: #333; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 2px; }
-  .status-btns { display: flex; gap: 10px; flex-wrap: wrap; }
-  .sbtn {
-    flex: 1 1 130px; padding: 18px 12px; border-radius: 12px; cursor: pointer;
-    font-family: 'Bebas Neue', sans-serif; font-size: 19px; letter-spacing: 2px;
-    border: 1px solid; transition: all .18s;
-  }
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; }
-  .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; margin-bottom: 14px; }
-  .inp {
-    width: 100%; background: #161616; border: 1px solid #222; border-radius: 8px;
-    padding: 10px 14px; color: #ddd; font-size: 15px; outline: none;
-    font-family: 'Inter', sans-serif; transition: border-color .2s;
-  }
-  .inp:focus { border-color: #444; }
-  .inp-label { font-size: 10px; color: #333; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; margin-top: 10px; }
-  .inp-label:first-child { margin-top: 0; }
-  .primary-btn {
-    width: 100%; padding: 13px; border: none; border-radius: 8px;
-    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px;
-    cursor: pointer; margin-top: 10px; transition: opacity .15s;
-  }
-  .primary-btn:active { opacity: .85; }
-  .ghost-btn {
-    background: #161616; border: 1px solid #252525; color: #666;
-    border-radius: 8px; padding: 8px 16px; font-size: 13px;
-    font-family: 'Inter', sans-serif; cursor: pointer; transition: all .15s;
-  }
-  .ghost-btn:hover { color: #aaa; border-color: #444; }
-  .status-indicator { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .status-dot { width: 10px; height: 10px; border-radius: 50%; }
-  .status-name { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; }
-  .timer-row { display: flex; gap: 20px; flex-wrap: wrap; }
-  .timer-item .t-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
-  .timer-item .t-val { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 2px; }
-  .sync-note { font-size: 11px; color: #222; text-align: center; margin-top: 6px; letter-spacing: .5px; }
+/* DISPLAY */
+#s-disp{justify-content:flex-start;padding:0;position:relative;overflow:hidden}
+.d-glow{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:80vw;height:80vw;max-width:800px;max-height:800px;border-radius:50%;pointer-events:none;transition:background 1.5s;z-index:0}
+.d-bar{position:fixed;left:0;right:0;height:3px;z-index:10;transition:background 1s}
+.d-inner{position:relative;z-index:1;width:100%;height:calc(100vh - 44px);display:flex;flex-direction:column}
+.d-grid{flex:1;display:grid;padding:10px;gap:10px;align-content:stretch}
+.u-card{background:#0e0e0e;border-radius:14px;padding:20px;display:flex;flex-direction:column;justify-content:center;border:1px solid #1a1a1a;position:relative;overflow:hidden;transition:border-color .6s}
+.presence-bar{background:#090909;border-top:1px solid #1a1a1a;height:44px;padding:0 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);position:fixed;bottom:0;left:0;right:0;z-index:10}
+.pdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+#d-add-btn{position:fixed;top:14px;right:14px;z-index:20;background:var(--card2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
+#d-add-btn:hover{color:var(--text);border-color:#444}
 
-  /* PIN overlay */
-  #pin-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.88); backdrop-filter: blur(6px);
-    align-items: center; justify-content: center; z-index: 100;
-  }
-  #pin-overlay.show { display: flex; }
-  .pin-box {
-    background: #111; border-radius: 16px; padding: 40px 44px;
-    text-align: center; min-width: 280px; animation: fadein .3s ease;
-  }
-  .pin-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 3px; margin-bottom: 24px; }
-  #pin-input {
-    width: 100%; background: #1a1a1a; border-radius: 8px;
-    padding: 12px 16px; color: #fff; font-size: 24px;
-    text-align: center; outline: none; letter-spacing: 10px;
-    font-family: 'Inter', sans-serif; transition: border-color .2s;
-  }
-  .pin-err { color: #ef4444; font-size: 13px; margin-top: 10px; min-height: 20px; }
-  .pin-btns { display: flex; gap: 10px; margin-top: 20px; }
-  .pin-cancel { flex: 1; padding: 10px; background: #1a1a1a; color: #555; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: 'Inter', sans-serif; }
-  .pin-ok { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; font-family: 'Inter', sans-serif; }
+/* OVERLAYS */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(8px)}
+.ov.show{display:flex}
+.ov-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px;animation:fadein .3s ease}
+.ov-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px}
 
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-  @keyframes fadein { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%,75%{transform:translateX(-8px)} 50%{transform:translateX(8px)} }
-  .shake { animation: shake .35s ease !important; }
-  .fadein { animation: fadein .45s ease forwards; }
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes fadein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%,75%{transform:translateX(-8px)}50%{transform:translateX(8px)}}
+.pulse{animation:pulse 2.5s ease-in-out infinite}
+.shake{animation:shake .35s ease}
 </style>
 </head>
 <body>
 
-<!-- MODE SELECTOR -->
-<div id="mode-screen">
-  <div>
-    <div class="mode-title B">FLOW APP</div>
-    <div class="mode-subtitle">Welchen Modus möchtest Du öffnen?</div>
-  </div>
-  <div class="mode-cards">
-    <div class="mode-card" onclick="startDisplay()">
-      <div class="mc-icon">🖥️</div>
-      <div class="mc-title B">ANZEIGE</div>
-      <div class="mc-desc">Vollbild-Statusanzeige für den Monitor im Büro</div>
+<!-- SETUP -->
+<div class="screen" id="s-setup">
+  <div class="B" id="setup-logo" style="font-size:clamp(44px,9vw,72px);letter-spacing:5px;color:#22c55e">FLOW APP</div>
+  <div class="setup-card">
+    <div>
+      <div style="font-size:10px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">Einmalige Einrichtung</div>
+      <div style="font-size:17px;font-weight:500;margin-bottom:10px">Firebase Datenbank verbinden</div>
+      <div class="setup-desc">
+        Für geräteübergreifende Synchronisation brauchst du eine kostenlose Firebase Realtime Database.<br><br>
+        <strong style="color:var(--text)">In ca. 4 Minuten eingerichtet:</strong><br>
+        1. <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → Projekt erstellen<br>
+        2. <em>Realtime Database → Erstellen</em> wählen<br>
+        3. Unter <em>Regeln</em> eintragen: <code>{"rules":{".read":true,".write":true}}</code><br>
+        4. Datenbank-URL kopieren (Format: <code>https://xxx-rtdb.firebaseio.com</code>)
+      </div>
     </div>
-    <div class="mode-card" onclick="startController()">
+    <div>
+      <div class="inp-label">Firebase Datenbank-URL</div>
+      <input class="inp" id="inp-db" placeholder="https://mein-projekt-default-rtdb.firebaseio.com" />
+    </div>
+    <div>
+      <div class="inp-label">Dein Name</div>
+      <input class="inp" id="inp-name-s" placeholder="z. B. Max Müller" />
+    </div>
+    <div id="setup-err" class="err"></div>
+    <button class="btn-p" id="btn-setup" style="background:#22c55e" onclick="doSetup()">Verbinden & starten</button>
+    <div id="setup-spin" style="display:none;text-align:center;color:var(--muted);font-size:13px">Verbindung wird geprüft…</div>
+  </div>
+</div>
+
+<!-- MODE -->
+<div class="screen" id="s-mode">
+  <div class="B" id="mode-logo" style="font-size:clamp(44px,9vw,72px);letter-spacing:5px">FLOW APP</div>
+  <div id="mode-greet" style="font-size:12px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px"></div>
+  <div class="mode-cards">
+    <div class="mc" onclick="goCtrl()">
       <div class="mc-icon">📱</div>
       <div class="mc-title B">CONTROLLER</div>
-      <div class="mc-desc">Status steuern – vom Handy oder PC aus</div>
+      <div class="mc-desc">Deinen Status steuern – vom Handy oder PC</div>
     </div>
+    <div class="mc" onclick="goDisp()">
+      <div class="mc-icon">🖥️</div>
+      <div class="mc-title B">ANZEIGE</div>
+      <div class="mc-desc">Vollbild-Statusanzeige für den Monitor</div>
+    </div>
+  </div>
+  <div style="margin-top:20px"><button class="btn-g" onclick="openSettings()">⚙ Einstellungen</button></div>
+</div>
+
+<!-- CONTROLLER -->
+<div class="screen" id="s-ctrl">
+  <div class="ctrl-hdr">
+    <div>
+      <div class="B" id="ctrl-logo" style="font-size:30px;letter-spacing:3px">CONTROLLER</div>
+      <div id="ctrl-namelbl" style="font-size:11px;color:var(--dim);letter-spacing:2px;text-transform:uppercase"></div>
+    </div>
+    <button class="btn-g" onclick="goMode()">← Startseite</button>
+  </div>
+  <div class="ctrl-body">
+
+    <div class="section-lbl">Arbeitsstatus</div>
+    <div class="sgrid3">
+      <button class="sbtn" id="btn-ansprechbar" onclick="setStatus('ansprechbar')">ANSPRECH-BAR</button>
+      <button class="sbtn" id="btn-anlauf"       onclick="setStatus('anlauf')">ANLAUF</button>
+      <button class="sbtn" id="btn-flow"          onclick="setStatus('flow')">FLOW</button>
+    </div>
+    <div class="sgrid2">
+      <button class="sbtn" id="btn-im_werk"         onclick="setStatus('im_werk')">IM WERK</button>
+      <button class="sbtn" id="btn-werk_verlassen"   onclick="setStatus('werk_verlassen')">WERK VERLASSEN</button>
+    </div>
+
+    <!-- auto-flow (shown when anlauf active) -->
+    <div class="card" id="card-af" style="display:none">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-bottom:12px;color:#f59e0b">AUTO-FLOW</div>
+      <div class="inp-label">Nach Anlauf automatisch in FLOW wechseln</div>
+      <select class="inp" id="sel-af" onchange="setAutoFlow(this.value)">
+        <option value="0">Kein automatischer Wechsel</option>
+        <option value="10">10 Minuten</option>
+        <option value="15">15 Minuten</option>
+        <option value="20">20 Minuten</option>
+        <option value="25">25 Minuten</option>
+        <option value="30">30 Minuten</option>
+        <option value="45">45 Minuten</option>
+      </select>
+    </div>
+
+    <!-- unterwegs (always visible) -->
+    <div class="card">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-bottom:12px;color:#60a5fa">UNTERWEGS</div>
+      <div class="inp-label">Aufenthaltsort</div>
+      <input class="inp" id="inp-ort" placeholder="z. B. Besprechungsraum 3 · 2. OG" />
+      <div class="inp-label" style="margin-top:10px">Voraussichtlich zurück</div>
+      <input class="inp" id="inp-ret" placeholder="z. B. 14:30 · nach dem Mittagessen" />
+      <button class="btn-p" style="background:#60a5fa;margin-top:10px" onclick="setStatus('unterwegs')">Unterwegs-Status setzen</button>
+    </div>
+
+    <!-- current status -->
+    <div class="card">
+      <div class="section-lbl" style="margin-bottom:10px">Aktueller Status</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="sdot" id="c-sdot"></div>
+        <div class="B" id="c-sname" style="font-size:22px;letter-spacing:2px"></div>
+      </div>
+      <div class="tpair" id="c-timers"></div>
+    </div>
+
+    <!-- pairing code -->
+    <div class="card">
+      <div class="section-lbl" style="margin-bottom:10px">Mein Pairing-Code</div>
+      <div class="code-box">
+        <div>
+          <div style="font-size:9px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">Diesen Code in die Anzeige eingeben</div>
+          <div class="code-val B" id="my-code"></div>
+        </div>
+        <button class="btn-g" id="copy-btn" onclick="copyCode()">Kopieren</button>
+      </div>
+      <div style="font-size:12px;color:var(--dim);margin-top:10px;line-height:1.6">Teile diesen Code mit Kollegen, die dich in ihrer Anzeige sehen möchten.</div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn-d" onclick="removeFromAll()" style="flex:1">Aus allen Anzeigen entfernen</button>
+      <button class="btn-g" onclick="openSettings()">⚙</button>
+    </div>
+
+    <div style="font-size:11px;color:#222;text-align:center">Sync alle 4 Sek.</div>
   </div>
 </div>
 
 <!-- DISPLAY -->
-<div id="display-screen">
-  <div class="glow" id="glow"></div>
-  <div class="bar-top" id="bar-top"></div>
-  <div class="bar-bot" id="bar-bot"></div>
-  <div class="d-content fadein" id="d-content">
-    <!-- filled by JS -->
+<div class="screen" id="s-disp">
+  <div class="d-glow" id="d-glow"></div>
+  <div class="d-bar" id="d-bar-t" style="top:0"></div>
+  <div class="d-bar" id="d-bar-b" style="bottom:44px"></div>
+  <div class="d-inner">
+    <div id="d-content" style="flex:1;display:flex;flex-direction:column"></div>
   </div>
-  <button id="ctrl-btn" title="Controller öffnen" onclick="showPin()">⚙</button>
+  <div class="presence-bar" id="pbar"></div>
+  <button id="d-add-btn" onclick="showAddRoom()">＋ Code hinzufügen</button>
 </div>
 
-<!-- CONTROLLER -->
-<div id="controller-screen">
-  <div class="ctrl-header">
+<!-- OVERLAY: add room -->
+<div class="ov" id="ov-room">
+  <div class="ov-box" style="max-width:420px">
+    <div class="ov-title B">PERSON HINZUFÜGEN</div>
+    <div style="font-size:13px;color:var(--muted)">Pairing-Code der Person eingeben (aus deren Controller-Ansicht).<br>Der Code wird nur einmalig benötigt – danach nicht mehr in der Anzeige sichtbar.</div>
+    <input class="inp" id="inp-rcode" maxlength="6" placeholder="ABC123"
+      style="text-transform:uppercase;letter-spacing:5px;font-size:22px;text-align:center"
+      onkeydown="if(event.key==='Enter')addRoom()" />
+    <div class="err" id="room-err"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-g" onclick="hideAddRoom()" style="flex:1">Abbrechen</button>
+      <button class="btn-p" style="flex:1;background:#60a5fa" onclick="addRoom()">Hinzufügen</button>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:14px">
+      <div class="section-lbl" style="margin-bottom:10px">Aktive Personen in dieser Anzeige</div>
+      <div id="room-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY: PIN -->
+<div class="ov" id="ov-pin">
+  <div class="ov-box">
+    <div class="ov-title B" id="pin-title">CONTROLLER</div>
+    <div style="font-size:13px;color:var(--muted)" id="pin-sub">PIN eingeben</div>
+    <input type="password" class="inp" id="pin-inp" maxlength="8" placeholder="••••"
+      style="font-size:22px;text-align:center;letter-spacing:8px"
+      onkeydown="if(event.key==='Enter')checkPin()" />
+    <div class="err" id="pin-err"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-g" onclick="hidePinOv()" style="flex:1">Abbrechen</button>
+      <button class="btn-p" id="pin-ok" style="flex:1" onclick="checkPin()">Weiter</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY: Settings -->
+<div class="ov" id="ov-settings">
+  <div class="ov-box" style="max-width:420px">
+    <div class="ov-title B">EINSTELLUNGEN</div>
     <div>
-      <div class="ctrl-title B" id="ctrl-title">FLOW APP</div>
-      <div class="ctrl-sub">Controller</div>
+      <div class="inp-label">Dein Name</div>
+      <input class="inp" id="inp-name-cfg" />
     </div>
-    <button class="ghost-btn" onclick="goMode()">← Startseite</button>
-  </div>
-
-  <div class="ctrl-body">
-    <div class="ctrl-label">Status wählen</div>
-    <div class="status-btns" id="status-btns">
-      <button class="sbtn" id="btn-ansprechbar" onclick="setStatus('ansprechbar')">ANSPRECHBAR</button>
-      <button class="sbtn" id="btn-anlauf"       onclick="setStatus('anlauf')">MOMENT</button>
-      <button class="sbtn" id="btn-flow"          onclick="setStatus('flow')">FLOW</button>
+    <div>
+      <div class="inp-label">PIN für Controller (leer lassen = kein PIN)</div>
+      <input type="password" class="inp" id="inp-pin-cfg" placeholder="Neuer PIN eingeben" />
     </div>
-
-    <div class="card" id="card-unterwegs">
-      <div class="card-title B" style="color:#60a5fa">UNTERWEGS</div>
-      <div class="inp-label">Aufenthaltsort</div>
-      <input class="inp" id="inp-ort" placeholder="z. B. Besprechungsraum 3 · 2. OG" />
-      <div class="inp-label">Voraussichtlich zurück</div>
-      <input class="inp" id="inp-rueckkehr" placeholder="z. B. 14:30 · nach dem Mittagessen" />
-      <button class="primary-btn" style="background:#60a5fa;color:#000" onclick="setStatus('unterwegs')">Unterwegs-Status setzen</button>
+    <div>
+      <div class="inp-label">Firebase Datenbank-URL</div>
+      <input class="inp" id="inp-db-cfg" />
     </div>
-
-    <div class="card">
-      <div class="ctrl-label" style="margin-bottom:10px">Aktueller Status</div>
-      <div class="status-indicator">
-        <div class="status-dot" id="s-dot"></div>
-        <div class="status-name B" id="s-name"></div>
-      </div>
-      <div class="timer-row" id="timer-row"></div>
-    </div>
-
-    <div class="card">
-      <div class="ctrl-label" style="margin-bottom:10px">PIN ändern</div>
-      <div style="display:flex;gap:8px">
-        <input type="password" class="inp" id="inp-pin-change" placeholder="Neuer PIN" style="flex:1" />
-        <button class="ghost-btn" id="pin-save-btn" onclick="savePin()">Speichern</button>
-      </div>
-      <div style="font-size:11px;color:#2a2a2a;margin-top:8px" id="pin-display"></div>
-    </div>
-
-    <div class="sync-note" id="sync-note">Sync alle 5 Sek. · Auf Handy und PC nutzbar</div>
-  </div>
-</div>
-
-<!-- PIN OVERLAY (display → controller) -->
-<div id="pin-overlay">
-  <div class="pin-box">
-    <div class="pin-title B" id="pin-title">PIN EINGEBEN</div>
-    <input type="password" id="pin-input" maxlength="8" placeholder="••••" onkeydown="if(event.key==='Enter')checkPin()" />
-    <div class="pin-err" id="pin-err"></div>
-    <div class="pin-btns">
-      <button class="pin-cancel" onclick="hidePin()">Abbrechen</button>
-      <button class="pin-ok" id="pin-ok-btn" onclick="checkPin()">Weiter</button>
+    <div style="display:flex;gap:10px">
+      <button class="btn-g" onclick="closeSettings()" style="flex:1">Abbrechen</button>
+      <button class="btn-p" style="flex:1;background:#22c55e" onclick="saveSettings()">Speichern</button>
     </div>
   </div>
 </div>
 
 <script>
-// ── STATE ─────────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'flowapp-v5';
-const COLORS = {
-  ansprechbar: { accent:'#22c55e', dim:'rgba(34,197,94,.11)' },
-  anlauf:      { accent:'#f59e0b', dim:'rgba(245,158,11,.11)' },
-  flow:        { accent:'#ef4444', dim:'rgba(239,68,68,.11)'  },
-  unterwegs:   { accent:'#60a5fa', dim:'rgba(96,165,250,.11)' },
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const LS = { db:'fa_db', code:'fa_code', name:'fa_name', pin:'fa_pin', rooms:'fa_rooms', af:'fa_af' };
+
+const ST = {
+  ansprechbar:    { lbl:'ANSPRECHBAR',    a:'#22c55e', glow:'rgba(34,197,94,.09)',   present:true  },
+  anlauf:         { lbl:'ANLAUF',          a:'#f59e0b', glow:'rgba(245,158,11,.09)',  present:true  },
+  flow:           { lbl:'FLOW',            a:'#ef4444', glow:'rgba(239,68,68,.09)',   present:true  },
+  unterwegs:      { lbl:'UNTERWEGS',       a:'#60a5fa', glow:'rgba(96,165,250,.09)',  present:false },
+  im_werk:        { lbl:'IM WERK',         a:'#10b981', glow:'rgba(16,185,129,.09)',  present:true  },
+  werk_verlassen: { lbl:'WERK VERLASSEN',  a:'#f97316', glow:'rgba(249,115,22,.09)',  present:false },
 };
-const LABELS = { ansprechbar:'ANSPRECHBAR', anlauf:'MOMENT', flow:'FLOW', unterwegs:'UNTERWEGS' };
 
-let state = { status:'ansprechbar', anlaufStart:null, flowStart:null, ort:'', rueckkehr:'' };
-let pin = '1234';
-let mode = 'mode'; // 'mode' | 'display' | 'controller'
-let tickInterval = null;
-let syncInterval = null;
+// ── APP STATE ─────────────────────────────────────────────────────────────────
+let db       = lg(LS.db)   || '';
+let myCode   = lg(LS.code) || genCode();
+let myName   = lg(LS.name) || '';
+let pin      = lg(LS.pin)  || '';
+let watched  = JSON.parse(lg(LS.rooms)||'[]'); // [{code,nick}]
+let afMin    = parseInt(lg(LS.af)||'0');
+let myState  = { status:'ansprechbar', anlaufStart:null, flowStart:null, ort:'', rueckkehr:'', name:myName, t:Date.now() };
+let users    = {}; // code → firebase state
+let _ivDisp, _ivCtrl, _ivTick, _pinCb;
 
-function fmt(ms) {
-  if (!ms) return '–';
-  const s = Math.floor((Date.now()-ms)/1000);
-  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
-  if (h>0) return `${h}:${pad(m)}:${pad(sec)}`;
-  return `${pad(m)}:${pad(sec)}`;
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function lg(k){ return localStorage.getItem(k); }
+function ls(k,v){ localStorage.setItem(k,v); }
+function genCode(){ const c=Math.random().toString(36).substring(2,8).toUpperCase(); ls(LS.code,c); return c; }
+function p(n){ return String(n).padStart(2,'0'); }
+function fmt(ms){
+  if(!ms) return '–';
+  const s=Math.floor((Date.now()-ms)/1000);
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;
+  return h>0?`${h}:${p(m)}:${p(sc)}`:`${p(m)}:${p(sc)}`;
 }
-function pad(n){ return String(n).padStart(2,'0'); }
+function clearIvs(){ clearInterval(_ivDisp);clearInterval(_ivCtrl);clearInterval(_ivTick); }
 
-// ── STORAGE ───────────────────────────────────────────────────────────────
-async function loadState() {
-  try {
-    const r = await window.storage.get(STORAGE_KEY);
-    if (r) { const s=JSON.parse(r.value); state=s; return true; }
-  } catch(e) {}
-  return false;
+// ── FIREBASE ─────────────────────────────────────────────────────────────────
+async function fbGet(path){
+  try{ const r=await fetch(`${db}${path}.json`); return r.ok?await r.json():null; }catch(e){ return null; }
 }
-async function saveState() {
-  try { await window.storage.set(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+async function fbPut(path,data){
+  try{ const r=await fetch(`${db}${path}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); return r.ok; }catch(e){ return false; }
 }
-
-// ── ROUTING ───────────────────────────────────────────────────────────────
-function show(id) {
-  ['mode-screen','display-screen','controller-screen'].forEach(s=>
-    document.getElementById(s).style.display='none'
-  );
-  document.getElementById(id).style.display='flex';
-}
-
-function goMode() {
-  clearInterval(tickInterval); clearInterval(syncInterval);
-  show('mode-screen');
+async function fbDel(path){
+  try{ const r=await fetch(`${db}${path}.json`,{method:'DELETE'}); return r.ok; }catch(e){ return false; }
 }
 
-async function startDisplay() {
-  await loadState();
-  show('display-screen');
-  mode='display';
-  renderDisplay();
-  tickInterval = setInterval(()=>{ if(mode==='display') renderDisplay(); }, 1000);
-  syncInterval = setInterval(async()=>{ await loadState(); renderDisplay(); }, 5000);
+// ── SCREENS ───────────────────────────────────────────────────────────────────
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+function goMode(){
+  clearIvs();
+  show('s-mode');
+  const a=ST[myState.status]?.a||'#22c55e';
+  document.getElementById('mode-logo').style.color=a;
+  document.getElementById('mode-greet').textContent = myName?`Hallo, ${myName}`:'';
 }
 
-async function startController() {
-  await loadState();
-  show('controller-screen');
-  mode='controller';
-  renderController();
-  tickInterval = setInterval(()=>{ if(mode==='controller') renderController(); }, 1000);
-  syncInterval = setInterval(async()=>{ await loadState(); renderController(); }, 5000);
+// ── SETUP ─────────────────────────────────────────────────────────────────────
+async function doSetup(){
+  const url=(document.getElementById('inp-db').value||'').trim().replace(/\/$/,'');
+  const name=(document.getElementById('inp-name-s').value||'').trim();
+  document.getElementById('setup-err').textContent='';
+  if(!url){ document.getElementById('setup-err').textContent='Bitte Firebase-URL eingeben.'; return; }
+  if(!name){ document.getElementById('setup-err').textContent='Bitte Namen eingeben.'; return; }
+  document.getElementById('btn-setup').style.display='none';
+  document.getElementById('setup-spin').style.display='block';
+  db=url; ls(LS.db,url);
+  const ok=await fbPut('/flowapp/_ping',{t:Date.now()});
+  document.getElementById('btn-setup').style.display='block';
+  document.getElementById('setup-spin').style.display='none';
+  if(!ok){ document.getElementById('setup-err').textContent='Verbindung fehlgeschlagen. URL und Firebase-Regeln prüfen.'; return; }
+  myName=name; ls(LS.name,name); myState.name=name;
+  goMode();
 }
 
-// ── DISPLAY RENDER ────────────────────────────────────────────────────────
-function renderDisplay() {
-  const s = state.status;
-  const c = COLORS[s];
-  document.documentElement.style.setProperty('--accent', c.accent);
-  document.getElementById('glow').style.background = `radial-gradient(circle, ${c.dim} 0%, transparent 65%)`;
-  document.getElementById('bar-top').style.background = `linear-gradient(90deg,transparent,${c.accent},transparent)`;
-  document.getElementById('bar-bot').style.background = `linear-gradient(90deg,transparent,${c.accent},transparent)`;
+// ── CONTROLLER ────────────────────────────────────────────────────────────────
+function goCtrl(){
+  if(pin){ _pinCb=_openCtrl; openPinOv('CONTROLLER','PIN eingeben um fortzufahren','#22c55e'); }
+  else { _openCtrl(); }
+}
+function _openCtrl(){
+  show('s-ctrl');
+  document.getElementById('ctrl-namelbl').textContent=myName;
+  document.getElementById('my-code').textContent=myCode;
+  document.getElementById('sel-af').value=afMin;
+  document.getElementById('inp-ort').value=myState.ort||'';
+  document.getElementById('inp-ret').value=myState.rueckkehr||'';
+  renderCtrl();
+  _ivTick=setInterval(()=>renderCtrl(),1000);
+  _ivCtrl=setInterval(async()=>{ checkAF(); await pushState(); },4000);
+}
 
-  const el = document.getElementById('d-content');
-  let html = '';
+function renderCtrl(){
+  const s=myState.status, cfg=ST[s];
+  document.getElementById('ctrl-logo').style.color=cfg.a;
+  // buttons
+  ['ansprechbar','anlauf','flow','im_werk','werk_verlassen'].forEach(k=>{
+    const b=document.getElementById('btn-'+k); if(!b)return;
+    const c=ST[k];
+    if(k===s){ b.style.background=c.a;b.style.color='#000';b.style.borderColor=c.a; }
+    else { b.style.background='#161616';b.style.color=c.a;b.style.borderColor=c.a+'55'; }
+  });
+  // auto-flow card
+  document.getElementById('card-af').style.display=s==='anlauf'?'block':'none';
+  // status
+  document.getElementById('c-sdot').style.background=cfg.a;
+  document.getElementById('c-sdot').style.boxShadow=`0 0 8px ${cfg.a}`;
+  document.getElementById('c-sname').style.color=cfg.a;
+  document.getElementById('c-sname').textContent=cfg.lbl;
+  // timers
+  let h='';
+  if(myState.anlaufStart) h+=`<div class="tbox"><div class="tl">Anlauf</div><div class="tv" style="color:#777">${fmt(myState.anlaufStart)}</div></div>`;
+  if(myState.flowStart)   h+=`<div class="tbox"><div class="tl" style="color:${cfg.a}">Flow</div><div class="tv" style="color:${cfg.a}">${fmt(myState.flowStart)}</div></div>`;
+  document.getElementById('c-timers').innerHTML=h;
+}
 
-  if (s==='ansprechbar') {
-    html = `
-      <div class="d-heading B" style="font-size:clamp(64px,13vw,155px);color:${c.accent}">ANSPRECHBAR</div>
-      <div class="d-divider" style="background:${c.accent}"></div>
-      <div class="d-sub">Ich bin verfügbar – sprich mich gerne an</div>
-      <div class="pulse-dot" style="background:${c.accent};box-shadow:0 0 20px ${c.accent}"></div>
-    `;
-  } else if (s==='anlauf') {
-    html = `
-      <div class="d-heading B" style="font-size:clamp(80px,16vw,170px);color:${c.accent}">MOMENT</div>
-      <div class="d-divider" style="background:${c.accent}"></div>
-      <div class="d-sub">Ich versuche gerade, in einen Flow zu kommen.<br>Bitte komm später wieder oder schreib mir eine E-Mail.</div>
-      <div class="d-timer-box" style="border-color:${c.accent}33">
-        <div class="d-timer-label">Anlauf läuft seit</div>
-        <div class="d-timer-val B" style="font-size:clamp(40px,7vw,72px);color:${c.accent}">${fmt(state.anlaufStart)}</div>
-      </div>
-    `;
-  } else if (s==='flow') {
-    html = `
-      <div class="d-heading B" style="font-size:clamp(110px,20vw,220px);color:${c.accent};line-height:.9">FLOW</div>
-      <div class="italic-sub">– Bin im Work-Flow –</div>
-      <div class="d-divider" style="width:60px;height:1px;background:${c.accent};opacity:.35"></div>
-      <div class="d-big">Bitte nicht stören!</div>
-      <div class="d-sub" style="font-size:clamp(12px,1.6vw,17px)">Komm gerne später wieder oder schreib mir eine E-Mail.</div>
-      <div class="d-timers">
-        <div class="d-timer-box" style="border-color:#1e1e1e">
-          <div class="d-timer-label" style="color:#3a3a3a">Anlauf-Dauer</div>
-          <div class="d-timer-val B" style="font-size:clamp(30px,5vw,54px);color:#484848">${fmt(state.anlaufStart)}</div>
-        </div>
-        <div class="d-timer-box" style="border-color:${c.accent}55;border-width:2px">
-          <div class="d-timer-label" style="color:${c.accent}">Flow-Dauer</div>
-          <div class="d-timer-val B" style="font-size:clamp(30px,5vw,54px);color:${c.accent}">${fmt(state.flowStart)}</div>
-        </div>
-      </div>
-    `;
-  } else if (s==='unterwegs') {
-    html = `
-      <div class="d-heading B" style="font-size:clamp(70px,13vw,140px);color:${c.accent}">UNTERWEGS</div>
-      <div class="d-divider" style="background:${c.accent}"></div>
-      ${state.ort ? `
-        <div style="font-size:clamp(13px,1.6vw,17px);color:#484848;margin-bottom:10px;letter-spacing:1px">Du findest mich hier:</div>
-        <div style="font-size:clamp(22px,4vw,46px);font-weight:500;color:#e5e5e5;margin-bottom:32px">${state.ort}</div>
-      ` : ''}
-      ${state.rueckkehr ? `
-        <div class="d-timer-box" style="border-color:${c.accent}44">
-          <div class="d-timer-label">Voraussichtlich zurück</div>
-          <div class="d-timer-val B" style="font-size:clamp(30px,5.5vw,60px);color:${c.accent}">${state.rueckkehr}</div>
-        </div>
-      ` : ''}
-    `;
+async function setStatus(s){
+  const now=Date.now();
+  const ns={...myState,status:s};
+  if(s==='anlauf')         { ns.anlaufStart=now; ns.flowStart=null; }
+  else if(s==='flow')      { if(!myState.anlaufStart) ns.anlaufStart=now; ns.flowStart=now; }
+  else if(s==='unterwegs') { ns.anlaufStart=null;ns.flowStart=null;ns.ort=document.getElementById('inp-ort').value;ns.rueckkehr=document.getElementById('inp-ret').value; }
+  else                     { ns.anlaufStart=null;ns.flowStart=null; }
+  ns.name=myName; ns.t=Date.now();
+  myState=ns;
+  await pushState();
+  renderCtrl();
+}
+
+async function pushState(){ if(!db) return; myState.name=myName; myState.t=Date.now(); await fbPut(`/flowapp/rooms/${myCode}`,myState); }
+
+function checkAF(){
+  if(myState.status==='anlauf'&&afMin>0&&myState.anlaufStart&&Date.now()-myState.anlaufStart>=afMin*60000){
+    myState.status='flow'; myState.flowStart=Date.now(); pushState();
   }
-  el.innerHTML = html;
 }
 
-// ── CONTROLLER RENDER ─────────────────────────────────────────────────────
-function renderController() {
-  const s = state.status;
-  const c = COLORS[s];
-  document.getElementById('ctrl-title').style.color = c.accent;
+function setAutoFlow(v){ afMin=parseInt(v); ls(LS.af,afMin); }
 
-  // status buttons
-  ['ansprechbar','anlauf','flow'].forEach(k => {
-    const btn = document.getElementById('btn-'+k);
-    const kc = COLORS[k];
-    if (k===s) {
-      btn.style.background = kc.accent; btn.style.color = '#000'; btn.style.borderColor = kc.accent;
-    } else {
-      btn.style.background = '#161616'; btn.style.color = kc.accent; btn.style.borderColor = kc.accent+'44';
-    }
+function copyCode(){
+  navigator.clipboard?.writeText(myCode).then(()=>{
+    const b=document.getElementById('copy-btn'); b.textContent='✓ Kopiert';
+    setTimeout(()=>b.textContent='Kopieren',2000);
+  });
+}
+
+async function removeFromAll(){
+  if(!confirm('Dich aus allen Anzeigen entfernen? Dein Status wird gelöscht und ein neuer Code vergeben.')) return;
+  await fbDel(`/flowapp/rooms/${myCode}`);
+  myCode=genCode();
+  document.getElementById('my-code').textContent=myCode;
+  alert('Erfolgreich entfernt. Neuer Code: '+myCode);
+}
+
+// ── DISPLAY ───────────────────────────────────────────────────────────────────
+async function goDisp(){
+  show('s-disp');
+  await syncUsers();
+  renderDisp();
+  _ivTick=setInterval(()=>renderDisp(),1000);
+  _ivDisp=setInterval(async()=>{ await syncUsers(); renderDisp(); },4000);
+}
+
+async function syncUsers(){
+  const all=await fbGet('/flowapp/rooms');
+  users={};
+  if(all) watched.forEach(({code})=>{ if(all[code]) users[code]=all[code]; });
+}
+
+function renderDisp(){
+  const active=watched.filter(({code})=>users[code]);
+  const cnt=active.length;
+
+  // ambient color from first user
+  const fst=cnt>0?(ST[users[active[0].code]?.status]||ST.ansprechbar):ST.ansprechbar;
+  document.getElementById('d-glow').style.background=`radial-gradient(circle,${fst.glow} 0%,transparent 65%)`;
+  const grad=`linear-gradient(90deg,transparent,${fst.a},transparent)`;
+  document.getElementById('d-bar-t').style.background=grad;
+  document.getElementById('d-bar-b').style.background=grad;
+
+  const el=document.getElementById('d-content');
+
+  if(cnt===0){
+    el.innerHTML=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;gap:16px">
+      <div class="B" style="font-size:clamp(44px,10vw,80px);color:#2a2a2a;letter-spacing:5px">FLOW APP</div>
+      <div style="color:var(--dim);font-size:15px">Noch keine Personen verknüpft.<br>Klicke auf <strong style="color:var(--muted)">＋ Code hinzufügen</strong> um loszulegen.</div>
+    </div>`;
+    document.getElementById('pbar').innerHTML='';
+    return;
+  }
+
+  // responsive sizing
+  let cols=1;
+  if(cnt===2)cols=2;
+  if(cnt>=3&&cnt<=4)cols=2;
+  if(cnt>=5)cols=3;
+  const fs = cnt===1?'clamp(72px,14vw,150px)':cnt===2?'clamp(46px,8vw,90px)':cnt<=4?'clamp(32px,5.5vw,66px)':'clamp(24px,4vw,46px)';
+  const ss = cnt===1?'clamp(14px,2vw,22px)':cnt<=2?'clamp(13px,1.7vw,18px)':cnt<=4?'14px':'12px';
+
+  const grid=document.createElement('div');
+  grid.className='d-grid';
+  grid.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+
+  active.forEach(({code})=>{
+    const d=users[code]; if(!d) return;
+    const cfg=ST[d.status]||ST.ansprechbar;
+    const compact=cnt>=5;
+    const card=document.createElement('div');
+    card.className='u-card';
+    card.style.borderColor=cfg.a+'33';
+    card.innerHTML=`
+      <div style="position:absolute;inset:0;background:${cfg.glow};border-radius:14px;pointer-events:none"></div>
+      <div style="position:relative">
+        ${cnt>1?`<div style="font-size:${compact?'10px':'12px'};color:${cfg.a};letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;opacity:.85">${d.name||code}</div>`:''}
+        <div class="B" style="font-size:${fs};color:${cfg.a};letter-spacing:4px;line-height:.92;transition:color .5s">${cfg.lbl}</div>
+        ${dispDetail(d,cfg,ss,compact)}
+      </div>`;
+    grid.appendChild(card);
   });
 
-  // unterwegs card highlight
-  document.getElementById('card-unterwegs').style.borderColor = s==='unterwegs'?'#60a5fa44':'#181818';
+  el.innerHTML=''; el.appendChild(grid);
 
-  // current status
-  document.getElementById('s-dot').style.background = c.accent;
-  document.getElementById('s-dot').style.boxShadow = `0 0 10px ${c.accent}`;
-  document.getElementById('s-name').style.color = c.accent;
-  document.getElementById('s-name').textContent = LABELS[s];
+  // presence bar
+  const inW=active.filter(({code})=>{ const d=users[code];return d&&ST[d.status]?.present; }).map(({code})=>users[code]?.name||code);
+  const away=active.filter(({code})=>{ const d=users[code];return d&&d.status==='unterwegs'; }).map(({code})=>users[code]?.name||code);
+  const left=active.filter(({code})=>{ const d=users[code];return d&&d.status==='werk_verlassen'; }).map(({code})=>users[code]?.name||code);
+  let pb='';
+  if(inW.length)  pb+=`<span style="display:flex;align-items:center;gap:6px"><span class="pdot" style="background:#22c55e"></span><span>Im Werk: <strong style="color:var(--text)">${inW.join(', ')}</strong></span></span>`;
+  if(away.length) pb+=`<span style="display:flex;align-items:center;gap:6px"><span class="pdot" style="background:#60a5fa"></span><span>Unterwegs: <strong style="color:var(--text)">${away.join(', ')}</strong></span></span>`;
+  if(left.length) pb+=`<span style="display:flex;align-items:center;gap:6px"><span class="pdot" style="background:#f97316"></span><span>Hat Werk verlassen: <strong style="color:var(--text)">${left.join(', ')}</strong></span></span>`;
+  if(!inW.length&&!away.length) pb+=`<span style="display:flex;align-items:center;gap:6px;color:#f97316"><span class="pdot" style="background:#f97316"></span><span>⚠ Niemand im Werk!</span></span>`;
+  document.getElementById('pbar').innerHTML=pb;
+}
 
-  // timers
-  let timerHtml = '';
-  if (state.anlaufStart) {
-    timerHtml += `<div class="timer-item"><div class="t-label" style="color:#333">Anlauf</div><div class="t-val" style="color:#555">${fmt(state.anlaufStart)}</div></div>`;
+function dispDetail(d,cfg,ss,compact){
+  const s=d.status; let h='';
+  if(s==='ansprechbar'){
+    h=`<div style="font-size:${ss};color:#aaa;margin-top:10px;font-weight:300">Ich bin verfügbar – sprich mich gerne an</div>
+       ${!compact?`<div class="pulse" style="width:10px;height:10px;border-radius:50%;background:${cfg.a};box-shadow:0 0 14px ${cfg.a};margin:16px 0 0"></div>`:''}`;
+  } else if(s==='anlauf'){
+    h=`<div style="font-size:${ss};color:#aaa;margin-top:8px;font-weight:300">Ich versuche in einen Flow zu kommen.<br>Bitte komm später wieder.</div>
+       <div style="display:inline-block;background:#0f0f0f;border:1px solid ${cfg.a}33;border-radius:10px;padding:10px 20px;margin-top:12px">
+         <div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">Anlauf seit</div>
+         <div class="B" style="font-size:${compact?'20px':'clamp(24px,4vw,44px)'};color:${cfg.a};letter-spacing:3px">${fmt(d.anlaufStart)}</div>
+       </div>`;
+  } else if(s==='flow'){
+    h=`${!compact?`<div style="font-size:${ss};color:#666;font-style:italic;margin:8px 0 4px;letter-spacing:1px">– Bin im Work-Flow –</div>`:''}
+       <div style="font-size:${compact?'13px':ss};color:#ccc;font-weight:600;margin-bottom:6px">Bitte nicht stören!</div>
+       <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+         <div style="background:#0f0f0f;border:1px solid #222;border-radius:8px;padding:8px 12px">
+           <div style="font-size:9px;color:#444;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">Anlauf</div>
+           <div class="B" style="font-size:${compact?'16px':'clamp(18px,3vw,32px)'};color:#555;letter-spacing:2px">${fmt(d.anlaufStart)}</div>
+         </div>
+         <div style="background:#0f0f0f;border:2px solid ${cfg.a}55;border-radius:8px;padding:8px 12px">
+           <div style="font-size:9px;color:${cfg.a};letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">Flow</div>
+           <div class="B" style="font-size:${compact?'16px':'clamp(18px,3vw,32px)'};color:${cfg.a};letter-spacing:2px">${fmt(d.flowStart)}</div>
+         </div>
+       </div>`;
+  } else if(s==='unterwegs'){
+    h=`${d.ort?`<div style="font-size:${ss};color:#aaa;margin-top:8px">Du findest mich hier: <strong style="color:#eee">${d.ort}</strong></div>`:''}
+       ${d.rueckkehr?`<div style="display:inline-block;background:#0f0f0f;border:1px solid ${cfg.a}44;border-radius:10px;padding:10px 18px;margin-top:12px">
+         <div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">Voraussichtlich zurück</div>
+         <div class="B" style="font-size:${compact?'18px':'clamp(20px,4vw,40px)'};color:${cfg.a};letter-spacing:2px">${d.rueckkehr}</div>
+       </div>`:''}`;
+  } else if(s==='im_werk'){
+    h=`<div style="font-size:${ss};color:#aaa;margin-top:10px">Ist im Betrieb anwesend</div>
+       ${!compact?`<div class="pulse" style="width:10px;height:10px;border-radius:50%;background:${cfg.a};box-shadow:0 0 14px ${cfg.a};margin:16px 0 0"></div>`:''}`;
+  } else if(s==='werk_verlassen'){
+    h=`<div style="font-size:${ss};color:#aaa;margin-top:10px;font-weight:300">Hat das Werk verlassen</div>`;
   }
-  if (state.flowStart) {
-    timerHtml += `<div class="timer-item"><div class="t-label" style="color:${c.accent}">Flow</div><div class="t-val" style="color:${c.accent}">${fmt(state.flowStart)}</div></div>`;
-  }
-  document.getElementById('timer-row').innerHTML = timerHtml;
-  document.getElementById('pin-display').textContent = 'Aktuell: ' + pin;
+  return h;
 }
 
-// ── STATUS SETTER ─────────────────────────────────────────────────────────
-async function setStatus(s) {
-  const now = Date.now();
-  const ns = {...state, status:s};
-  if (s==='anlauf')         { ns.anlaufStart=now; ns.flowStart=null; }
-  else if (s==='flow')      { if(!state.anlaufStart) ns.anlaufStart=now; ns.flowStart=now; }
-  else if (s==='unterwegs') {
-    ns.anlaufStart=null; ns.flowStart=null;
-    ns.ort = document.getElementById('inp-ort').value;
-    ns.rueckkehr = document.getElementById('inp-rueckkehr').value;
-  } else                    { ns.anlaufStart=null; ns.flowStart=null; }
-  state = ns;
-  await saveState();
-  renderController();
+// ── ADD ROOM ──────────────────────────────────────────────────────────────────
+function showAddRoom(){ document.getElementById('inp-rcode').value=''; document.getElementById('room-err').textContent=''; renderRoomList(); document.getElementById('ov-room').classList.add('show'); setTimeout(()=>document.getElementById('inp-rcode').focus(),100); }
+function hideAddRoom(){ document.getElementById('ov-room').classList.remove('show'); }
+
+async function addRoom(){
+  const code=document.getElementById('inp-rcode').value.trim().toUpperCase();
+  document.getElementById('room-err').textContent='';
+  if(code.length<4){ document.getElementById('room-err').textContent='Code zu kurz.'; return; }
+  if(watched.find(r=>r.code===code)){ document.getElementById('room-err').textContent='Code bereits in der Liste.'; return; }
+  const data=await fbGet(`/flowapp/rooms/${code}`);
+  if(!data){ document.getElementById('room-err').textContent='Code nicht gefunden. Bitte prüfen.'; return; }
+  watched.push({code, nick:data.name||code});
+  ls(LS.rooms,JSON.stringify(watched));
+  await syncUsers(); renderDisp(); renderRoomList();
+  document.getElementById('inp-rcode').value='';
 }
 
-// ── PIN ───────────────────────────────────────────────────────────────────
-function showPin() {
-  const c = COLORS[state.status];
-  document.getElementById('pin-title').style.color = c.accent;
-  document.getElementById('pin-input').style.border = `2px solid ${c.accent}55`;
-  document.getElementById('pin-ok-btn').style.background = c.accent;
-  document.getElementById('pin-ok-btn').style.color = '#000';
-  document.getElementById('pin-err').textContent = '';
-  document.getElementById('pin-input').value = '';
-  document.getElementById('pin-overlay').classList.add('show');
-  setTimeout(()=>document.getElementById('pin-input').focus(),100);
+function removeRoom(code){
+  watched=watched.filter(r=>r.code!==code); delete users[code];
+  ls(LS.rooms,JSON.stringify(watched)); renderRoomList(); renderDisp();
 }
-function hidePin() {
-  document.getElementById('pin-overlay').classList.remove('show');
+
+function renderRoomList(){
+  const el=document.getElementById('room-list');
+  if(!watched.length){ el.innerHTML=`<div style="color:var(--dim);font-size:13px">Noch keine Personen hinzugefügt.</div>`; return; }
+  el.innerHTML=watched.map(({code,nick})=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <span style="color:var(--text);font-size:14px">${nick}</span>
+        <span style="color:var(--dim);font-size:11px;margin-left:8px;letter-spacing:2px">${code}</span>
+      </div>
+      <button class="btn-d" style="padding:4px 10px;font-size:12px" onclick="removeRoom('${code}')">Entfernen</button>
+    </div>`).join('');
 }
-function checkPin() {
-  const v = document.getElementById('pin-input').value;
-  if (v===pin) {
-    hidePin();
-    clearInterval(tickInterval); clearInterval(syncInterval);
-    startController();
-  } else {
-    document.getElementById('pin-err').textContent = 'Falscher PIN';
-    document.getElementById('pin-input').classList.add('shake');
-    document.getElementById('pin-input').value='';
-    setTimeout(()=>{
-      document.getElementById('pin-input').classList.remove('shake');
-      document.getElementById('pin-err').textContent='';
-    },600);
-  }
+
+// ── PIN ───────────────────────────────────────────────────────────────────────
+function openPinOv(title,sub,accent){
+  document.getElementById('pin-title').textContent=title; document.getElementById('pin-title').style.color=accent;
+  document.getElementById('pin-sub').textContent=sub;
+  document.getElementById('pin-ok').style.background=accent;
+  document.getElementById('pin-inp').value=''; document.getElementById('pin-err').textContent='';
+  document.getElementById('ov-pin').classList.add('show');
+  setTimeout(()=>document.getElementById('pin-inp').focus(),100);
 }
-function savePin() {
-  const v = document.getElementById('inp-pin-change').value;
-  if (v.length>=4) {
-    pin=v;
-    document.getElementById('inp-pin-change').value='';
-    const btn = document.getElementById('pin-save-btn');
-    const orig = btn.textContent;
-    btn.textContent='✓ OK'; btn.style.color='#22c55e';
-    setTimeout(()=>{ btn.textContent=orig; btn.style.color=''; },2000);
-    renderController();
+function hidePinOv(){ document.getElementById('ov-pin').classList.remove('show'); _pinCb=null; }
+function checkPin(){
+  if(document.getElementById('pin-inp').value===pin){ hidePinOv(); if(_pinCb)_pinCb(); }
+  else {
+    document.getElementById('pin-err').textContent='Falscher PIN';
+    document.getElementById('pin-inp').classList.add('shake');
+    document.getElementById('pin-inp').value='';
+    setTimeout(()=>{ document.getElementById('pin-inp').classList.remove('shake'); document.getElementById('pin-err').textContent=''; },600);
   }
 }
 
-// prefill unterwegs inputs when controller loads
-async function prefillInputs() {
-  document.getElementById('inp-ort').value = state.ort||'';
-  document.getElementById('inp-rueckkehr').value = state.rueckkehr||'';
+// ── SETTINGS ─────────────────────────────────────────────────────────────────
+function openSettings(){
+  document.getElementById('inp-name-cfg').value=myName;
+  document.getElementById('inp-pin-cfg').value='';
+  document.getElementById('inp-db-cfg').value=db;
+  document.getElementById('ov-settings').classList.add('show');
 }
-const _startCtrl = startController;
-startController = async function() {
-  await loadState();
-  show('controller-screen');
-  mode='controller';
-  prefillInputs();
-  renderController();
-  tickInterval = setInterval(()=>{ if(mode==='controller') renderController(); }, 1000);
-  syncInterval = setInterval(async()=>{ await loadState(); renderController(); }, 5000);
-};
+function closeSettings(){ document.getElementById('ov-settings').classList.remove('show'); }
+function saveSettings(){
+  const n=(document.getElementById('inp-name-cfg').value||'').trim();
+  const p2=document.getElementById('inp-pin-cfg').value;
+  const d2=(document.getElementById('inp-db-cfg').value||'').trim().replace(/\/$/,'');
+  if(n){ myName=n; ls(LS.name,n); myState.name=n; }
+  if(p2!==''){ pin=p2; ls(LS.pin,p2); }
+  if(d2){ db=d2; ls(LS.db,d2); }
+  closeSettings();
+  if(document.getElementById('s-ctrl').classList.contains('active')) renderCtrl();
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+(()=>{ db?goMode():show('s-setup'); })();
 </script>
 </body>
 </html>
