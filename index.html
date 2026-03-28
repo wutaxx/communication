@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flow App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --accent: #22c55e;
+    --bg: #070707;
+    --card: #0f0f0f;
+    --border: #1e1e1e;
+    --muted: #444;
+    --text: #e5e5e5;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  .B { font-family: 'Bebas Neue', sans-serif; }
+
+  /* ── MODE SELECTOR ── */
+  #mode-screen {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; gap: 32px; padding: 40px 20px;
+  }
+  .mode-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(48px,10vw,90px); color: var(--accent); letter-spacing: 6px; text-align: center; }
+  .mode-subtitle { font-size: 14px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; text-align: center; }
+  .mode-cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; max-width: 600px; }
+  .mode-card {
+    flex: 1 1 220px; padding: 32px 28px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; cursor: pointer; transition: all .2s; text-align: center;
+  }
+  .mode-card:hover { border-color: var(--accent); background: #161616; transform: translateY(-2px); }
+  .mode-card .mc-icon { font-size: 36px; margin-bottom: 14px; }
+  .mode-card .mc-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 3px; color: var(--accent); margin-bottom: 8px; }
+  .mode-card .mc-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* ── DISPLAY ── */
+  #display-screen {
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; position: relative; overflow: hidden; text-align: center; padding: 40px 40px;
+  }
+  .glow {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 700px; height: 700px; border-radius: 50%;
+    background: radial-gradient(circle, var(--accent-glow, rgba(34,197,94,.1)) 0%, transparent 65%);
+    pointer-events: none; transition: background 1s;
+  }
+  .bar-top, .bar-bot {
+    position: absolute; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    transition: background 1s;
+  }
+  .bar-top { top: 0; }
+  .bar-bot { bottom: 0; }
+  .d-content { position: relative; z-index: 1; max-width: 900px; width: 100%; }
+  .d-heading { font-family: 'Bebas Neue', sans-serif; line-height: 1; letter-spacing: 6px; color: var(--accent); transition: color 1s; }
+  .d-divider { width: 80px; height: 2px; background: var(--accent); margin: 22px auto; opacity: .4; transition: background 1s; }
+  .d-sub { font-size: clamp(14px,2vw,20px); color: #666; font-weight: 300; line-height: 1.9; }
+  .d-timer-box {
+    display: inline-block; background: var(--card); border: 1px solid; border-radius: 14px;
+    padding: 18px 44px; margin-top: 36px;
+  }
+  .d-timer-label { font-size: 10px; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
+  .d-timer-val { font-family: 'Bebas Neue', sans-serif; letter-spacing: 4px; }
+  .d-timers { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 40px; }
+  .pulse-dot {
+    width: 14px; height: 14px; border-radius: 50%; background: var(--accent);
+    margin: 36px auto 0; box-shadow: 0 0 20px var(--accent);
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+  .italic-sub { font-style: italic; letter-spacing: 2px; margin: 14px 0 6px; color: #484848; }
+  .d-big { font-size: clamp(18px,3vw,32px); color: #ddd; font-weight: 600; margin-bottom: 6px; }
+
+  /* ctrl button on display */
+  #ctrl-btn {
+    position: fixed; bottom: 18px; right: 20px;
+    width: 42px; height: 42px; border-radius: 50%;
+    background: #1a1a1a; border: 1px solid #333;
+    color: #666; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s; z-index: 50;
+  }
+  #ctrl-btn:hover { background: #222; color: #aaa; border-color: #555; }
+
+  /* ── CONTROLLER ── */
+  #controller-screen {
+    display: none; flex-direction: column; align-items: center;
+    padding: 28px 18px 80px; min-height: 100vh;
+  }
+  .ctrl-header { width: 100%; max-width: 480px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+  .ctrl-title { font-family: 'Bebas Neue', sans-serif; font-size: 34px; letter-spacing: 3px; color: var(--accent); }
+  .ctrl-sub { font-size: 11px; color: #333; letter-spacing: 2px; text-transform: uppercase; }
+  .ctrl-body { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 14px; }
+  .ctrl-label { font-size: 10px; color: #333; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 2px; }
+  .status-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .sbtn {
+    flex: 1 1 130px; padding: 18px 12px; border-radius: 12px; cursor: pointer;
+    font-family: 'Bebas Neue', sans-serif; font-size: 19px; letter-spacing: 2px;
+    border: 1px solid; transition: all .18s;
+  }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; }
+  .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; margin-bottom: 14px; }
+  .inp {
+    width: 100%; background: #161616; border: 1px solid #222; border-radius: 8px;
+    padding: 10px 14px; color: #ddd; font-size: 15px; outline: none;
+    font-family: 'Inter', sans-serif; transition: border-color .2s;
+  }
+  .inp:focus { border-color: #444; }
+  .inp-label { font-size: 10px; color: #333; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; margin-top: 10px; }
+  .inp-label:first-child { margin-top: 0; }
+  .primary-btn {
+    width: 100%; padding: 13px; border: none; border-radius: 8px;
+    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px;
+    cursor: pointer; margin-top: 10px; transition: opacity .15s;
+  }
+  .primary-btn:active { opacity: .85; }
+  .ghost-btn {
+    background: #161616; border: 1px solid #252525; color: #666;
+    border-radius: 8px; padding: 8px 16px; font-size: 13px;
+    font-family: 'Inter', sans-serif; cursor: pointer; transition: all .15s;
+  }
+  .ghost-btn:hover { color: #aaa; border-color: #444; }
+  .status-indicator { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .status-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .status-name { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; }
+  .timer-row { display: flex; gap: 20px; flex-wrap: wrap; }
+  .timer-item .t-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+  .timer-item .t-val { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 2px; }
+  .sync-note { font-size: 11px; color: #222; text-align: center; margin-top: 6px; letter-spacing: .5px; }
+
+  /* PIN overlay */
+  #pin-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.88); backdrop-filter: blur(6px);
+    align-items: center; justify-content: center; z-index: 100;
+  }
+  #pin-overlay.show { display: flex; }
+  .pin-box {
+    background: #111; border-radius: 16px; padding: 40px 44px;
+    text-align: center; min-width: 280px; animation: fadein .3s ease;
+  }
+  .pin-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 3px; margin-bottom: 24px; }
+  #pin-input {
+    width: 100%; background: #1a1a1a; border-radius: 8px;
+    padding: 12px 16px; color: #fff; font-size: 24px;
+    text-align: center; outline: none; letter-spacing: 10px;
+    font-family: 'Inter', sans-serif; transition: border-color .2s;
+  }
+  .pin-err { color: #ef4444; font-size: 13px; margin-top: 10px; min-height: 20px; }
+  .pin-btns { display: flex; gap: 10px; margin-top: 20px; }
+  .pin-cancel { flex: 1; padding: 10px; background: #1a1a1a; color: #555; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .pin-ok { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; font-family: 'Inter', sans-serif; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  @keyframes fadein { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%,75%{transform:translateX(-8px)} 50%{transform:translateX(8px)} }
+  .shake { animation: shake .35s ease !important; }
+  .fadein { animation: fadein .45s ease forwards; }
+</style>
+</head>
+<body>
+
+<!-- MODE SELECTOR -->
+<div id="mode-screen">
+  <div>
+    <div class="mode-title B">FLOW APP</div>
+    <div class="mode-subtitle">Welchen Modus möchtest Du öffnen?</div>
+  </div>
+  <div class="mode-cards">
+    <div class="mode-card" onclick="startDisplay()">
+      <div class="mc-icon">🖥️</div>
+      <div class="mc-title B">ANZEIGE</div>
+      <div class="mc-desc">Vollbild-Statusanzeige für den Monitor im Büro</div>
+    </div>
+    <div class="mode-card" onclick="startController()">
+      <div class="mc-icon">📱</div>
+      <div class="mc-title B">CONTROLLER</div>
+      <div class="mc-desc">Status steuern – vom Handy oder PC aus</div>
+    </div>
+  </div>
+</div>
+
+<!-- DISPLAY -->
+<div id="display-screen">
+  <div class="glow" id="glow"></div>
+  <div class="bar-top" id="bar-top"></div>
+  <div class="bar-bot" id="bar-bot"></div>
+  <div class="d-content fadein" id="d-content">
+    <!-- filled by JS -->
+  </div>
+  <button id="ctrl-btn" title="Controller öffnen" onclick="showPin()">⚙</button>
+</div>
+
+<!-- CONTROLLER -->
+<div id="controller-screen">
+  <div class="ctrl-header">
+    <div>
+      <div class="ctrl-title B" id="ctrl-title">FLOW APP</div>
+      <div class="ctrl-sub">Controller</div>
+    </div>
+    <button class="ghost-btn" onclick="goMode()">← Startseite</button>
+  </div>
+
+  <div class="ctrl-body">
+    <div class="ctrl-label">Status wählen</div>
+    <div class="status-btns" id="status-btns">
+      <button class="sbtn" id="btn-ansprechbar" onclick="setStatus('ansprechbar')">ANSPRECHBAR</button>
+      <button class="sbtn" id="btn-anlauf"       onclick="setStatus('anlauf')">MOMENT</button>
+      <button class="sbtn" id="btn-flow"          onclick="setStatus('flow')">FLOW</button>
+    </div>
+
+    <div class="card" id="card-unterwegs">
+      <div class="card-title B" style="color:#60a5fa">UNTERWEGS</div>
+      <div class="inp-label">Aufenthaltsort</div>
+      <input class="inp" id="inp-ort" placeholder="z. B. Besprechungsraum 3 · 2. OG" />
+      <div class="inp-label">Voraussichtlich zurück</div>
+      <input class="inp" id="inp-rueckkehr" placeholder="z. B. 14:30 · nach dem Mittagessen" />
+      <button class="primary-btn" style="background:#60a5fa;color:#000" onclick="setStatus('unterwegs')">Unterwegs-Status setzen</button>
+    </div>
+
+    <div class="card">
+      <div class="ctrl-label" style="margin-bottom:10px">Aktueller Status</div>
+      <div class="status-indicator">
+        <div class="status-dot" id="s-dot"></div>
+        <div class="status-name B" id="s-name"></div>
+      </div>
+      <div class="timer-row" id="timer-row"></div>
+    </div>
+
+    <div class="card">
+      <div class="ctrl-label" style="margin-bottom:10px">PIN ändern</div>
+      <div style="display:flex;gap:8px">
+        <input type="password" class="inp" id="inp-pin-change" placeholder="Neuer PIN" style="flex:1" />
+        <button class="ghost-btn" id="pin-save-btn" onclick="savePin()">Speichern</button>
+      </div>
+      <div style="font-size:11px;color:#2a2a2a;margin-top:8px" id="pin-display"></div>
+    </div>
+
+    <div class="sync-note" id="sync-note">Sync alle 5 Sek. · Auf Handy und PC nutzbar</div>
+  </div>
+</div>
+
+<!-- PIN OVERLAY (display → controller) -->
+<div id="pin-overlay">
+  <div class="pin-box">
+    <div class="pin-title B" id="pin-title">PIN EINGEBEN</div>
+    <input type="password" id="pin-input" maxlength="8" placeholder="••••" onkeydown="if(event.key==='Enter')checkPin()" />
+    <div class="pin-err" id="pin-err"></div>
+    <div class="pin-btns">
+      <button class="pin-cancel" onclick="hidePin()">Abbrechen</button>
+      <button class="pin-ok" id="pin-ok-btn" onclick="checkPin()">Weiter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'flowapp-v5';
+const COLORS = {
+  ansprechbar: { accent:'#22c55e', dim:'rgba(34,197,94,.11)' },
+  anlauf:      { accent:'#f59e0b', dim:'rgba(245,158,11,.11)' },
+  flow:        { accent:'#ef4444', dim:'rgba(239,68,68,.11)'  },
+  unterwegs:   { accent:'#60a5fa', dim:'rgba(96,165,250,.11)' },
+};
+const LABELS = { ansprechbar:'ANSPRECHBAR', anlauf:'MOMENT', flow:'FLOW', unterwegs:'UNTERWEGS' };
+
+let state = { status:'ansprechbar', anlaufStart:null, flowStart:null, ort:'', rueckkehr:'' };
+let pin = '1234';
+let mode = 'mode'; // 'mode' | 'display' | 'controller'
+let tickInterval = null;
+let syncInterval = null;
+
+function fmt(ms) {
+  if (!ms) return '–';
+  const s = Math.floor((Date.now()-ms)/1000);
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  if (h>0) return `${h}:${pad(m)}:${pad(sec)}`;
+  return `${pad(m)}:${pad(sec)}`;
+}
+function pad(n){ return String(n).padStart(2,'0'); }
+
+// ── STORAGE ───────────────────────────────────────────────────────────────
+async function loadState() {
+  try {
+    const r = await window.storage.get(STORAGE_KEY);
+    if (r) { const s=JSON.parse(r.value); state=s; return true; }
+  } catch(e) {}
+  return false;
+}
+async function saveState() {
+  try { await window.storage.set(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+// ── ROUTING ───────────────────────────────────────────────────────────────
+function show(id) {
+  ['mode-screen','display-screen','controller-screen'].forEach(s=>
+    document.getElementById(s).style.display='none'
+  );
+  document.getElementById(id).style.display='flex';
+}
+
+function goMode() {
+  clearInterval(tickInterval); clearInterval(syncInterval);
+  show('mode-screen');
+}
+
+async function startDisplay() {
+  await loadState();
+  show('display-screen');
+  mode='display';
+  renderDisplay();
+  tickInterval = setInterval(()=>{ if(mode==='display') renderDisplay(); }, 1000);
+  syncInterval = setInterval(async()=>{ await loadState(); renderDisplay(); }, 5000);
+}
+
+async function startController() {
+  await loadState();
+  show('controller-screen');
+  mode='controller';
+  renderController();
+  tickInterval = setInterval(()=>{ if(mode==='controller') renderController(); }, 1000);
+  syncInterval = setInterval(async()=>{ await loadState(); renderController(); }, 5000);
+}
+
+// ── DISPLAY RENDER ────────────────────────────────────────────────────────
+function renderDisplay() {
+  const s = state.status;
+  const c = COLORS[s];
+  document.documentElement.style.setProperty('--accent', c.accent);
+  document.getElementById('glow').style.background = `radial-gradient(circle, ${c.dim} 0%, transparent 65%)`;
+  document.getElementById('bar-top').style.background = `linear-gradient(90deg,transparent,${c.accent},transparent)`;
+  document.getElementById('bar-bot').style.background = `linear-gradient(90deg,transparent,${c.accent},transparent)`;
+
+  const el = document.getElementById('d-content');
+  let html = '';
+
+  if (s==='ansprechbar') {
+    html = `
+      <div class="d-heading B" style="font-size:clamp(64px,13vw,155px);color:${c.accent}">ANSPRECHBAR</div>
+      <div class="d-divider" style="background:${c.accent}"></div>
+      <div class="d-sub">Ich bin verfügbar – sprich mich gerne an</div>
+      <div class="pulse-dot" style="background:${c.accent};box-shadow:0 0 20px ${c.accent}"></div>
+    `;
+  } else if (s==='anlauf') {
+    html = `
+      <div class="d-heading B" style="font-size:clamp(80px,16vw,170px);color:${c.accent}">MOMENT</div>
+      <div class="d-divider" style="background:${c.accent}"></div>
+      <div class="d-sub">Ich versuche gerade, in einen Flow zu kommen.<br>Bitte komm später wieder oder schreib mir eine E-Mail.</div>
+      <div class="d-timer-box" style="border-color:${c.accent}33">
+        <div class="d-timer-label">Anlauf läuft seit</div>
+        <div class="d-timer-val B" style="font-size:clamp(40px,7vw,72px);color:${c.accent}">${fmt(state.anlaufStart)}</div>
+      </div>
+    `;
+  } else if (s==='flow') {
+    html = `
+      <div class="d-heading B" style="font-size:clamp(110px,20vw,220px);color:${c.accent};line-height:.9">FLOW</div>
+      <div class="italic-sub">– Bin im Work-Flow –</div>
+      <div class="d-divider" style="width:60px;height:1px;background:${c.accent};opacity:.35"></div>
+      <div class="d-big">Bitte nicht stören!</div>
+      <div class="d-sub" style="font-size:clamp(12px,1.6vw,17px)">Komm gerne später wieder oder schreib mir eine E-Mail.</div>
+      <div class="d-timers">
+        <div class="d-timer-box" style="border-color:#1e1e1e">
+          <div class="d-timer-label" style="color:#3a3a3a">Anlauf-Dauer</div>
+          <div class="d-timer-val B" style="font-size:clamp(30px,5vw,54px);color:#484848">${fmt(state.anlaufStart)}</div>
+        </div>
+        <div class="d-timer-box" style="border-color:${c.accent}55;border-width:2px">
+          <div class="d-timer-label" style="color:${c.accent}">Flow-Dauer</div>
+          <div class="d-timer-val B" style="font-size:clamp(30px,5vw,54px);color:${c.accent}">${fmt(state.flowStart)}</div>
+        </div>
+      </div>
+    `;
+  } else if (s==='unterwegs') {
+    html = `
+      <div class="d-heading B" style="font-size:clamp(70px,13vw,140px);color:${c.accent}">UNTERWEGS</div>
+      <div class="d-divider" style="background:${c.accent}"></div>
+      ${state.ort ? `
+        <div style="font-size:clamp(13px,1.6vw,17px);color:#484848;margin-bottom:10px;letter-spacing:1px">Du findest mich hier:</div>
+        <div style="font-size:clamp(22px,4vw,46px);font-weight:500;color:#e5e5e5;margin-bottom:32px">${state.ort}</div>
+      ` : ''}
+      ${state.rueckkehr ? `
+        <div class="d-timer-box" style="border-color:${c.accent}44">
+          <div class="d-timer-label">Voraussichtlich zurück</div>
+          <div class="d-timer-val B" style="font-size:clamp(30px,5.5vw,60px);color:${c.accent}">${state.rueckkehr}</div>
+        </div>
+      ` : ''}
+    `;
+  }
+  el.innerHTML = html;
+}
+
+// ── CONTROLLER RENDER ─────────────────────────────────────────────────────
+function renderController() {
+  const s = state.status;
+  const c = COLORS[s];
+  document.getElementById('ctrl-title').style.color = c.accent;
+
+  // status buttons
+  ['ansprechbar','anlauf','flow'].forEach(k => {
+    const btn = document.getElementById('btn-'+k);
+    const kc = COLORS[k];
+    if (k===s) {
+      btn.style.background = kc.accent; btn.style.color = '#000'; btn.style.borderColor = kc.accent;
+    } else {
+      btn.style.background = '#161616'; btn.style.color = kc.accent; btn.style.borderColor = kc.accent+'44';
+    }
+  });
+
+  // unterwegs card highlight
+  document.getElementById('card-unterwegs').style.borderColor = s==='unterwegs'?'#60a5fa44':'#181818';
+
+  // current status
+  document.getElementById('s-dot').style.background = c.accent;
+  document.getElementById('s-dot').style.boxShadow = `0 0 10px ${c.accent}`;
+  document.getElementById('s-name').style.color = c.accent;
+  document.getElementById('s-name').textContent = LABELS[s];
+
+  // timers
+  let timerHtml = '';
+  if (state.anlaufStart) {
+    timerHtml += `<div class="timer-item"><div class="t-label" style="color:#333">Anlauf</div><div class="t-val" style="color:#555">${fmt(state.anlaufStart)}</div></div>`;
+  }
+  if (state.flowStart) {
+    timerHtml += `<div class="timer-item"><div class="t-label" style="color:${c.accent}">Flow</div><div class="t-val" style="color:${c.accent}">${fmt(state.flowStart)}</div></div>`;
+  }
+  document.getElementById('timer-row').innerHTML = timerHtml;
+  document.getElementById('pin-display').textContent = 'Aktuell: ' + pin;
+}
+
+// ── STATUS SETTER ─────────────────────────────────────────────────────────
+async function setStatus(s) {
+  const now = Date.now();
+  const ns = {...state, status:s};
+  if (s==='anlauf')         { ns.anlaufStart=now; ns.flowStart=null; }
+  else if (s==='flow')      { if(!state.anlaufStart) ns.anlaufStart=now; ns.flowStart=now; }
+  else if (s==='unterwegs') {
+    ns.anlaufStart=null; ns.flowStart=null;
+    ns.ort = document.getElementById('inp-ort').value;
+    ns.rueckkehr = document.getElementById('inp-rueckkehr').value;
+  } else                    { ns.anlaufStart=null; ns.flowStart=null; }
+  state = ns;
+  await saveState();
+  renderController();
+}
+
+// ── PIN ───────────────────────────────────────────────────────────────────
+function showPin() {
+  const c = COLORS[state.status];
+  document.getElementById('pin-title').style.color = c.accent;
+  document.getElementById('pin-input').style.border = `2px solid ${c.accent}55`;
+  document.getElementById('pin-ok-btn').style.background = c.accent;
+  document.getElementById('pin-ok-btn').style.color = '#000';
+  document.getElementById('pin-err').textContent = '';
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-overlay').classList.add('show');
+  setTimeout(()=>document.getElementById('pin-input').focus(),100);
+}
+function hidePin() {
+  document.getElementById('pin-overlay').classList.remove('show');
+}
+function checkPin() {
+  const v = document.getElementById('pin-input').value;
+  if (v===pin) {
+    hidePin();
+    clearInterval(tickInterval); clearInterval(syncInterval);
+    startController();
+  } else {
+    document.getElementById('pin-err').textContent = 'Falscher PIN';
+    document.getElementById('pin-input').classList.add('shake');
+    document.getElementById('pin-input').value='';
+    setTimeout(()=>{
+      document.getElementById('pin-input').classList.remove('shake');
+      document.getElementById('pin-err').textContent='';
+    },600);
+  }
+}
+function savePin() {
+  const v = document.getElementById('inp-pin-change').value;
+  if (v.length>=4) {
+    pin=v;
+    document.getElementById('inp-pin-change').value='';
+    const btn = document.getElementById('pin-save-btn');
+    const orig = btn.textContent;
+    btn.textContent='✓ OK'; btn.style.color='#22c55e';
+    setTimeout(()=>{ btn.textContent=orig; btn.style.color=''; },2000);
+    renderController();
+  }
+}
+
+// prefill unterwegs inputs when controller loads
+async function prefillInputs() {
+  document.getElementById('inp-ort').value = state.ort||'';
+  document.getElementById('inp-rueckkehr').value = state.rueckkehr||'';
+}
+const _startCtrl = startController;
+startController = async function() {
+  await loadState();
+  show('controller-screen');
+  mode='controller';
+  prefillInputs();
+  renderController();
+  tickInterval = setInterval(()=>{ if(mode==='controller') renderController(); }, 1000);
+  syncInterval = setInterval(async()=>{ await loadState(); renderController(); }, 5000);
+};
+</script>
+</body>
+</html>
