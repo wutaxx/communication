@@ -3,17 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flow App · Werksicht</title>
+<title>Werksicht</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#070707;--card:#111;--c2:#161616;--brd:#252525;--txt:#ddd;--mut:#888;--dim:#444}
+:root{--bg:#070707;--card:#111;--c2:#161616;--brd:#252525;--txt:#ddd;--mut:#888;--dim:#444;--accent:#22c55e}
 body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
 .B{font-family:'Bebas Neue',sans-serif}
-.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:26px 16px 60px}
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px 56px}
 .screen.active{display:flex}
-
-/* inputs & buttons */
 .inp{width:100%;background:var(--c2);border:1px solid var(--brd);border-radius:8px;padding:10px 13px;color:var(--txt);font-size:14px;outline:none;font-family:'Inter',sans-serif;transition:border-color .2s}
 .inp:focus{border-color:#555}
 .lbl{font-size:9px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
@@ -22,112 +20,111 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;min-he
 .btn-g{background:var(--c2);border:1px solid var(--brd);color:var(--mut);border-radius:7px;padding:8px 14px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}
 .btn-g:hover{color:var(--txt);border-color:#555}
 .btn-d{background:#160808;border:1px solid #4a1010;color:#f87171;border-radius:7px;padding:6px 12px;font-size:12px;font-family:'Inter',sans-serif;cursor:pointer}
+.btn-d:hover{background:#2a0808}
 .card{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:15px 17px}
 .err{color:#f87171;font-size:13px;min-height:16px}
-.sep{width:100%;height:1px;background:var(--brd);margin:4px 0}
+.app-name{font-family:'Bebas Neue',sans-serif;letter-spacing:5px;color:var(--accent)}
 
 /* MODE */
-#s-mode{gap:22px}
-.mcs{display:flex;gap:13px;flex-wrap:wrap;justify-content:center;max-width:480px}
-.mc{flex:1 1 175px;padding:22px 18px;background:var(--card);border:1px solid var(--brd);border-radius:14px;cursor:pointer;transition:all .2s;text-align:center}
+#s-mode{gap:20px}
+.mcs{display:flex;gap:13px;flex-wrap:wrap;justify-content:center;max-width:460px}
+.mc{flex:1 1 170px;padding:20px 18px;background:var(--card);border:1px solid var(--brd);border-radius:13px;cursor:pointer;transition:all .2s;text-align:center}
 .mc:hover{border-color:#555;background:var(--c2);transform:translateY(-2px)}
-.mc-icon{font-size:26px;margin-bottom:9px}
-.mc-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;margin-bottom:5px}
-.mc-desc{font-size:11px;color:var(--mut);line-height:1.55}
+.mc-icon{font-size:26px;margin-bottom:8px}
+.mc-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;margin-bottom:4px}
+.mc-desc{font-size:11px;color:var(--mut);line-height:1.5}
 
 /* CONTROLLER */
 #s-ctrl{justify-content:flex-start;padding-top:22px}
-.ch{width:100%;max-width:480px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.cb{width:100%;max-width:480px;display:flex;flex-direction:column;gap:11px}
-
-/* status sections */
-.section-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;margin-bottom:9px}
-.sg3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ch{width:100%;max-width:480px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cb{width:100%;max-width:480px;display:flex;flex-direction:column;gap:10px}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;margin-bottom:8px}
 .sg2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.sbtn{padding:13px 5px;border-radius:8px;cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;border:1px solid;transition:all .18s;text-align:center;line-height:1.1}
+.sg3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.sbtn{padding:12px 5px;border-radius:8px;cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;border:1px solid;transition:all .18s;text-align:center;line-height:1.1}
 .sbtn:active{transform:scale(.97)}
-
-/* location tiles */
-.loc-tiles{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.loc-tile{background:var(--c2);border:1px solid var(--brd);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--mut);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;max-width:100%}
-.loc-tile:hover{border-color:#555;color:var(--txt)}
-.loc-tile .loc-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
-
-/* status info */
 .sdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.tpair{display:flex;gap:13px;flex-wrap:wrap;margin-top:7px}
+.tpair{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
 .tbox .tl{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;color:var(--dim)}
-.tbox .tv{font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:2px}
-.code-box{background:var(--c2);border:1px solid var(--brd);border-radius:8px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;gap:9px}
-.code-val{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:6px;color:#fff}
+.tbox .tv{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px}
+.code-box{background:var(--c2);border:1px solid var(--brd);border-radius:8px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.code-val{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:6px;color:#fff}
 .witem{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--brd);cursor:pointer}
 .witem:last-child{border-bottom:none}
 .witem:hover{opacity:.75}
+.loc-tiles{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.loc-tile{background:var(--c2);border:1px solid var(--brd);border-radius:6px;padding:5px 9px;font-size:12px;color:var(--mut);cursor:pointer;transition:all .15s}
+.loc-tile:hover{border-color:#555;color:var(--txt)}
 
 /* DISPLAY */
 #s-disp{justify-content:flex-start;padding:0;overflow:hidden}
 .d-glow{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:80vw;height:80vw;max-width:700px;border-radius:50%;pointer-events:none;transition:background 1.5s;z-index:0}
 .d-bar{position:fixed;left:0;right:0;height:3px;z-index:10;transition:background 1s}
-.d-inner{position:relative;z-index:1;width:100%;display:flex;flex-direction:column;height:calc(100vh - 38px);overflow:hidden}
-
-/* own card strip */
-.d-own{flex-shrink:0;background:#0a0a0a;border-bottom:1px solid #1a1a1a;padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.d-own-label{font-size:10px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;flex-shrink:0}
-
-/* others grid */
-.d-others{flex:1;overflow:hidden;display:flex;flex-direction:column}
-.d-grid{flex:1;display:grid;padding:8px;gap:7px;align-content:stretch;overflow:hidden}
-.u-card{background:#0e0e0e;border-radius:12px;padding:16px;display:flex;flex-direction:column;justify-content:center;border:1px solid #1a1a1a;position:relative;overflow:hidden;transition:border-color .6s}
+.d-shell{position:relative;z-index:1;width:100%;display:flex;flex-direction:column;height:calc(100vh - 36px)}
+.d-topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;flex-shrink:0;background:rgba(7,7,7,.9);border-bottom:1px solid #161616;backdrop-filter:blur(4px);position:sticky;top:0;z-index:5}
+.d-topbar-center{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:#333}
+.d-own{flex-shrink:0;background:#0c0c0c;border-bottom:1px solid #1a1a1a;padding:9px 14px;cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:12px}
+.d-own:hover{background:#141414}
+.d-own-hint{font-size:9px;color:#2a2a2a;letter-spacing:2px;text-transform:uppercase;flex-shrink:0}
+.d-main{flex:1;display:flex;overflow:hidden}
+.d-grid-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.d-grid{flex:1;display:grid;padding:7px;gap:7px;align-content:stretch}
+.d-tl-wrap{flex:1;overflow-y:auto;padding:10px 14px}
+.u-card{background:#0e0e0e;border-radius:11px;padding:15px;display:flex;flex-direction:column;justify-content:center;border:1px solid #1a1a1a;position:relative;overflow:hidden;transition:border-color .6s}
+/* absent sidebar */
+.d-sidebar{width:140px;flex-shrink:0;background:#080808;border-left:1px solid #141414;overflow-y:auto;padding:8px 6px;display:flex;flex-direction:column;gap:6px}
+.sidebar-lbl{font-size:8px;color:#2a2a2a;letter-spacing:2px;text-transform:uppercase;padding:2px 4px;margin-bottom:2px}
+.absent-card{background:#0a0a0a;border:1px solid #181818;border-radius:8px;padding:9px 10px;font-size:12px}
+.absent-name{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px}
+.absent-time{font-size:10px;margin-top:3px}
+.absent-fresh{color:#f97316}
+.absent-stale{color:#2a2a2a}
+/* warning screen */
+.d-warn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;gap:16px;background:#0d0000}
+/* pbar */
+.pbar{background:#080808;border-top:1px solid #161616;height:36px;padding:0 12px;display:flex;align-items:center;gap:12px;font-size:11px;color:var(--mut);position:fixed;bottom:0;left:0;right:0;z-index:10;overflow:hidden}
+.pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
 /* timeline */
-.d-tl{flex:1;overflow-y:auto;padding:12px 16px 8px}
-.tl-row{display:flex;align-items:stretch;gap:12px;min-height:64px}
-.tl-tc{width:48px;flex-shrink:0;display:flex;flex-direction:column;align-items:center}
-.tl-tl{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;line-height:1;padding-top:12px}
+.tl-row{display:flex;align-items:stretch;gap:10px;min-height:60px}
+.tl-tc{width:44px;flex-shrink:0;display:flex;flex-direction:column;align-items:center}
+.tl-tl{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;line-height:1;padding-top:10px}
 .tl-vl{flex:1;width:2px;margin:3px auto}
-.tl-dc{width:14px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding-top:12px}
-.tl-dot{width:11px;height:11px;border-radius:50%}
+.tl-dc{width:13px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding-top:10px}
+.tl-dot{width:10px;height:10px;border-radius:50%}
 .tl-vl2{flex:1;width:2px;margin:3px auto;background:#1e1e1e}
-.tl-cc{flex:1;padding:8px 0 8px 2px}
-.tl-nm{font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px}
+.tl-cc{flex:1;padding:7px 0 7px 2px}
+.tl-nm{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px}
 .tl-st{font-family:'Bebas Neue',sans-serif;letter-spacing:2px}
 .tl-sb{font-size:11px;color:var(--mut);margin-top:2px}
 
-/* presence bar */
-.pbar{background:#080808;border-top:1px solid #181818;height:38px;padding:0 12px;display:flex;align-items:center;gap:12px;flex-wrap:nowrap;font-size:11px;color:var(--mut);position:fixed;bottom:0;left:0;right:0;z-index:10;overflow:hidden}
-.pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.d-toolbar{position:fixed;top:8px;right:10px;z-index:20;display:flex;gap:6px}
-.d-back{position:fixed;top:8px;left:10px;z-index:20}
-
 /* OVERLAYS */
-.ov{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(8px)}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.93);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(8px)}
 .ov.show{display:flex}
-.ov-box{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:28px;width:100%;max-width:370px;display:flex;flex-direction:column;gap:12px;animation:fadein .3s ease;max-height:90vh;overflow-y:auto}
-
-/* loc popover */
+.ov-box{background:var(--card);border:1px solid var(--brd);border-radius:13px;padding:26px;width:100%;max-width:370px;display:flex;flex-direction:column;gap:11px;animation:fadein .3s ease;max-height:90vh;overflow-y:auto}
+.ov-lg{max-width:460px}
 .loc-pop{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:200}
 .loc-pop.show{display:flex}
-.loc-pop-box{background:#1a1a1a;border:1px solid #333;border-radius:10px;padding:18px;min-width:220px;display:flex;flex-direction:column;gap:9px;animation:fadein .2s ease}
-
-/* DSGVO banner */
-#gdpr-banner{display:none;background:#0d0d1a;border:1px solid #2a2a5a;border-radius:10px;padding:14px 16px;width:100%;max-width:480px;font-size:12px;color:#9999cc;line-height:1.65}
-#gdpr-banner a{color:#7b7bff;text-decoration:none}
+.loc-pop-box{background:#1a1a1a;border:1px solid #333;border-radius:10px;padding:16px;min-width:200px;display:flex;flex-direction:column;gap:8px;animation:fadein .2s ease}
 
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%,75%{transform:translateX(-7px)}50%{transform:translateX(7px)}}
+@keyframes warnpulse{0%,100%{opacity:1}50%{opacity:.7}}
 .pulse{animation:pulse 2.5s ease-in-out infinite}
 .shake{animation:shake .35s ease}
+.warnpulse{animation:warnpulse 1s ease-in-out infinite}
 select.inp{appearance:none;cursor:pointer}
 input[type=time]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:pointer}
 </style>
 </head>
 <body>
 
-<!-- ── MODE ────────────────────────────────────────────────────────────── -->
+<!-- ── SCREENS ──────────────────────────────────────────────────────────── -->
+
 <div class="screen" id="s-mode">
-  <div class="B" id="mode-logo" style="font-size:clamp(42px,9vw,70px);letter-spacing:5px;color:#22c55e">FLOW APP</div>
-  <div id="mode-greet" style="font-size:11px;color:var(--dim);letter-spacing:2px;text-transform:uppercase"></div>
+  <div class="app-name" style="font-size:clamp(40px,9vw,70px)">WERKSICHT</div>
+  <div id="mode-greet" style="font-size:11px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-top:-6px"></div>
   <div class="mcs">
     <div class="mc" onclick="goCtrl()">
       <div class="mc-icon">📱</div>
@@ -140,170 +137,185 @@ input[type=time]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <div class="mc-desc">Vollbild-Statusanzeige</div>
     </div>
   </div>
-  <div style="margin-top:14px;display:flex;gap:9px;flex-wrap:wrap;justify-content:center">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px">
     <button class="btn-g" onclick="openCfg()">⚙ Einstellungen</button>
-    <button class="btn-g" onclick="toggleGdpr()" style="color:#9999cc;border-color:#2a2a5a">🔒 Datenschutz</button>
+    <button class="btn-g" onclick="showContacts()" style="color:#60a5fa;border-color:#1a2a4a">👥 Verbindungen</button>
+    <button class="btn-g" onclick="togglePrivacy()" style="color:#9999cc;border-color:#2a2a5a">🔒 Datenschutz</button>
   </div>
-  <div id="gdpr-banner" style="margin-top:12px">
-    <strong style="color:#aaaaee">Datenschutzhinweis (DSGVO-Konformität)</strong><br><br>
-    Diese App speichert ausschließlich: Vorname, Arbeitsstatus und Zeitstempel in einer Firebase Realtime Database
-    in der EU (Frankfurt, europe-west1). Es werden keine weiteren personenbezogenen Daten erhoben.<br><br>
-    <strong style="color:#aaaaee">Empfehlungen für den Betriebseinsatz:</strong><br>
-    · Vor Inbetriebnahme Betriebsrat informieren / Betriebsvereinbarung schließen<br>
-    · Freiwillige Nutzung sicherstellen – keine Pflicht zur Statusangabe<br>
-    · Daten werden nicht dauerhaft protokolliert (kein Verlauf, nur Ist-Status)<br>
-    · Jeder Nutzer kann sich jederzeit selbst löschen ("Aus allen Anzeigen entfernen")<br>
-    · PIN-Schutz für Controller empfohlen (Einstellungen)<br>
-    · Firebase-Daten nach Bedarf mit eigenen Security Rules absichern<br>
-    · Datenschutzerklärung des Unternehmens um diesen Dienst ergänzen<br><br>
-    <span style="color:#666">Keine Nutzerkonten, keine Analyse, kein Tracking über die App hinaus.</span>
+  <div id="privacy-box" style="display:none;max-width:480px;margin-top:10px;background:#0d0d1a;border:1px solid #2a2a5a;border-radius:10px;padding:14px 16px;font-size:12px;color:#9999cc;line-height:1.7">
+    <strong style="color:#aaaaee">Werksicht – Datenschutzhinweis</strong><br><br>
+    Diese App ist ein <strong style="color:#aaaaee">privates Werkzeug</strong> zur freiwilligen Statusabsprache zwischen einzelnen Personen, vergleichbar mit einer WhatsApp-Statusfunktion. Es handelt sich ausdrücklich um <strong style="color:#aaaaee">keine offizielle Betriebsanwendung</strong>. Jede Verbindung wird bewusst und individuell zwischen genau zwei Personen hergestellt – es gibt keine automatische Gruppen- oder Betriebsvernetzung.<br><br>
+    <strong style="color:#aaaaee">Gespeicherte Daten:</strong> Nur selbst gewählter Vorname, Arbeitsstatus und Zeitstempel. Keine Nutzerkonten, keine E-Mail, kein Tracking.<br><br>
+    <strong style="color:#aaaaee">Speicherort:</strong> Firebase Realtime Database, Region europe-west1 (<strong style="color:#aaaaee">Belgien</strong>), betrieben von Google Ireland Ltd., Gordon House, Dublin 4, Irland.<br><br>
+    <strong style="color:#aaaaee">Löschung:</strong> Jederzeit über "Aus allen Anzeigen entfernen" im Controller möglich.<br><br>
+    <span style="color:#555">Keine Werbung · Kein Tracking · Keine Analyse · Nur für den Privatgebrauch</span>
   </div>
 </div>
 
-<!-- ── CONTROLLER ──────────────────────────────────────────────────────── -->
 <div class="screen" id="s-ctrl">
   <div class="ch">
     <div>
-      <div class="B" id="ctrl-logo" style="font-size:27px;letter-spacing:3px">CONTROLLER</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="app-name" style="font-size:22px">WERKSICHT</div>
+        <div class="B" id="ctrl-logo" style="font-size:22px;letter-spacing:2px;color:var(--dim)">· CONTROLLER</div>
+      </div>
       <div id="ctrl-nl" style="font-size:10px;color:var(--dim);letter-spacing:2px;text-transform:uppercase"></div>
     </div>
     <button class="btn-g" onclick="goMode()">← Start</button>
   </div>
   <div class="cb">
 
-    <!-- SECTION 1: Anwesenheit -->
     <div class="card">
       <div class="section-title B" style="color:#aaa">ANWESENHEIT</div>
       <div class="sg2">
-        <button class="sbtn" id="btn-im_werk"         onclick="setPresence('im_werk')">IM WERK</button>
-        <button class="sbtn" id="btn-werk_verlassen"   onclick="setPresence('werk_verlassen')">WERK VERLASSEN</button>
+        <button class="sbtn" id="btn-im_werk"        onclick="clickImWerk()">IM WERK</button>
+        <button class="sbtn" id="btn-werk_verlassen"  onclick="setPresence('werk_verlassen')">WERK VERLASSEN</button>
       </div>
-      <!-- Im Werk bis -->
-      <div style="margin-top:10px">
-        <div class="lbl">Im Werk bis (optional)</div>
-        <div style="display:flex;gap:7px;align-items:center">
+      <div style="margin-top:9px">
+        <div class="lbl">Im Werk bis (gesetzt: <span id="bis-display" style="color:#a78bfa">nicht gesetzt</span>)</div>
+        <div style="display:flex;gap:6px;align-items:center">
           <input type="time" class="inp" id="inp-bis" style="flex:1;color-scheme:dark" oninput="onBisChange()" />
-          <button class="btn-g" style="font-size:12px;padding:7px 10px" onclick="clearBis()">✕</button>
+          <button class="btn-g" style="font-size:12px;padding:7px 9px" onclick="clearBis()">✕</button>
         </div>
       </div>
     </div>
 
-    <!-- SECTION 2: Arbeitsstatus -->
     <div class="card">
       <div class="section-title B" style="color:#aaa">ARBEITSSTATUS</div>
       <div class="sg3">
         <button class="sbtn" id="btn-am_platz"  onclick="setWorkStatus('am_platz')">AM PLATZ</button>
-        <button class="sbtn" id="btn-anlauf"     onclick="setWorkStatus('anlauf')">ANLAUF</button>
-        <button class="sbtn" id="btn-flow"       onclick="setWorkStatus('flow')">FLOW</button>
+        <button class="sbtn" id="btn-einfinden" onclick="setWorkStatus('einfinden')">EIN-FINDEN</button>
+        <button class="sbtn" id="btn-flow"      onclick="setWorkStatus('flow')">FLOW</button>
       </div>
       <div style="margin-top:6px">
-        <button class="sbtn" id="btn-unterwegs" onclick="setWorkStatus('unterwegs')" style="width:100%;margin-top:0">IM WERK UNTERWEGS</button>
+        <button class="sbtn" id="btn-unterwegs" onclick="clickUnterwegs()" style="width:100%">IM WERK UNTERWEGS</button>
       </div>
-
-      <!-- auto-flow (only when anlauf) -->
-      <div id="card-af" style="display:none;margin-top:11px;padding-top:11px;border-top:1px solid var(--brd)">
+      <div id="card-af" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--brd)">
         <div class="lbl">Automatisch in FLOW wechseln nach</div>
         <select class="inp" id="sel-af" onchange="setAF(this.value)" style="margin-top:5px">
           <option value="0">Kein automatischer Wechsel</option>
-          <option value="10">10 Min</option>
-          <option value="15">15 Min</option>
-          <option value="20">20 Min</option>
-          <option value="25">25 Min</option>
-          <option value="30">30 Min</option>
-          <option value="45">45 Min</option>
+          <option value="10">10 Min</option><option value="15">15 Min</option>
+          <option value="20">20 Min</option><option value="25">25 Min</option>
+          <option value="30">30 Min</option><option value="45">45 Min</option>
         </select>
       </div>
-
-      <!-- unterwegs fields (only when unterwegs) -->
-      <div id="card-unterwegs" style="display:none;margin-top:11px;padding-top:11px;border-top:1px solid var(--brd)">
+      <div id="card-uw" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--brd)">
         <div class="lbl">Aufenthaltsort</div>
-        <input class="inp" id="inp-ort" placeholder="z. B. Lager · Besprechungsraum 3" style="margin-top:5px" oninput="onUwChange()" />
-        <div class="lbl" style="margin-top:9px">Voraussichtlich zurück</div>
-        <input type="time" class="inp" id="inp-ort-bis" style="margin-top:5px;color-scheme:dark" oninput="onUwChange()" />
-        <div class="lbl" style="margin-top:9px">Gespeicherte Orte</div>
+        <input class="inp" id="inp-ort" placeholder="z. B. Lager · Besprechungsraum 3" style="margin-top:5px" />
+        <div class="lbl" style="margin-top:8px">Voraussichtlich zurück</div>
+        <input type="time" class="inp" id="inp-ort-bis" style="margin-top:5px;color-scheme:dark" />
+        <div class="lbl" style="margin-top:8px">Gespeicherte Orte</div>
         <div class="loc-tiles" id="loc-tiles"></div>
       </div>
     </div>
 
-    <!-- current status summary -->
     <div class="card">
-      <div class="lbl" style="margin-bottom:9px">Aktueller Status</div>
-      <div style="display:flex;align-items:center;gap:9px;margin-bottom:4px">
+      <div class="lbl" style="margin-bottom:8px">Aktueller Status</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
         <div class="sdot" id="c-sdot"></div>
-        <div class="B" id="c-pname" style="font-size:16px;letter-spacing:2px"></div>
+        <div class="B" id="c-pname" style="font-size:15px;letter-spacing:2px"></div>
       </div>
-      <div style="display:flex;align-items:center;gap:9px">
-        <div style="width:9px;height:9px;flex-shrink:0"></div>
-        <div class="B" id="c-wname" style="font-size:20px;letter-spacing:2px"></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:9px"></div>
+        <div class="B" id="c-wname" style="font-size:19px;letter-spacing:2px"></div>
       </div>
       <div class="tpair" id="c-timers"></div>
     </div>
 
-    <!-- pairing code -->
     <div class="card">
-      <div class="lbl" style="margin-bottom:9px">Mein Pairing-Code</div>
+      <div class="lbl" style="margin-bottom:8px">Mein Code (rotiert jede Minute)</div>
       <div class="code-box">
         <div>
-          <div style="font-size:9px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">In Anzeige eingeben</div>
+          <div style="font-size:9px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">In Anzeige eingeben</div>
           <div class="code-val B" id="my-code"></div>
         </div>
-        <button class="btn-g" id="copy-btn" onclick="copyCode()">Kopieren</button>
+        <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">
+          <button class="btn-g" id="copy-btn" onclick="copyCode()" style="font-size:12px;padding:6px 10px">Kopieren</button>
+          <div id="code-timer" style="font-size:10px;color:var(--dim);text-align:right"></div>
+        </div>
       </div>
     </div>
 
-    <!-- watchers -->
     <div class="card">
-      <div class="lbl" style="margin-bottom:9px">Mein Status wird angezeigt bei</div>
+      <div class="lbl" style="margin-bottom:8px">Mein Status wird angezeigt bei</div>
       <div id="watcher-list"><div style="color:var(--dim);font-size:13px">Niemand zeigt deinen Status an.</div></div>
-      <div style="font-size:11px;color:var(--dim);margin-top:9px;line-height:1.55">Klick auf einen Namen → gegenseitig entfernen.</div>
+      <div style="font-size:11px;color:var(--dim);margin-top:8px">Klick → gegenseitig entfernen</div>
     </div>
 
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
       <button class="btn-d" onclick="removeFromAll()" style="flex:1">Aus allen Anzeigen entfernen</button>
       <button class="btn-g" onclick="openCfg()">⚙</button>
     </div>
-    <div style="font-size:10px;color:#1e1e1e;text-align:center">Sync alle 4 Sek. · Firebase EU</div>
+    <div style="font-size:10px;color:#1e1e1e;text-align:center">Werksicht · Sync alle 4 Sek. · Firebase EU</div>
   </div>
 </div>
 
-<!-- ── DISPLAY ─────────────────────────────────────────────────────────── -->
 <div class="screen" id="s-disp">
   <div class="d-glow" id="d-glow"></div>
   <div class="d-bar" id="d-bt" style="top:0"></div>
-  <div class="d-bar" id="d-bb" style="bottom:38px"></div>
-  <div class="d-inner">
-    <!-- own status strip -->
-    <div class="d-own" id="d-own"></div>
-    <!-- others -->
-    <div class="d-others" id="d-others"></div>
+  <div class="d-bar" id="d-bb" style="bottom:36px"></div>
+  <div class="d-shell">
+    <div class="d-topbar">
+      <button class="btn-g" onclick="goMode()" style="font-size:11px;padding:5px 9px">← Start</button>
+      <div class="d-topbar-center">WERKSICHT</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn-g" id="view-toggle" onclick="toggleView()" style="font-size:11px;padding:5px 9px">⏱ Zeitplan</button>
+        <button class="btn-g" onclick="showAddRoom()" style="font-size:11px;padding:5px 9px">＋</button>
+      </div>
+    </div>
+    <div class="d-own" id="d-own" onclick="openOwnStatus()"></div>
+    <div class="d-main" id="d-main">
+      <div class="d-grid-wrap" id="d-grid-wrap"></div>
+      <div class="d-sidebar" id="d-sidebar" style="display:none"></div>
+    </div>
   </div>
   <div class="pbar" id="pbar"></div>
-  <div class="d-back"><button class="btn-g" onclick="goMode()" style="font-size:11px;padding:6px 10px">← Start</button></div>
-  <div class="d-toolbar">
-    <button class="btn-g" id="view-toggle" onclick="toggleView()" style="font-size:11px;padding:6px 10px">⏱ Zeitplan</button>
-    <button class="btn-g" onclick="showAddRoom()" style="font-size:11px;padding:6px 10px">＋ Person</button>
+</div>
+
+<!-- ── OVERLAYS ─────────────────────────────────────────────────────────── -->
+
+<!-- Disclaimer (must accept) -->
+<div class="ov show" id="ov-disclaimer">
+  <div class="ov-box ov-lg">
+    <div class="app-name" style="font-size:28px">WERKSICHT</div>
+    <div style="font-size:14px;font-weight:500;color:var(--txt)">Haftungsausschluss & Nutzungshinweis</div>
+    <div style="font-size:13px;color:var(--mut);line-height:1.7;max-height:280px;overflow-y:auto;border:1px solid var(--brd);border-radius:8px;padding:12px">
+      Werksicht ist ein <strong style="color:var(--txt)">privates, freiwilliges Hilfsmittel</strong> zur persönlichen Statusabsprache zwischen einzelnen Personen. Es handelt sich ausdrücklich um keine offizielle Betriebsanwendung.<br><br>
+      <strong style="color:#f87171">Alle angezeigten Status-Informationen sind unverbindlich und ohne Gewähr.</strong> Technische Fehler, vergessene Status-Updates, versehentliche oder bewusst falsche Angaben können jederzeit vorkommen.<br><br>
+      <strong style="color:#f87171">Die App ersetzt in keinem Fall eine direkte, persönliche Überprüfung des Aufenthalts von Personen, insbesondere in sicherheitsrelevanten Situationen (z. B. Erste-Hilfe-Szenarien).</strong><br><br>
+      Sämtliche Haftung für Folgen aus der Nutzung dieser App, insbesondere für Schäden, die aus dem Vertrauen auf angezeigte Status entstehen, wird ausdrücklich ausgeschlossen. Die Nutzung erfolgt vollständig auf eigenes Risiko des Nutzers.<br><br>
+      <span style="color:var(--dim)">Mit dem Klick auf "Ich stimme zu" bestätige ich, dass ich diese Hinweise gelesen und verstanden habe und die alleinige Verantwortung für meine Nutzung dieser App trage.</span>
+    </div>
+    <div class="err" id="disclaimer-err"></div>
+    <button class="btn-p" style="background:#22c55e" onclick="acceptDisclaimer()">Ich stimme zu – Weiter</button>
+    <div style="font-size:11px;color:var(--dim);text-align:center">Diese Meldung erscheint einmalig pro Gerät.</div>
   </div>
 </div>
 
-<!-- ── OV: Welcome/Name ────────────────────────────────────────────────── -->
-<div class="ov show" id="ov-name">
+<!-- Welcome / Name -->
+<div class="ov" id="ov-name">
   <div class="ov-box">
-    <div class="B" style="font-size:24px;letter-spacing:3px;color:#22c55e">WILLKOMMEN</div>
+    <div class="app-name" style="font-size:26px">WERKSICHT</div>
     <div style="font-size:13px;color:var(--mut)">Wie soll dein Name in der Anzeige erscheinen?</div>
     <input class="inp" id="inp-name-s" placeholder="z. B. Max Müller" onkeydown="if(event.key==='Enter')saveName()" />
     <div class="err" id="name-err"></div>
     <button class="btn-p" style="background:#22c55e" onclick="saveName()">Los geht's</button>
-    <div style="font-size:11px;color:var(--dim);line-height:1.6">
-      Nur der Name wird gespeichert – kein Konto, keine E-Mail nötig.
+    <div style="border-top:1px solid var(--brd);padding-top:10px">
+      <div style="font-size:12px;color:var(--dim);margin-bottom:8px">Bereits auf einem anderen Gerät angemeldet?</div>
+      <div class="lbl">Aktuellen Pairing-Code des anderen Geräts eingeben</div>
+      <input class="inp" id="inp-sync-code" maxlength="6" placeholder="ABC123"
+        style="text-transform:uppercase;letter-spacing:4px;font-size:18px;text-align:center;margin-top:5px" />
+      <button class="btn-g" style="width:100%;margin-top:7px" onclick="doDeviceSync()">Gerät synchronisieren</button>
+      <div class="err" id="sync-err"></div>
     </div>
   </div>
 </div>
 
-<!-- ── OV: Add person ─────────────────────────────────────────────────── -->
+<!-- Add person -->
 <div class="ov" id="ov-room">
-  <div class="ov-box" style="max-width:400px">
-    <div class="B" style="font-size:22px;letter-spacing:3px;color:#60a5fa">PERSON HINZUFÜGEN</div>
-    <div style="font-size:13px;color:var(--mut)">Pairing-Code der Person eingeben.<br>Das Tracking ist <strong style="color:var(--txt)">gegenseitig</strong> – beide sehen sich.</div>
+  <div class="ov-box ov-lg">
+    <div class="B" style="font-size:20px;letter-spacing:3px;color:#60a5fa">PERSON HINZUFÜGEN</div>
+    <div style="font-size:13px;color:var(--mut)">Pairing-Code der Person eingeben.<br>Tracking ist <strong style="color:var(--txt)">gegenseitig</strong> – beide sehen sich.</div>
     <input class="inp" id="inp-rcode" maxlength="6" placeholder="ABC123"
       style="text-transform:uppercase;letter-spacing:5px;font-size:20px;text-align:center"
       onkeydown="if(event.key==='Enter')addRoom()" />
@@ -312,17 +324,18 @@ input[type=time]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <button class="btn-g" onclick="hideAddRoom()" style="flex:1">Abbrechen</button>
       <button class="btn-p" style="flex:1;background:#60a5fa" onclick="addRoom()">Hinzufügen</button>
     </div>
-    <div style="border-top:1px solid var(--brd);padding-top:12px">
-      <div class="lbl" style="margin-bottom:9px">Personen in dieser Anzeige</div>
+    <div style="border-top:1px solid var(--brd);padding-top:10px">
+      <div class="lbl" style="margin-bottom:8px">Personen in dieser Anzeige</div>
       <div id="room-list"></div>
     </div>
   </div>
 </div>
 
-<!-- ── OV: PIN ─────────────────────────────────────────────────────────── -->
+<!-- PIN -->
 <div class="ov" id="ov-pin">
   <div class="ov-box">
-    <div class="B" style="font-size:22px;letter-spacing:3px" id="pin-title">CONTROLLER</div>
+    <div class="app-name" style="font-size:20px">WERKSICHT</div>
+    <div class="B" style="font-size:20px;letter-spacing:3px" id="pin-title">CONTROLLER</div>
     <input type="password" class="inp" id="pin-inp" maxlength="8" placeholder="••••"
       style="font-size:22px;text-align:center;letter-spacing:8px"
       onkeydown="if(event.key==='Enter')checkPin()" />
@@ -331,19 +344,21 @@ input[type=time]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <button class="btn-g" onclick="hidePinOv()" style="flex:1">Abbrechen</button>
       <button class="btn-p" id="pin-ok" style="flex:1;background:#22c55e" onclick="checkPin()">Weiter</button>
     </div>
+    <button class="btn-d" style="width:100%;margin-top:4px" onclick="forgotPin()">PIN vergessen</button>
   </div>
 </div>
 
-<!-- ── OV: Settings ────────────────────────────────────────────────────── -->
+<!-- Settings -->
 <div class="ov" id="ov-cfg">
-  <div class="ov-box" style="max-width:380px">
-    <div class="B" style="font-size:22px;letter-spacing:3px">EINSTELLUNGEN</div>
-    <div>
+  <div class="ov-box">
+    <div class="app-name" style="font-size:20px">WERKSICHT</div>
+    <div class="B" style="font-size:20px;letter-spacing:3px">EINSTELLUNGEN</div>
+    <div id="cfg-name-block">
       <div class="lbl">Dein Name</div>
       <input class="inp" id="cfg-name" />
     </div>
     <div>
-      <div class="lbl">PIN für Controller (leer = kein PIN)</div>
+      <div class="lbl">Neuer PIN (leer = kein PIN)</div>
       <input type="password" class="inp" id="cfg-pin" placeholder="Neuen PIN eingeben" />
     </div>
     <div style="display:flex;gap:8px">
@@ -353,269 +368,377 @@ input[type=time]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   </div>
 </div>
 
-<!-- ── Location popover ────────────────────────────────────────────────── -->
+<!-- Im Werk end-time popup -->
+<div class="ov" id="ov-im-werk">
+  <div class="ov-box">
+    <div class="B" style="font-size:20px;letter-spacing:3px;color:#22c55e">IM WERK BIS WANN?</div>
+    <div style="font-size:13px;color:var(--mut)">Bis wann planst du heute im Werk zu sein?</div>
+    <input type="time" class="inp" id="inp-bis-popup" style="font-size:20px;color-scheme:dark;text-align:center" />
+    <button class="btn-p" style="background:#22c55e" onclick="confirmImWerk(false)">Bestätigen</button>
+    <button class="btn-g" style="width:100%;text-align:center" onclick="confirmImWerk(true)">Ich möchte mich nicht festlegen</button>
+  </div>
+</div>
+
+<!-- Unterwegs popup -->
+<div class="ov" id="ov-unterwegs">
+  <div class="ov-box">
+    <div class="B" style="font-size:20px;letter-spacing:3px;color:#60a5fa">IM WERK UNTERWEGS</div>
+    <div style="font-size:13px;color:var(--mut)">Wo bist du und wann bist du zurück?</div>
+    <div>
+      <div class="lbl">Aufenthaltsort</div>
+      <input class="inp" id="inp-ort-pop" placeholder="z. B. Lager · Besprechungsraum 3" />
+    </div>
+    <div>
+      <div class="lbl">Voraussichtlich zurück</div>
+      <input type="time" class="inp" id="inp-ort-bis-pop" style="color-scheme:dark" />
+    </div>
+    <div class="lbl" id="uw-locs-lbl" style="margin-bottom:5px">Gespeicherte Orte</div>
+    <div class="loc-tiles" id="uw-loc-tiles-pop"></div>
+    <button class="btn-p" style="background:#60a5fa;margin-top:4px" onclick="confirmUnterwegs()">Status setzen</button>
+    <button class="btn-g" style="width:100%;text-align:center" onclick="hov('ov-unterwegs')">Abbrechen</button>
+  </div>
+</div>
+
+<!-- Own status quick-change (from display) -->
+<div class="ov" id="ov-own-status">
+  <div class="ov-box">
+    <div class="app-name" style="font-size:20px">WERKSICHT</div>
+    <div class="B" style="font-size:20px;letter-spacing:3px">STATUS ÄNDERN</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <button class="sbtn" id="qbtn-im_werk"        onclick="qs('presence','im_werk')" style="background:#161616;color:#22c55e;border-color:#22c55e55">IM WERK</button>
+      <button class="sbtn" id="qbtn-werk_verlassen"  onclick="qs('presence','werk_verlassen')" style="background:#161616;color:#f97316;border-color:#f9731655">WERK VERLASSEN</button>
+    </div>
+    <div style="height:1px;background:var(--brd);margin:2px 0"></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+      <button class="sbtn" id="qbtn-am_platz"  onclick="qs('work','am_platz')"  style="background:#161616;color:#22c55e;border-color:#22c55e55">AM PLATZ</button>
+      <button class="sbtn" id="qbtn-einfinden" onclick="qs('work','einfinden')" style="background:#161616;color:#f59e0b;border-color:#f59e0b55">EIN-FINDEN</button>
+      <button class="sbtn" id="qbtn-flow"      onclick="qs('work','flow')"      style="background:#161616;color:#ef4444;border-color:#ef444455">FLOW</button>
+    </div>
+    <button class="sbtn" id="qbtn-unterwegs" onclick="qs('work','unterwegs')" style="background:#161616;color:#60a5fa;border-color:#60a5fa55;width:100%">IM WERK UNTERWEGS</button>
+    <button class="btn-g" onclick="hov('ov-own-status');goCtrl()" style="width:100%;text-align:center">Zum Controller →</button>
+    <button class="btn-g" onclick="hov('ov-own-status')" style="width:100%;text-align:center">Schließen</button>
+  </div>
+</div>
+
+<!-- Contact list -->
+<div class="ov" id="ov-contacts">
+  <div class="ov-box ov-lg" style="max-height:85vh">
+    <div class="app-name" style="font-size:20px">WERKSICHT</div>
+    <div class="B" style="font-size:20px;letter-spacing:3px">MEINE VERBINDUNGEN</div>
+    <div id="contact-list" style="font-size:13px"></div>
+    <button class="btn-g" onclick="hov('ov-contacts')" style="width:100%;text-align:center">Schließen</button>
+  </div>
+</div>
+
+<!-- New contact notification -->
+<div class="ov" id="ov-new-contact">
+  <div class="ov-box">
+    <div class="B" style="font-size:20px;letter-spacing:3px;color:#60a5fa">NEUE VERBINDUNG</div>
+    <div style="font-size:13px;color:var(--mut)" id="new-contact-msg"></div>
+    <div>
+      <div class="lbl">Name für diese Person (änderbar)</div>
+      <input class="inp" id="inp-contact-name" />
+    </div>
+    <button class="btn-p" style="background:#60a5fa" onclick="saveContactName()">Übernehmen</button>
+  </div>
+</div>
+
+<!-- Location tile popover -->
 <div class="loc-pop" id="loc-pop" onclick="hideLocPop()">
   <div class="loc-pop-box" onclick="event.stopPropagation()">
-    <div style="font-size:13px;font-weight:500;color:var(--txt)" id="loc-pop-name"></div>
-    <div style="font-size:11px;color:var(--dim)" id="loc-pop-bis"></div>
+    <div style="font-size:13px;font-weight:500" id="loc-pop-name"></div>
     <div style="display:flex;gap:7px;margin-top:4px">
       <button class="btn-p" style="flex:1;background:#60a5fa;font-size:13px" onclick="selectSavedLoc()">Auswählen</button>
-      <button class="btn-d" style="flex:0 0 auto" onclick="deleteSavedLoc()">Löschen</button>
+      <button class="btn-d" onclick="deleteSavedLoc()">Löschen</button>
     </div>
   </div>
 </div>
 
+<!-- Alone warning popup -->
+<div class="ov" id="ov-alone-warn">
+  <div class="ov-box" style="border-color:#f97316;background:#120500">
+    <div style="font-size:48px;text-align:center">⚠️</div>
+    <div class="B" style="font-size:26px;letter-spacing:3px;color:#f97316;text-align:center">DU BIST ALLEIN</div>
+    <div style="font-size:14px;color:#f97316;text-align:center;line-height:1.6">
+      Du bist die letzte Person im Werk!<br>
+      <strong>Bitte stelle sicher, dass dies beabsichtigt ist und informiere ggf. eine externe Person über deinen Aufenthalt.</strong>
+    </div>
+    <div style="font-size:12px;color:#555;text-align:center">Status-Anzeigen sind unverbindlich und ohne Gewähr.</div>
+    <button class="btn-p" style="background:#f97316" onclick="hov('ov-alone-warn')">Verstanden</button>
+  </div>
+</div>
+
 <script>
-// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// CONSTANTS & CONFIG
+// ══════════════════════════════════════════════════════════════════════════════
 const DB = 'https://werksicht-default-rtdb.europe-west1.firebasedatabase.app';
 
-// Status configs
-const PRESENCE = {
+const PRESENCE_CFG = {
   im_werk:        { lbl:'IM WERK',        a:'#22c55e' },
   werk_verlassen: { lbl:'WERK VERLASSEN', a:'#f97316' },
 };
-const WORKST = {
-  am_platz:  { lbl:'AM PLATZ',          a:'#22c55e', glow:'rgba(34,197,94,.09)'   },
-  anlauf:    { lbl:'ANLAUF',             a:'#f59e0b', glow:'rgba(245,158,11,.09)'  },
-  flow:      { lbl:'FLOW',              a:'#ef4444', glow:'rgba(239,68,68,.09)'   },
-  unterwegs: { lbl:'IM WERK UNTERWEGS', a:'#60a5fa', glow:'rgba(96,165,250,.09)'  },
+const WORK_CFG = {
+  am_platz:  { lbl:'AM PLATZ',          a:'#22c55e', glow:'rgba(34,197,94,.09)'  },
+  einfinden: { lbl:'EINFINDEN',         a:'#f59e0b', glow:'rgba(245,158,11,.09)' },
+  flow:      { lbl:'FLOW',              a:'#ef4444', glow:'rgba(239,68,68,.09)'  },
+  unterwegs: { lbl:'IM WERK UNTERWEGS', a:'#60a5fa', glow:'rgba(96,165,250,.09)' },
 };
 
-// ── STATE ─────────────────────────────────────────────────────────────────────
-const LS = { code:'wk_code', name:'wk_name', pin:'wk_pin', af:'wk_af', locs:'wk_locs' };
-let myCode    = lg(LS.code) || genCode();
+// ══════════════════════════════════════════════════════════════════════════════
+// LOCAL STATE
+// ══════════════════════════════════════════════════════════════════════════════
+const LS = {
+  uid:'wk_uid', code:'wk_code', codeTime:'wk_codeTime',
+  name:'wk_name', pin:'wk_pin', af:'wk_af',
+  locs:'wk_locs', disclaimer:'wk_disclaimer',
+  nicknames:'wk_nicknames' // {uid → custom nick}
+};
+
+let myUid     = lg(LS.uid)  || genUid();
+let myCode    = lg(LS.code) || '';
+let codeTime  = parseInt(lg(LS.codeTime)||'0');
 let myName    = lg(LS.name) || '';
 let pin       = lg(LS.pin)  || '';
 let afMin     = parseInt(lg(LS.af)||'0');
-let savedLocs = JSON.parse(lg(LS.locs)||'[]'); // [{ort, bis}]
+let savedLocs = JSON.parse(lg(LS.locs)||'[]');  // strings only (no time)
+let nicknames = JSON.parse(lg(LS.nicknames)||'{}'); // uid → nick
+let disclaimerAccepted = !!lg(LS.disclaimer);
 
-// myState: presence + workStatus separate
 let myState = {
-  presence:      'im_werk',
-  workStatus:    'am_platz',
-  bisZeit:       null,    // im_werk bis (persists across status changes until werk_verlassen)
-  anlaufStart:   null,
-  anlaufDur:     null,    // frozen anlauf duration (ms) once flow starts
-  flowStart:     null,
-  ort:           '',      // unterwegs location
-  ortBis:        '',      // unterwegs expected return
-  name:          myName,
-  t:             Date.now()
+  presence:'im_werk', workStatus:'am_platz',
+  bisZeit:null, anlaufStart:null, anlaufDur:null, flowStart:null,
+  ort:'', ortBis:'', name:myName, t:Date.now()
 };
 
-let users    = {};
-let watching = [];   // [{code, nick}]
-let watchers = {};
-let _ivD, _ivC, _ivT, _pinCb;
-let dispView = 'tiles';
+let users     = {};   // uid → firebase state
+let watching  = [];   // [{uid, nick}] – who I watch
+let watchers  = {};   // uid → {name} – who watches me
+let _ivD, _ivC, _ivT, _ivCode;
+let _pinCb;
+let dispView  = 'tiles';
 let locPopIdx = -1;
+let locPopCtx = 'ctrl'; // 'ctrl' or 'popup'
+let prevOthersInWerk = -1;
+let newContactCb = null;
 
-// ── HELPERS ───────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════════════════════
 function lg(k){ return localStorage.getItem(k); }
 function ls(k,v){ localStorage.setItem(k,v); }
-function genCode(){ const c=Math.random().toString(36).substring(2,8).toUpperCase(); ls(LS.code,c); return c; }
+function genUid(){ const u='wk_'+Math.random().toString(36).substring(2,12); ls(LS.uid,u); return u; }
+function genCode6(){ return Math.random().toString(36).substring(2,8).toUpperCase(); }
 function p(n){ return String(n).padStart(2,'0'); }
-function fmtMs(ms){ // format duration in ms
-  if(!ms&&ms!==0) return '–';
-  const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;
-  return h>0?`${h}:${p(m)}:${p(sc)}`:`${p(m)}:${p(sc)}`;
-}
+function fmtMs(ms){ if(!ms&&ms!==0)return '–'; const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60; return h>0?`${h}:${p(m)}:${p(sc)}`:`${p(m)}:${p(sc)}`; }
 function fmtSince(ts){ return ts?fmtMs(Date.now()-ts):'–'; }
-function clearIvs(){ clearInterval(_ivD);clearInterval(_ivC);clearInterval(_ivT); }
+function clearIvs(){ clearInterval(_ivD);clearInterval(_ivC);clearInterval(_ivT);clearInterval(_ivCode); }
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-function effColor(state){
-  if(state.presence==='werk_verlassen') return PRESENCE.werk_verlassen.a;
-  return WORKST[state.workStatus]?.a || '#22c55e';
-}
-function effGlow(state){
-  if(state.presence==='werk_verlassen') return 'rgba(249,115,22,.09)';
-  return WORKST[state.workStatus]?.glow || 'rgba(34,197,94,.09)';
-}
+function ov(id){ document.getElementById(id).classList.add('show'); }
+function hov(id){ document.getElementById(id).classList.remove('show'); }
+function effColor(state){ return state.presence==='werk_verlassen'?PRESENCE_CFG.werk_verlassen.a:(WORK_CFG[state.workStatus]?.a||'#22c55e'); }
+function effGlow(state){ return state.presence==='werk_verlassen'?'rgba(249,115,22,.09)':(WORK_CFG[state.workStatus]?.glow||'rgba(34,197,94,.09)'); }
+function nickFor(uid, fallback){ return nicknames[uid] || fallback || uid; }
 
-// ── FIREBASE ─────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// FIREBASE
+// ══════════════════════════════════════════════════════════════════════════════
 async function fbGet(path){ try{ const r=await fetch(`${DB}${path}.json`); return r.ok?await r.json():null; }catch{ return null; } }
 async function fbPut(path,d){ try{ const r=await fetch(`${DB}${path}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}); return r.ok; }catch{ return false; } }
 async function fbDel(path){ try{ const r=await fetch(`${DB}${path}.json`,{method:'DELETE'}); return r.ok; }catch{ return false; } }
 
-// ── BOOT ─────────────────────────────────────────────────────────────────────
-(()=>{
-  if(!myName){ ov('ov-name'); setTimeout(()=>document.getElementById('inp-name-s').focus(),200); }
-  else { document.getElementById('ov-name').classList.remove('show'); goMode(); }
+// ══════════════════════════════════════════════════════════════════════════════
+// CODE ROTATION (every 60s)
+// ══════════════════════════════════════════════════════════════════════════════
+async function rotateCode(){
+  const now = Date.now();
+  if(myCode && (now - codeTime) < 60000) return; // not yet
+  const oldCode = myCode;
+  const newCode = genCode6();
+  // write new mapping first
+  await fbPut(`/flowapp/codes/${newCode}`, {uid:myUid, name:myName, t:now});
+  // then delete old
+  if(oldCode) await fbDel(`/flowapp/codes/${oldCode}`);
+  myCode = newCode; codeTime = now;
+  ls(LS.code, newCode); ls(LS.codeTime, now);
+  const el = document.getElementById('my-code');
+  if(el) el.textContent = myCode;
+}
+
+function updateCodeTimer(){
+  const el = document.getElementById('code-timer'); if(!el) return;
+  const rem = Math.max(0, 60 - Math.floor((Date.now()-codeTime)/1000));
+  el.textContent = `Neu in ${rem}s`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SOUND (Web Audio API)
+// ══════════════════════════════════════════════════════════════════════════════
+function playBeeps(count, freq=880){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    for(let i=0;i<count;i++){
+      setTimeout(()=>{
+        const osc=ctx.createOscillator(), gain=ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value=freq;
+        gain.gain.setValueAtTime(0.4,ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.35);
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.35);
+      },i*550);
+    }
+  }catch(e){}
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════════════════════════════════
+(async()=>{
+  if(!disclaimerAccepted){ ov('ov-disclaimer'); return; }
+  bootAfterDisclaimer();
 })();
 
-function ov(id){ document.getElementById(id).classList.add('show'); }
-function hov(id){ document.getElementById(id).classList.remove('show'); }
+function acceptDisclaimer(){
+  ls(LS.disclaimer,'yes'); disclaimerAccepted=true;
+  hov('ov-disclaimer'); bootAfterDisclaimer();
+}
+
+function bootAfterDisclaimer(){
+  if(!myName){ ov('ov-name'); setTimeout(()=>document.getElementById('inp-name-s').focus(),200); }
+  else { goMode(); }
+}
 
 async function saveName(){
   const n=(document.getElementById('inp-name-s').value||'').trim();
   if(!n){ document.getElementById('name-err').textContent='Bitte einen Namen eingeben.'; return; }
   myName=n; ls(LS.name,n); myState.name=n;
-  hov('ov-name'); goMode();
+  hov('ov-name');
+  await rotateCode();
+  goMode();
 }
 
-// ── MODE ─────────────────────────────────────────────────────────────────────
+async function doDeviceSync(){
+  const code=(document.getElementById('inp-sync-code').value||'').trim().toUpperCase();
+  if(code.length<4){ document.getElementById('sync-err').textContent='Code zu kurz.'; return; }
+  document.getElementById('sync-err').textContent='Suche...';
+  const data=await fbGet(`/flowapp/codes/${code}`);
+  if(!data||!data.uid){ document.getElementById('sync-err').textContent='Code nicht gefunden.'; return; }
+  // take over that uid
+  const oldUid=myUid; myUid=data.uid;
+  ls(LS.uid,myUid); myName=data.name||myName; ls(LS.name,myName);
+  // load state from firebase
+  const st=await fbGet(`/flowapp/rooms/${myUid}`);
+  if(st) myState={...myState,...st};
+  hov('ov-name');
+  await rotateCode();
+  goMode();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MODE
+// ══════════════════════════════════════════════════════════════════════════════
 function goMode(){
   clearIvs();
   show('s-mode');
-  document.getElementById('mode-logo').style.color=effColor(myState);
-  document.getElementById('mode-greet').textContent=myName?`Hallo, ${myName}`:'';
+  document.getElementById('mode-greet').textContent = myName?`Hallo, ${myName}`:'';
 }
 
-function toggleGdpr(){
-  const el=document.getElementById('gdpr-banner');
+function togglePrivacy(){
+  const el=document.getElementById('privacy-box');
   el.style.display=el.style.display==='block'?'none':'block';
 }
 
-// ── CONTROLLER ───────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// CONTROLLER
+// ══════════════════════════════════════════════════════════════════════════════
 function goCtrl(){
-  if(pin){ _pinCb=_openCtrl; openPinOv('CONTROLLER','#22c55e'); }
+  if(pin){ _pinCb=_openCtrl; openPinOv('CONTROLLER'); }
   else { _openCtrl(); }
 }
 async function _openCtrl(){
   show('s-ctrl');
   document.getElementById('ctrl-nl').textContent=myName;
-  document.getElementById('my-code').textContent=myCode;
   document.getElementById('sel-af').value=afMin;
   if(myState.bisZeit) document.getElementById('inp-bis').value=myState.bisZeit;
   if(myState.ort) document.getElementById('inp-ort').value=myState.ort;
   if(myState.ortBis) document.getElementById('inp-ort-bis').value=myState.ortBis;
-  renderLocTiles();
+  renderLocTiles('ctrl');
+  await rotateCode();
+  document.getElementById('my-code').textContent=myCode;
   renderCtrl();
   await refreshWatchers();
-  _ivT=setInterval(()=>renderCtrl(),1000);
+  _ivT=setInterval(()=>{ renderCtrl(); updateCodeTimer(); },1000);
+  _ivCode=setInterval(async()=>{ await rotateCode(); document.getElementById('my-code').textContent=myCode; },5000);
   _ivC=setInterval(async()=>{ checkAF(); await pushState(); await refreshWatchers(); },4000);
 }
 
 function renderCtrl(){
-  const p2=myState.presence, w=myState.workStatus;
-  const pa=PRESENCE[p2]?.a||'#22c55e';
-  const wa=WORKST[w]?.a||'#22c55e';
+  const pr=myState.presence, ws=myState.workStatus;
+  const pa=PRESENCE_CFG[pr]?.a||'#22c55e';
+  const wa=WORK_CFG[ws]?.a||'#22c55e';
   const ac=effColor(myState);
   document.getElementById('ctrl-logo').style.color=ac;
 
-  // presence buttons
   ['im_werk','werk_verlassen'].forEach(k=>{
     const b=document.getElementById('btn-'+k); if(!b)return;
-    const c=PRESENCE[k];
-    b.style.cssText=k===p2
-      ?`background:${c.a};color:#000;border-color:${c.a}`
-      :`background:#161616;color:${c.a};border-color:${c.a}55`;
+    const c=PRESENCE_CFG[k];
+    b.style.cssText=k===pr?`background:${c.a};color:#000;border-color:${c.a}`:`background:#161616;color:${c.a};border-color:${c.a}55`;
   });
-
-  // work status buttons
-  ['am_platz','anlauf','flow','unterwegs'].forEach(k=>{
+  ['am_platz','einfinden','flow','unterwegs'].forEach(k=>{
     const b=document.getElementById('btn-'+k); if(!b)return;
-    const c=WORKST[k];
-    const active=k===w&&p2!=='werk_verlassen';
-    b.style.cssText=active
-      ?`background:${c.a};color:#000;border-color:${c.a}`
-      :`background:#161616;color:${c.a};border-color:${c.a}55`;
-    b.disabled=p2==='werk_verlassen';
-    b.style.opacity=p2==='werk_verlassen'?'.35':'1';
+    const c=WORK_CFG[k];
+    const active=k===ws&&pr!=='werk_verlassen';
+    b.style.cssText=active?`background:${c.a};color:#000;border-color:${c.a}`:`background:#161616;color:${c.a};border-color:${c.a}55`;
+    b.disabled=pr==='werk_verlassen'; b.style.opacity=pr==='werk_verlassen'?'.3':'1';
   });
 
-  document.getElementById('card-af').style.display=(w==='anlauf'&&p2!=='werk_verlassen')?'block':'none';
-  document.getElementById('card-unterwegs').style.display=(w==='unterwegs'&&p2!=='werk_verlassen')?'block':'none';
+  document.getElementById('card-af').style.display=(ws==='einfinden'&&pr!=='werk_verlassen')?'block':'none';
+  document.getElementById('card-uw').style.display=(ws==='unterwegs'&&pr!=='werk_verlassen')?'block':'none';
+  document.getElementById('bis-display').textContent=myState.bisZeit||'nicht gesetzt';
 
-  // summary
-  const pdot=document.getElementById('c-sdot');
-  pdot.style.cssText=`width:9px;height:9px;border-radius:50%;background:${pa};box-shadow:0 0 7px ${pa}`;
+  document.getElementById('c-sdot').style.cssText=`width:9px;height:9px;border-radius:50%;background:${pa};box-shadow:0 0 7px ${pa}`;
   document.getElementById('c-pname').style.color=pa;
-  document.getElementById('c-pname').textContent=PRESENCE[p2]?.lbl||'';
-  document.getElementById('c-wname').style.color=p2==='werk_verlassen'?'#444':wa;
-  document.getElementById('c-wname').textContent=p2==='werk_verlassen'?'–':WORKST[w]?.lbl||'';
+  document.getElementById('c-pname').textContent=PRESENCE_CFG[pr]?.lbl||'';
+  document.getElementById('c-wname').style.color=pr==='werk_verlassen'?'#333':wa;
+  document.getElementById('c-wname').textContent=pr==='werk_verlassen'?'–':WORK_CFG[ws]?.lbl||'';
 
-  // timers
   let h='';
-  if(myState.anlaufStart&&w==='anlauf')
-    h+=`<div class="tbox"><div class="tl">Anlauf</div><div class="tv" style="color:#888">${fmtSince(myState.anlaufStart)}</div></div>`;
-  if(myState.anlaufDur!=null&&w==='flow')
-    h+=`<div class="tbox"><div class="tl">Anlauf (eingefroren)</div><div class="tv" style="color:#555">${fmtMs(myState.anlaufDur)}</div></div>`;
-  if(myState.flowStart&&w==='flow')
-    h+=`<div class="tbox"><div class="tl" style="color:${wa}">Flow</div><div class="tv" style="color:${wa}">${fmtSince(myState.flowStart)}</div></div>`;
+  if(myState.anlaufStart&&ws==='einfinden') h+=`<div class="tbox"><div class="tl">Einfinden seit</div><div class="tv" style="color:#888">${fmtSince(myState.anlaufStart)}</div></div>`;
+  if(myState.anlaufDur!=null&&ws==='flow')  h+=`<div class="tbox"><div class="tl">Einfindezeit</div><div class="tv" style="color:#555">${fmtMs(myState.anlaufDur)}</div></div>`;
+  if(myState.flowStart&&ws==='flow')        h+=`<div class="tbox"><div class="tl" style="color:${wa}">Flow seit</div><div class="tv" style="color:${wa}">${fmtSince(myState.flowStart)}</div></div>`;
   document.getElementById('c-timers').innerHTML=h;
 }
 
-async function setPresence(p2){
-  const ns={...myState,presence:p2};
-  if(p2==='werk_verlassen'){ ns.bisZeit=null; document.getElementById('inp-bis').value=''; }
+// Presence / work setters
+function clickImWerk(){
+  const t=new Date(); t.setMinutes(Math.ceil(t.getMinutes()/15)*15,0,0);
+  document.getElementById('inp-bis-popup').value=`${p(t.getHours())}:${p(t.getMinutes())}`;
+  ov('ov-im-werk');
+}
+async function confirmImWerk(noCommit){
+  const v=noCommit?null:document.getElementById('inp-bis-popup').value||null;
+  hov('ov-im-werk');
+  await setPresence('im_werk', v);
+}
+async function setPresence(pr, bisOverride=undefined){
+  const ns={...myState,presence:pr};
+  if(pr==='werk_verlassen'){ ns.bisZeit=null; document.getElementById('inp-bis').value=''; }
+  else if(bisOverride!==undefined) ns.bisZeit=bisOverride;
   myState=ns; await pushState(); renderCtrl();
 }
-
-async function setWorkStatus(w){
+async function setWorkStatus(ws){
   if(myState.presence==='werk_verlassen') return;
-  const now=Date.now();
-  const ns={...myState,workStatus:w};
-  if(w==='anlauf')    { ns.anlaufStart=now; ns.anlaufDur=null; ns.flowStart=null; }
-  else if(w==='flow') { if(myState.anlaufStart) ns.anlaufDur=now-myState.anlaufStart; ns.flowStart=now; ns.anlaufStart=null; }
-  else if(w==='am_platz'||w==='unterwegs'){ ns.anlaufStart=null; ns.anlaufDur=null; ns.flowStart=null; }
-  // keep ort/ortBis when switching to unterwegs
-  if(w==='unterwegs'){ ns.ort=document.getElementById('inp-ort').value; ns.ortBis=document.getElementById('inp-ort-bis').value; }
+  const now=Date.now(), ns={...myState,workStatus:ws};
+  if(ws==='einfinden')   { ns.anlaufStart=now; ns.anlaufDur=null; ns.flowStart=null; }
+  else if(ws==='flow')   { if(myState.anlaufStart) ns.anlaufDur=now-myState.anlaufStart; ns.flowStart=now; ns.anlaufStart=null; }
+  else                   { ns.anlaufStart=null; ns.anlaufDur=null; ns.flowStart=null; }
   ns.t=Date.now(); myState=ns; await pushState(); renderCtrl();
 }
-
-function onBisChange(){
-  const v=document.getElementById('inp-bis').value;
-  myState.bisZeit=v||null;
-  pushState();
-}
-function clearBis(){
-  document.getElementById('inp-bis').value='';
-  myState.bisZeit=null; pushState();
-}
-function onUwChange(){
-  myState.ort=document.getElementById('inp-ort').value;
-  myState.ortBis=document.getElementById('inp-ort-bis').value;
-  // save location if both fields have values
-  if(myState.ort&&myState.ortBis) maybeSaveLoc(myState.ort,myState.ortBis);
-  pushState();
-}
-function maybeSaveLoc(ort,bis){
-  if(!savedLocs.find(l=>l.ort===ort&&l.bis===bis)){
-    savedLocs.unshift({ort,bis}); // newest first
-    if(savedLocs.length>8) savedLocs=savedLocs.slice(0,8);
-    ls(LS.locs,JSON.stringify(savedLocs));
-    renderLocTiles();
-  }
-}
-function renderLocTiles(){
-  const el=document.getElementById('loc-tiles'); if(!el)return;
-  if(!savedLocs.length){ el.innerHTML=`<div style="font-size:11px;color:var(--dim)">Noch keine gespeicherten Orte.</div>`; return; }
-  el.innerHTML=savedLocs.map((l,i)=>`
-    <div class="loc-tile" onclick="openLocPop(${i})">
-      <span class="loc-name">${l.ort}</span>
-      ${l.bis?`<span style="color:var(--dim);font-size:10px;flex-shrink:0">bis ${l.bis}</span>`:''}
-    </div>`).join('');
-}
-function openLocPop(i){
-  locPopIdx=i;
-  const l=savedLocs[i];
-  document.getElementById('loc-pop-name').textContent=l.ort;
-  document.getElementById('loc-pop-bis').textContent=l.bis?`Zurück: ${l.bis}`:'';
-  document.getElementById('loc-pop').classList.add('show');
-}
-function hideLocPop(){ document.getElementById('loc-pop').classList.remove('show'); locPopIdx=-1; }
-function selectSavedLoc(){
-  if(locPopIdx<0)return;
-  const l=savedLocs[locPopIdx];
-  document.getElementById('inp-ort').value=l.ort;
-  document.getElementById('inp-ort-bis').value=l.bis||'';
-  myState.ort=l.ort; myState.ortBis=l.bis||'';
-  hideLocPop(); pushState();
-}
-function deleteSavedLoc(){
-  if(locPopIdx<0)return;
-  savedLocs.splice(locPopIdx,1);
-  ls(LS.locs,JSON.stringify(savedLocs));
-  renderLocTiles(); hideLocPop();
-}
-
-async function pushState(){
-  myState.name=myName; myState.t=Date.now();
-  await fbPut(`/flowapp/rooms/${myCode}`,myState);
-}
+function onBisChange(){ myState.bisZeit=document.getElementById('inp-bis').value||null; pushState(); }
+function clearBis(){ document.getElementById('inp-bis').value=''; myState.bisZeit=null; pushState(); }
+function setAF(v){ afMin=parseInt(v); ls(LS.af,afMin); }
 function checkAF(){
-  if(myState.workStatus==='anlauf'&&myState.presence!=='werk_verlassen'&&afMin>0&&myState.anlaufStart){
+  if(myState.workStatus==='einfinden'&&myState.presence!=='werk_verlassen'&&afMin>0&&myState.anlaufStart){
     if(Date.now()-myState.anlaufStart>=afMin*60000){
       myState.anlaufDur=Date.now()-myState.anlaufStart;
       myState.workStatus='flow'; myState.flowStart=Date.now(); myState.anlaufStart=null;
@@ -623,46 +746,118 @@ function checkAF(){
     }
   }
 }
-function setAF(v){ afMin=parseInt(v); ls(LS.af,afMin); }
-function copyCode(){
-  navigator.clipboard?.writeText(myCode).then(()=>{ const b=document.getElementById('copy-btn'); b.textContent='✓ OK'; setTimeout(()=>b.textContent='Kopieren',2000); });
+
+// Unterwegs popup
+function clickUnterwegs(){
+  document.getElementById('inp-ort-pop').value=myState.ort||'';
+  document.getElementById('inp-ort-bis-pop').value=myState.ortBis||'';
+  renderLocTiles('popup');
+  ov('ov-unterwegs');
+}
+async function confirmUnterwegs(){
+  const ort=(document.getElementById('inp-ort-pop').value||'').trim();
+  const ortBis=document.getElementById('inp-ort-bis-pop').value||'';
+  hov('ov-unterwegs');
+  // save location only on confirm, without time
+  if(ort && !savedLocs.includes(ort)){
+    savedLocs.unshift(ort);
+    if(savedLocs.length>8) savedLocs=savedLocs.slice(0,8);
+    ls(LS.locs,JSON.stringify(savedLocs));
+  }
+  const ns={...myState,workStatus:'unterwegs',ort,ortBis,anlaufStart:null,anlaufDur:null,flowStart:null};
+  ns.t=Date.now(); myState=ns; await pushState(); renderCtrl();
+  renderLocTiles('ctrl');
 }
 
+// Location tiles
+function renderLocTiles(ctx){
+  const tileId = ctx==='popup'?'uw-loc-tiles-pop':'loc-tiles';
+  const el=document.getElementById(tileId); if(!el)return;
+  if(!savedLocs.length){ el.innerHTML=`<div style="font-size:11px;color:var(--dim)">Keine gespeicherten Orte</div>`; return; }
+  el.innerHTML=savedLocs.map((loc,i)=>`<div class="loc-tile" onclick="openLocPop(${i},'${ctx}')">${loc}</div>`).join('');
+}
+function openLocPop(i,ctx){
+  locPopIdx=i; locPopCtx=ctx;
+  document.getElementById('loc-pop-name').textContent=savedLocs[i];
+  document.getElementById('loc-pop').classList.add('show');
+}
+function hideLocPop(){ document.getElementById('loc-pop').classList.remove('show'); locPopIdx=-1; }
+function selectSavedLoc(){
+  if(locPopIdx<0)return;
+  const loc=savedLocs[locPopIdx];
+  if(locPopCtx==='popup'){ document.getElementById('inp-ort-pop').value=loc; }
+  else { document.getElementById('inp-ort').value=loc; myState.ort=loc; pushState(); }
+  hideLocPop();
+}
+function deleteSavedLoc(){
+  if(locPopIdx<0)return;
+  savedLocs.splice(locPopIdx,1);
+  ls(LS.locs,JSON.stringify(savedLocs));
+  renderLocTiles(locPopCtx); hideLocPop();
+}
+
+async function pushState(){ myState.name=myName; myState.t=Date.now(); await fbPut(`/flowapp/rooms/${myUid}`,myState); }
+function copyCode(){ navigator.clipboard?.writeText(myCode).then(()=>{ const b=document.getElementById('copy-btn'); b.textContent='✓ OK'; setTimeout(()=>b.textContent='Kopieren',2000); }); }
+
 async function refreshWatchers(){
-  const data=await fbGet(`/flowapp/watchers/${myCode}`)||{};
+  const data=await fbGet(`/flowapp/watchers/${myUid}`)||{};
   watchers=data;
   const el=document.getElementById('watcher-list');
   const keys=Object.keys(watchers);
   if(!keys.length){ el.innerHTML=`<div style="color:var(--dim);font-size:13px">Niemand zeigt deinen Status an.</div>`; return; }
-  el.innerHTML=keys.map(code=>`
-    <div class="witem" onclick="removeWatcher('${code}','${(watchers[code]?.name||code).replace(/'/g,"\\'")}')">
-      <div><span style="font-size:14px">${watchers[code]?.name||code}</span>
-      <span style="color:var(--dim);font-size:11px;margin-left:8px">${code}</span></div>
+  el.innerHTML=keys.map(uid=>{
+    const nick=nickFor(uid, watchers[uid]?.name||uid);
+    return `<div class="witem" onclick="removeWatcher('${uid}','${nick.replace(/'/g,"\\'")}')">
+      <div><span style="font-size:14px">${nick}</span><span style="color:var(--dim);font-size:11px;margin-left:8px">${uid.substring(0,8)}…</span></div>
       <span style="color:#f87171;font-size:11px">✕</span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
-async function removeWatcher(wc,wn){
-  if(!confirm(`${wn} entfernen? Ihr seht euch gegenseitig nicht mehr.`)) return;
-  await fbDel(`/flowapp/watchers/${myCode}/${wc}`);
-  await fbDel(`/flowapp/watching/${wc}/${myCode}`);
-  await fbDel(`/flowapp/watching/${myCode}/${wc}`);
-  await fbDel(`/flowapp/watchers/${wc}/${myCode}`);
+
+async function removeWatcher(uid2, nick){
+  if(!confirm(`${nick} entfernen? Ihr seht euch gegenseitig nicht mehr.`)) return;
+  await fbDel(`/flowapp/watchers/${myUid}/${uid2}`);
+  await fbDel(`/flowapp/watching/${uid2}/${myUid}`);
+  await fbDel(`/flowapp/watching/${myUid}/${uid2}`);
+  await fbDel(`/flowapp/watchers/${uid2}/${myUid}`);
   await refreshWatchers();
 }
+
 async function removeFromAll(){
-  if(!confirm('Aus allen Anzeigen entfernen?\nDein Status wird gelöscht und ein neuer Code vergeben.')) return;
-  const mw=await fbGet(`/flowapp/watchers/${myCode}`)||{};
-  for(const wc of Object.keys(mw)){ await fbDel(`/flowapp/watching/${wc}/${myCode}`); await fbDel(`/flowapp/watchers/${wc}/${myCode}`); }
-  const mwg=await fbGet(`/flowapp/watching/${myCode}`)||{};
-  for(const wc of Object.keys(mwg)){ await fbDel(`/flowapp/watchers/${wc}/${myCode}`); await fbDel(`/flowapp/watching/${myCode}/${wc}`); }
-  await fbDel(`/flowapp/rooms/${myCode}`);
-  await fbDel(`/flowapp/watchers/${myCode}`);
-  await fbDel(`/flowapp/watching/${myCode}`);
-  myCode=genCode(); document.getElementById('my-code').textContent=myCode;
+  if(!confirm('Aus allen Anzeigen entfernen?\nDeine Verbindungen werden gelöscht und ein neuer Code vergeben.')) return;
+  const mw=await fbGet(`/flowapp/watchers/${myUid}`)||{};
+  for(const u of Object.keys(mw)){ await fbDel(`/flowapp/watching/${u}/${myUid}`); await fbDel(`/flowapp/watchers/${u}/${myUid}`); }
+  const mwg=await fbGet(`/flowapp/watching/${myUid}`)||{};
+  for(const u of Object.keys(mwg)){ await fbDel(`/flowapp/watchers/${u}/${myUid}`); await fbDel(`/flowapp/watching/${myUid}/${u}`); }
+  await fbDel(`/flowapp/rooms/${myUid}`);
+  await fbDel(`/flowapp/watchers/${myUid}`);
+  await fbDel(`/flowapp/watching/${myUid}`);
+  if(myCode) await fbDel(`/flowapp/codes/${myCode}`);
+  myCode=''; codeTime=0; ls(LS.code,''); ls(LS.codeTime,'0');
+  await rotateCode();
+  document.getElementById('my-code').textContent=myCode;
   alert('Entfernt. Neuer Code: '+myCode);
 }
 
-// ── DISPLAY ──────────────────────────────────────────────────────────────────
+// Quick status change from display
+function openOwnStatus(){
+  // highlight current state
+  ov('ov-own-status');
+}
+async function qs(type, val){
+  if(type==='presence'){
+    if(val==='im_werk') { hov('ov-own-status'); clickImWerk(); }
+    else { await setPresence(val); hov('ov-own-status'); }
+  } else {
+    if(val==='unterwegs'){ hov('ov-own-status'); clickUnterwegs(); }
+    else { await setWorkStatus(val); hov('ov-own-status'); }
+  }
+  renderOwnStrip();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DISPLAY
+// ══════════════════════════════════════════════════════════════════════════════
 async function goDisp(){
   show('s-disp');
   await syncDisplay(); renderDisp();
@@ -671,15 +866,18 @@ async function goDisp(){
 }
 
 async function syncDisplay(){
-  const wdata=await fbGet(`/flowapp/watching/${myCode}`)||{};
-  watching=Object.keys(wdata).map(code=>({code,nick:wdata[code]?.name||code}));
+  const wdata=await fbGet(`/flowapp/watching/${myUid}`)||{};
+  watching=Object.keys(wdata).map(uid=>({uid,nick:nickFor(uid,wdata[uid]?.name||uid)}));
   const rooms=await fbGet('/flowapp/rooms')||{};
   users={};
-  watching.forEach(({code})=>{ if(rooms[code]) users[code]=rooms[code]; });
+  watching.forEach(({uid})=>{ if(rooms[uid]) users[uid]=rooms[uid]; });
 }
 
 function renderDisp(){
-  const active=watching.filter(({code})=>users[code]);
+  const active=watching.filter(({uid})=>users[uid]);
+  const present=active.filter(({uid})=>users[uid]?.presence!=='werk_verlassen');
+  const absent=active.filter(({uid})=>users[uid]?.presence==='werk_verlassen');
+
   const ac=effColor(myState);
   const gl=effGlow(myState);
   document.getElementById('d-glow').style.background=`radial-gradient(circle,${gl} 0%,transparent 65%)`;
@@ -690,175 +888,201 @@ function renderDisp(){
   // own strip
   renderOwnStrip();
 
-  // others
-  const el=document.getElementById('d-others');
-  if(!active.length){
-    el.innerHTML=`<div style="flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;color:var(--dim);font-size:14px">Noch keine Personen verknüpft.<br>Klicke auf <strong style="color:var(--mut)">＋ Person</strong> um loszulegen.</div>`;
+  // absent sidebar
+  const sidebar=document.getElementById('d-sidebar');
+  if(absent.length>0){
+    sidebar.style.display='flex';
+    sidebar.innerHTML=`<div class="sidebar-lbl">NICHT IM WERK</div>`+absent.map(({uid})=>{
+      const d=users[uid]; if(!d)return '';
+      const freshness=Date.now()-d.t<8*3600*1000;
+      const timeAgo=fmtMs(Date.now()-d.t);
+      return `<div class="absent-card">
+        <div class="absent-name" style="color:#f97316">${nickFor(uid,d.name||uid)}</div>
+        <div class="absent-time ${freshness?'absent-fresh':'absent-stale'}">
+          ${freshness?'vor '+timeAgo:'⚠ vor '+timeAgo+'<br>(ggf. veraltet)'}
+        </div>
+        ${d.bisZeit?`<div style="font-size:9px;color:#a78bfa;margin-top:2px">war bis ${d.bisZeit}</div>`:''}
+      </div>`;
+    }).join('');
+  } else { sidebar.style.display='none'; }
+
+  // warning check
+  const othersInWerk=present.length;
+  if(othersInWerk!==prevOthersInWerk){
+    if(prevOthersInWerk>=0){ // not on first load
+      if(othersInWerk===3&&prevOthersInWerk>3) playBeeps(1);
+      else if(othersInWerk===2&&prevOthersInWerk>2) playBeeps(2);
+      else if(othersInWerk===1&&prevOthersInWerk>1) playBeeps(3);
+      else if(othersInWerk===0&&prevOthersInWerk>0){ playBeeps(10,660); ov('ov-alone-warn'); }
+    }
+    prevOthersInWerk=othersInWerk;
+  }
+
+  const gwrap=document.getElementById('d-grid-wrap');
+  const cnt=present.length;
+
+  if(cnt===0&&active.length===0){
+    gwrap.innerHTML=`<div style="flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;color:var(--dim);font-size:14px">
+      Noch keine Personen verknüpft.<br>Klicke auf <strong style="color:var(--mut)">＋</strong> um loszulegen.</div>`;
     document.getElementById('pbar').innerHTML=''; return;
   }
-  el.innerHTML=''; el.style.display='flex'; el.style.flexDirection='column';
-  if(dispView==='timeline') renderTimeline(active,el);
-  else renderTiles(active,el);
+
+  if(othersInWerk===0 && myState.presence==='im_werk' && active.length>0){
+    // alone warning content area
+    gwrap.innerHTML=`<div class="d-warn warnpulse">
+      <div style="font-size:clamp(60px,15vw,120px)">⚠️</div>
+      <div class="B" style="font-size:clamp(40px,10vw,80px);color:#f97316;letter-spacing:4px">NIEMAND IM WERK!</div>
+      <div style="font-size:clamp(14px,2vw,20px);color:#f97316;max-width:500px;line-height:1.6">Du bist die einzige anwesende Person.<br>Bitte stelle sicher, dass dies beabsichtigt ist.</div>
+      <div style="font-size:12px;color:#555;margin-top:8px">Status-Anzeigen sind unverbindlich und ohne Gewähr.</div>
+    </div>`;
+    renderPbar(active); return;
+  }
+
+  gwrap.innerHTML=''; gwrap.style.display='flex'; gwrap.style.flexDirection='column';
+  if(dispView==='timeline') renderTimeline(present,gwrap);
+  else renderTiles(present,cnt,gwrap);
   renderPbar(active);
 }
 
 function renderOwnStrip(){
   const el=document.getElementById('d-own');
-  const ac=effColor(myState);
+  const ac=effColor(myState), pa=PRESENCE_CFG[myState.presence]?.a||'#22c55e';
   const pw=myState.presence==='werk_verlassen';
-  const wl=pw?'–':(WORKST[myState.workStatus]?.lbl||'');
-  const pl=PRESENCE[myState.presence]?.lbl||'';
-  let detail='';
+  let det='';
   if(!pw){
-    if(myState.workStatus==='flow'&&myState.flowStart)
-      detail=`<span style="font-size:11px;color:#888;margin-left:10px">Flow: ${fmtSince(myState.flowStart)}</span>`;
-    else if(myState.workStatus==='anlauf'&&myState.anlaufStart)
-      detail=`<span style="font-size:11px;color:#888;margin-left:10px">Anlauf: ${fmtSince(myState.anlaufStart)}</span>`;
-    else if(myState.workStatus==='unterwegs'&&myState.ort)
-      detail=`<span style="font-size:11px;color:#888;margin-left:10px">${myState.ort}${myState.ortBis?' bis '+myState.ortBis:''}</span>`;
+    const ws=myState.workStatus;
+    if(ws==='flow'&&myState.flowStart) det=`<span style="font-size:11px;color:#888;margin-left:8px">Flow: ${fmtSince(myState.flowStart)}</span>`;
+    else if(ws==='einfinden'&&myState.anlaufStart) det=`<span style="font-size:11px;color:#888;margin-left:8px">Einfinden: ${fmtSince(myState.anlaufStart)}</span>`;
+    else if(ws==='unterwegs'&&myState.ort) det=`<span style="font-size:11px;color:#888;margin-left:8px">${myState.ort}${myState.ortBis?' bis '+myState.ortBis:''}</span>`;
   }
-  const bis=(!pw&&myState.bisZeit)?`<span style="font-size:11px;color:#a78bfa;margin-left:10px">bis ${myState.bisZeit}</span>`:'';
+  const bis=(!pw&&myState.bisZeit)?`<span style="font-size:11px;color:#a78bfa;margin-left:8px">bis ${myState.bisZeit}</span>`:'';
   el.innerHTML=`
-    <div class="d-own-label">ICH</div>
+    <div class="d-own-hint">ICH (klicken zum Ändern)</div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <div style="width:8px;height:8px;border-radius:50%;background:${PRESENCE[myState.presence]?.a};box-shadow:0 0 6px ${PRESENCE[myState.presence]?.a};flex-shrink:0"></div>
-      <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:${PRESENCE[myState.presence]?.a}">${pl}</span>
-      ${!pw?`<span style="color:#333">·</span><span style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:${ac}">${wl}</span>`:''}
-      ${detail}${bis}
+      <div style="width:8px;height:8px;border-radius:50%;background:${pa};box-shadow:0 0 6px ${pa};flex-shrink:0"></div>
+      <span class="B" style="font-size:17px;letter-spacing:2px;color:${pa}">${PRESENCE_CFG[myState.presence]?.lbl||''}</span>
+      ${!pw?`<span style="color:#2a2a2a">·</span><span class="B" style="font-size:17px;letter-spacing:2px;color:${ac}">${WORK_CFG[myState.workStatus]?.lbl||''}</span>`:''}
+      ${det}${bis}
     </div>`;
 }
 
-function renderTiles(active,el){
-  const cnt=active.length;
+function renderTiles(present,cnt,wrap){
   let cols=1;
-  if(cnt===2)cols=2; if(cnt>=3&&cnt<=4)cols=2; if(cnt>=5)cols=3;
-  const fs=cnt===1?'clamp(68px,13vw,145px)':cnt===2?'clamp(40px,7.5vw,84px)':cnt<=4?'clamp(28px,5vw,58px)':'clamp(20px,3.8vw,42px)';
-  const ss=cnt===1?'clamp(13px,1.9vw,21px)':cnt<=2?'clamp(12px,1.6vw,17px)':cnt<=4?'13px':'11px';
+  if(cnt===2)cols=2; else if(cnt<=4)cols=2; else cols=3;
+  const fs=cnt===1?'clamp(66px,13vw,140px)':cnt===2?'clamp(38px,7vw,82px)':cnt<=4?'clamp(26px,4.5vw,56px)':'clamp(18px,3.5vw,40px)';
+  const ss=cnt===1?'clamp(13px,1.9vw,20px)':cnt<=2?'clamp(12px,1.6vw,17px)':cnt<=4?'13px':'11px';
   const compact=cnt>=5;
   const grid=document.createElement('div');
   grid.className='d-grid';
   grid.style.gridTemplateColumns=`repeat(${cols},1fr)`;
-  active.forEach(({code})=>{
-    const d=users[code]; if(!d)return;
-    const ac2=effColor(d), gl2=effGlow(d);
-    const pw=d.presence==='werk_verlassen';
-    const wlbl=pw?'':(WORKST[d.workStatus]?.lbl||'');
-    const card=document.createElement('div');
-    card.className='u-card'; card.style.borderColor=ac2+'33';
+  present.forEach(({uid})=>{
+    const d=users[uid]; if(!d)return;
+    const ac=effColor(d),gl=effGlow(d);
+    const card=document.createElement('div'); card.className='u-card'; card.style.borderColor=ac+'33';
     card.innerHTML=`
-      <div style="position:absolute;inset:0;background:${gl2};border-radius:12px;pointer-events:none"></div>
+      <div style="position:absolute;inset:0;background:${gl};border-radius:11px;pointer-events:none"></div>
       <div style="position:relative">
-        ${cnt>1?`<div style="font-size:${compact?'9px':'11px'};color:${ac2};letter-spacing:2px;text-transform:uppercase;margin-bottom:5px">${d.name||code}</div>`:''}
-        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
-          <div class="B" style="font-size:${fs};color:${PRESENCE[d.presence]?.a||'#22c55e'};letter-spacing:3px;line-height:.9;transition:color .5s">${PRESENCE[d.presence]?.lbl||''}</div>
-          ${!pw?`<div class="B" style="font-size:${compact?'clamp(14px,2.5vw,24px)':'clamp(20px,3.5vw,44px)'};color:${ac2};letter-spacing:2px;line-height:.9">${wlbl}</div>`:''}
+        ${cnt>1?`<div style="font-size:${compact?'9px':'11px'};color:${ac};letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">${nickFor(uid,d.name||uid)}</div>`:''}
+        <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+          <div class="B" style="font-size:${compact?'clamp(14px,3vw,28px)':fs};color:${PRESENCE_CFG[d.presence]?.a||'#22c55e'};letter-spacing:3px;line-height:.9">${PRESENCE_CFG[d.presence]?.lbl||''}</div>
+          <div class="B" style="font-size:${fs};color:${ac};letter-spacing:3px;line-height:.9">${WORK_CFG[d.workStatus]?.lbl||''}</div>
         </div>
-        ${tileDetail(d,ac2,ss,compact)}
+        ${tileDetail(d,ac,ss,compact)}
       </div>`;
     grid.appendChild(card);
   });
-  el.appendChild(grid);
+  wrap.appendChild(grid);
 }
 
 function tileDetail(d,ac,ss,compact){
-  const pw=d.presence==='werk_verlassen'; const w=d.workStatus;
-  const bisHtml=(!pw&&d.bisZeit)?`<div style="font-size:${compact?'10px':ss};color:#a78bfa;margin-top:6px">Im Werk bis <strong>${d.bisZeit}</strong></div>`:'';
-  if(pw) return `<div style="font-size:${ss};color:#aaa;margin-top:8px">Hat das Werk verlassen</div>`;
+  const pw=d.presence==='werk_verlassen';
+  const w=d.workStatus;
+  const bisHtml=(!pw&&d.bisZeit)?`<div style="font-size:${compact?'9px':ss};color:#a78bfa;margin-top:5px">Im Werk bis <strong>${d.bisZeit}</strong></div>`:'';
+  if(pw) return '';
   let h='';
   if(w==='am_platz'){
     h=`<div style="font-size:${ss};color:#aaa;margin-top:8px;font-weight:300">Verfügbar – sprich mich gerne an</div>
        ${!compact?`<div class="pulse" style="width:9px;height:9px;border-radius:50%;background:${ac};box-shadow:0 0 12px ${ac};margin:12px 0 0"></div>`:''}`;
-  } else if(w==='anlauf'){
-    h=`<div style="font-size:${ss};color:#aaa;margin-top:7px;font-weight:300">Ich versuche in einen Flow zu kommen.</div>
-       <div style="display:inline-block;background:#0f0f0f;border:1px solid ${ac}33;border-radius:8px;padding:8px 16px;margin-top:9px">
-         <div style="font-size:8px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Anlauf seit</div>
-         <div class="B" style="font-size:${compact?'17px':'clamp(20px,3.5vw,40px)'};color:${ac};letter-spacing:3px">${fmtSince(d.anlaufStart)}</div>
+  } else if(w==='einfinden'){
+    h=`<div style="font-size:${ss};color:#aaa;margin-top:7px;font-weight:300">Ich finde mich gerade ein – komm später wieder.</div>
+       <div style="display:inline-block;background:#0f0f0f;border:1px solid ${ac}33;border-radius:8px;padding:7px 15px;margin-top:9px">
+         <div style="font-size:8px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Einfinden seit</div>
+         <div class="B" style="font-size:${compact?'16px':'clamp(18px,3.5vw,40px)'};color:${ac};letter-spacing:3px">${fmtSince(d.anlaufStart)}</div>
        </div>`;
   } else if(w==='flow'){
     h=`${!compact?`<div style="font-size:${ss};color:#555;font-style:italic;margin:6px 0 3px;letter-spacing:1px">– Bin im Work-Flow –</div>`:''}
        <div style="font-size:${compact?'12px':ss};color:#ccc;font-weight:600;margin-bottom:4px">Bitte nicht stören!</div>
-       <div style="display:flex;gap:8px;margin-top:7px;flex-wrap:wrap">
-         <div style="background:#0f0f0f;border:1px solid #222;border-radius:7px;padding:7px 11px">
-           <div style="font-size:8px;color:#444;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Anlauf</div>
-           <div class="B" style="font-size:${compact?'14px':'clamp(15px,2.5vw,28px)'};color:#555;letter-spacing:2px">${fmtMs(d.anlaufDur)}</div>
+       <div style="display:flex;gap:7px;margin-top:6px;flex-wrap:wrap">
+         <div style="background:#0f0f0f;border:1px solid #222;border-radius:7px;padding:6px 10px">
+           <div style="font-size:8px;color:#444;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Einfindezeit</div>
+           <div class="B" style="font-size:${compact?'13px':'clamp(14px,2.5vw,28px)'};color:#555;letter-spacing:2px">${fmtMs(d.anlaufDur)}</div>
          </div>
-         <div style="background:#0f0f0f;border:2px solid ${ac}55;border-radius:7px;padding:7px 11px">
-           <div style="font-size:8px;color:${ac};letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Flow</div>
-           <div class="B" style="font-size:${compact?'14px':'clamp(15px,2.5vw,28px)'};color:${ac};letter-spacing:2px">${fmtSince(d.flowStart)}</div>
+         <div style="background:#0f0f0f;border:2px solid ${ac}55;border-radius:7px;padding:6px 10px">
+           <div style="font-size:8px;color:${ac};letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Flow seit</div>
+           <div class="B" style="font-size:${compact?'13px':'clamp(14px,2.5vw,28px)'};color:${ac};letter-spacing:2px">${fmtSince(d.flowStart)}</div>
          </div>
        </div>`;
   } else if(w==='unterwegs'){
-    h=`<div style="font-size:${ss};color:#aaa;margin-top:7px">Im Werk unterwegs${d.ort?` · <strong style="color:#ddd">${d.ort}</strong>`:''}</div>
-       ${d.ortBis?`<div style="font-size:${compact?'10px':ss};color:#888;margin-top:3px">Zurück: <strong>${d.ortBis}</strong></div>`:''}`;
+    h=`<div style="font-size:${ss};color:#aaa;margin-top:7px">Unterwegs${d.ort?` · <strong style="color:#ddd">${d.ort}</strong>`:''}</div>
+       ${d.ortBis?`<div style="font-size:${compact?'10px':ss};color:#888;margin-top:2px">Zurück: <strong>${d.ortBis}</strong></div>`:''}`;
   }
   return h+bisHtml;
 }
 
-function renderTimeline(active,el){
-  const prio={am_platz:2,anlauf:3,flow:4,unterwegs:5,im_werk_bis:1};
-  const sorted=[...active].sort((a,b)=>{
-    const da=users[a.code],db2=users[b.code];
-    if(!da||!db2)return 0;
-    const pa=da.presence==='werk_verlassen'?9:0, pb2=db2.presence==='werk_verlassen'?9:0;
-    if(pa!==pb2)return pa-pb2;
+function renderTimeline(present,wrap){
+  const prio={am_platz:2,einfinden:3,flow:4,unterwegs:5};
+  const sorted=[...present].sort((a,b)=>{
+    const da=users[a.uid],db2=users[b.uid]; if(!da||!db2)return 0;
     if(da.bisZeit&&db2.bisZeit) return da.bisZeit.localeCompare(db2.bisZeit);
-    if(da.bisZeit) return -1; if(db2.bisZeit) return 1;
+    if(da.bisZeit)return -1; if(db2.bisZeit)return 1;
     return (prio[da.workStatus]||9)-(prio[db2.workStatus]||9);
   });
-  const tl=document.createElement('div'); tl.className='d-tl';
+  const tl=document.createElement('div'); tl.className='d-tl-wrap';
   const now=new Date();
-  tl.innerHTML=`<div style="font-size:10px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid var(--brd);margin-bottom:8px">ZEITPLAN · ${p(now.getHours())}:${p(now.getMinutes())} Uhr</div>`;
-  sorted.forEach(({code},i)=>{
-    const d=users[code]; if(!d)return;
-    const ac2=effColor(d);
-    const pw=d.presence==='werk_verlassen';
-    const timeLabel=d.bisZeit&&!pw?d.bisZeit:'–';
-    const isLast=i===sorted.length-1;
+  tl.innerHTML=`<div style="font-size:9px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;padding-bottom:7px;border-bottom:1px solid var(--brd);margin-bottom:7px">ZEITPLAN · ${p(now.getHours())}:${p(now.getMinutes())} Uhr · WERKSICHT</div>`;
+  sorted.forEach(({uid},i)=>{
+    const d=users[uid]; if(!d)return;
+    const ac=effColor(d); const isLast=i===sorted.length-1;
     const row=document.createElement('div'); row.className='tl-row';
     row.innerHTML=`
       <div class="tl-tc">
-        <div class="tl-tl" style="color:${d.bisZeit&&!pw?'#a78bfa':'#2a2a2a'}">${timeLabel}</div>
-        ${!isLast?`<div class="tl-vl" style="background:${d.bisZeit&&!pw?'#a78bfa33':'#1e1e1e'}"></div>`:''}
+        <div class="tl-tl" style="color:${d.bisZeit?'#a78bfa':'#2a2a2a'}">${d.bisZeit||'–'}</div>
+        ${!isLast?`<div class="tl-vl" style="background:${d.bisZeit?'#a78bfa33':'#1e1e1e'}"></div>`:''}
       </div>
       <div class="tl-dc">
-        <div class="tl-dot" style="background:${ac2};box-shadow:0 0 7px ${ac2}44"></div>
+        <div class="tl-dot" style="background:${ac};box-shadow:0 0 6px ${ac}44"></div>
         ${!isLast?`<div class="tl-vl2"></div>`:''}
       </div>
       <div class="tl-cc">
-        <div class="tl-nm" style="color:${ac2}">${d.name||code}</div>
-        <div class="tl-st B" style="font-size:clamp(16px,2.8vw,28px);color:${ac2}">
-          ${PRESENCE[d.presence]?.lbl||''}${!pw?' · '+(WORKST[d.workStatus]?.lbl||''):''}
-        </div>
+        <div class="tl-nm" style="color:${ac}">${nickFor(uid,d.name||uid)}</div>
+        <div class="tl-st B" style="font-size:clamp(15px,2.6vw,26px);color:${ac}">${PRESENCE_CFG[d.presence]?.lbl||''} · ${WORK_CFG[d.workStatus]?.lbl||''}</div>
         <div class="tl-sb">${tlSub(d)}</div>
       </div>`;
     tl.appendChild(row);
   });
-  el.appendChild(tl);
+  wrap.appendChild(tl);
 }
 
 function tlSub(d){
-  const pw=d.presence==='werk_verlassen';
-  if(pw) return 'Hat das Werk verlassen';
   const w=d.workStatus;
   let s='';
-  if(w==='am_platz')  s='Verfügbar · am Platz';
-  else if(w==='anlauf')    s=`Anlauf läuft seit ${fmtSince(d.anlaufStart)}`;
-  else if(w==='flow')      s=`Flow: ${fmtSince(d.flowStart)} · Anlauf war: ${fmtMs(d.anlaufDur)}`;
-  else if(w==='unterwegs') s=`Im Werk unterwegs${d.ort?' · '+d.ort:''}${d.ortBis?' bis '+d.ortBis:''}`;
+  if(w==='am_platz')   s='Verfügbar · am Platz';
+  else if(w==='einfinden')  s=`Einfinden seit ${fmtSince(d.anlaufStart)}`;
+  else if(w==='flow')       s=`Flow: ${fmtSince(d.flowStart)} · Einfindezeit: ${fmtMs(d.anlaufDur)}`;
+  else if(w==='unterwegs')  s=`Unterwegs${d.ort?' · '+d.ort:''}${d.ortBis?' bis '+d.ortBis:''}`;
   if(d.bisZeit) s+=(s?' · ':'')+`Im Werk bis ${d.bisZeit}`;
   return s;
 }
 
 function renderPbar(active){
-  const inW=active.filter(({code})=>{const d=users[code];return d&&d.presence!=='werk_verlassen';}).map(({code})=>users[code]?.name||code);
-  const left=active.filter(({code})=>{const d=users[code];return d&&d.presence==='werk_verlassen';}).map(({code})=>users[code]?.name||code);
-  const bis=active.filter(({code})=>{const d=users[code];return d&&d.bisZeit&&d.presence!=='werk_verlassen';}).map(({code})=>`${users[code]?.name||code} bis ${users[code].bisZeit}`);
+  const inW=active.filter(({uid})=>users[uid]?.presence!=='werk_verlassen');
+  const left=active.filter(({uid})=>users[uid]?.presence==='werk_verlassen');
+  const bis=active.filter(({uid})=>{ const d=users[uid]; return d&&d.bisZeit&&d.presence!=='werk_verlassen'; });
   let pb='';
-  if(inW.length)  pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#22c55e"></span><span>Im Werk: <strong style="color:var(--txt)">${inW.join(', ')}</strong></span></span>`;
-  if(left.length) pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#f97316"></span><span>Weg: <strong style="color:var(--txt)">${left.join(', ')}</strong></span></span>`;
-  if(bis.length)  pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#a78bfa"></span><span style="color:#a78bfa">${bis.join(' · ')}</span></span>`;
-  if(!active.filter(({code})=>{const d=users[code];return d&&d.presence!=='werk_verlassen';}).length&&active.length>0)
-    pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0;color:#f97316"><span class="pdot" style="background:#f97316"></span><span>⚠ Niemand im Werk!</span></span>`;
+  if(inW.length)  pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#22c55e"></span><span>Im Werk: <strong style="color:var(--txt)">${inW.map(({uid})=>nickFor(uid,users[uid]?.name||uid)).join(', ')}</strong></span></span>`;
+  if(left.length) pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#f97316"></span><span>Weg: <strong style="color:var(--txt)">${left.map(({uid})=>nickFor(uid,users[uid]?.name||uid)).join(', ')}</strong></span></span>`;
+  if(bis.length)  pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#a78bfa"></span><span style="color:#a78bfa">${bis.map(({uid})=>`${nickFor(uid,users[uid]?.name||uid)} bis ${users[uid].bisZeit}`).join(' · ')}</span></span>`;
+  if(!inW.length&&active.length>0) pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0;color:#f97316"><span class="pdot" style="background:#f97316"></span><span>⚠ Niemand im Werk!</span></span>`;
   document.getElementById('pbar').innerHTML=pb;
 }
 
@@ -868,55 +1092,124 @@ function toggleView(){
   renderDisp();
 }
 
-// ── ROOM MANAGEMENT ───────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// ROOM MANAGEMENT
+// ══════════════════════════════════════════════════════════════════════════════
 function showAddRoom(){ document.getElementById('inp-rcode').value=''; document.getElementById('room-err').textContent=''; renderRoomList(); ov('ov-room'); setTimeout(()=>document.getElementById('inp-rcode').focus(),100); }
 function hideAddRoom(){ hov('ov-room'); }
+
 async function addRoom(){
-  const code=document.getElementById('inp-rcode').value.trim().toUpperCase();
+  const code=(document.getElementById('inp-rcode').value||'').trim().toUpperCase();
   document.getElementById('room-err').textContent='';
-  if(code===myCode){ document.getElementById('room-err').textContent='Das ist dein eigener Code.'; return; }
   if(code.length<4){ document.getElementById('room-err').textContent='Code zu kurz.'; return; }
-  const alr=await fbGet(`/flowapp/watching/${myCode}/${code}`);
-  if(alr){ document.getElementById('room-err').textContent='Person bereits verknüpft.'; return; }
-  const data=await fbGet(`/flowapp/rooms/${code}`);
-  if(!data){ document.getElementById('room-err').textContent='Code nicht gefunden.'; return; }
-  const on=data.name||code;
-  await fbPut(`/flowapp/watching/${myCode}/${code}`,{name:on,t:Date.now()});
-  await fbPut(`/flowapp/watchers/${code}/${myCode}`,{name:myName,t:Date.now()});
-  await fbPut(`/flowapp/watching/${code}/${myCode}`,{name:myName,t:Date.now()});
-  await fbPut(`/flowapp/watchers/${myCode}/${code}`,{name:on,t:Date.now()});
-  await syncDisplay(); renderDisp(); renderRoomList();
+  document.getElementById('room-err').textContent='Suche…';
+  const codeData=await fbGet(`/flowapp/codes/${code}`);
+  if(!codeData||!codeData.uid){ document.getElementById('room-err').textContent='Code nicht gefunden. Codes rotieren jede Minute – bitte aktuellen Code verwenden.'; return; }
+  const theirUid=codeData.uid;
+  if(theirUid===myUid){ document.getElementById('room-err').textContent='Das ist dein eigener Code.'; return; }
+  const already=await fbGet(`/flowapp/watching/${myUid}/${theirUid}`);
+  if(already){ document.getElementById('room-err').textContent='Person bereits verknüpft.'; return; }
+
+  const theirName=codeData.name||theirUid;
+  // Check for duplicate names
+  const existingNicks=Object.values(nicknames);
+  const dupName=existingNicks.includes(theirName) || watching.some(w=>nickFor(w.uid,users[w.uid]?.name)===theirName);
+
+  // mutual link
+  await fbPut(`/flowapp/watching/${myUid}/${theirUid}`,{name:theirName,t:Date.now()});
+  await fbPut(`/flowapp/watchers/${theirUid}/${myUid}`,{name:myName,t:Date.now()});
+  await fbPut(`/flowapp/watching/${theirUid}/${myUid}`,{name:myName,t:Date.now()});
+  await fbPut(`/flowapp/watchers/${myUid}/${theirUid}`,{name:theirName,t:Date.now()});
+
+  document.getElementById('room-err').textContent='';
   document.getElementById('inp-rcode').value='';
+
+  // Notify about new contact + possible duplicate
+  await syncDisplay();
+  renderRoomList();
+
+  document.getElementById('new-contact-msg').textContent=
+    dupName
+      ? `"${theirName}" wurde hinzugefügt – dieser Name existiert bereits. Möchtest du ihn umbenennen?`
+      : `"${theirName}" wurde erfolgreich verknüpft. Möchtest du den Namen anpassen?`;
+  document.getElementById('inp-contact-name').value=theirName;
+  newContactCb=theirUid;
+  ov('ov-new-contact');
 }
-async function removeRoom(code){
-  const nick=(watching.find(r=>r.code===code)?.nick)||code;
+
+async function saveContactName(){
+  const nick=(document.getElementById('inp-contact-name').value||'').trim();
+  if(nick&&newContactCb){ nicknames[newContactCb]=nick; ls(LS.nicknames,JSON.stringify(nicknames)); }
+  hov('ov-new-contact'); newContactCb=null;
+  renderRoomList();
+}
+
+async function removeRoom(uid2){
+  const nick=nickFor(uid2,watching.find(r=>r.uid===uid2)?.nick||uid2);
   if(!confirm(`${nick} entfernen?`)) return;
-  await fbDel(`/flowapp/watching/${myCode}/${code}`);
-  await fbDel(`/flowapp/watchers/${code}/${myCode}`);
-  await fbDel(`/flowapp/watching/${code}/${myCode}`);
-  await fbDel(`/flowapp/watchers/${myCode}/${code}`);
+  await fbDel(`/flowapp/watching/${myUid}/${uid2}`);
+  await fbDel(`/flowapp/watchers/${uid2}/${myUid}`);
+  await fbDel(`/flowapp/watching/${uid2}/${myUid}`);
+  await fbDel(`/flowapp/watchers/${myUid}/${uid2}`);
   await syncDisplay(); renderDisp(); renderRoomList();
 }
+
 function renderRoomList(){
   const el=document.getElementById('room-list');
   if(!watching.length){ el.innerHTML=`<div style="color:var(--dim);font-size:13px">Noch keine Personen hinzugefügt.</div>`; return; }
-  el.innerHTML=watching.map(({code,nick})=>`
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--brd)">
-      <div><span style="font-size:14px">${nick}</span><span style="color:var(--dim);font-size:11px;margin-left:8px">${code}</span></div>
-      <button class="btn-d" onclick="removeRoom('${code}')">Entfernen</button>
+  const sorted=[...watching].sort((a,b)=>nickFor(a.uid,a.nick).localeCompare(nickFor(b.uid,b.nick)));
+  el.innerHTML=sorted.map(({uid,nick})=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--brd)">
+      <div>
+        <span style="font-size:14px">${nickFor(uid,nick)}</span>
+        ${nicknames[uid]?`<span style="font-size:11px;color:#555;margin-left:6px">(orig: ${nick})</span>`:''}
+      </div>
+      <button class="btn-d" onclick="removeRoom('${uid}')">Entfernen</button>
     </div>`).join('');
 }
 
-// ── PIN ───────────────────────────────────────────────────────────────────────
-function openPinOv(title,accent){ document.getElementById('pin-title').textContent=title; document.getElementById('pin-title').style.color=accent; document.getElementById('pin-ok').style.background=accent; document.getElementById('pin-inp').value=''; document.getElementById('pin-err').textContent=''; ov('ov-pin'); setTimeout(()=>document.getElementById('pin-inp').focus(),100); }
+function showContacts(){
+  const el=document.getElementById('contact-list');
+  if(!watching.length){ el.innerHTML=`<div style="color:var(--dim)">Keine Verbindungen vorhanden.</div>`; }
+  else{
+    const sorted=[...watching].sort((a,b)=>nickFor(a.uid,a.nick).localeCompare(nickFor(b.uid,b.nick)));
+    el.innerHTML=sorted.map(({uid,nick},i)=>
+      `<div style="padding:7px 0;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between">
+        <span>${i+1}. ${nickFor(uid,nick)}</span>
+        <button class="btn-g" style="font-size:11px;padding:4px 8px" onclick="renameContact('${uid}','${nickFor(uid,nick).replace(/'/g,"\\'")}')">Umbenennen</button>
+      </div>`
+    ).join('');
+  }
+  ov('ov-contacts');
+}
+
+function renameContact(uid2,currentNick){
+  const n=prompt(`Neuen Namen für "${currentNick}" eingeben:`,currentNick);
+  if(n&&n.trim()){ nicknames[uid2]=n.trim(); ls(LS.nicknames,JSON.stringify(nicknames)); showContacts(); }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PIN
+// ══════════════════════════════════════════════════════════════════════════════
+function openPinOv(title){ document.getElementById('pin-title').textContent=title; document.getElementById('pin-inp').value=''; document.getElementById('pin-err').textContent=''; ov('ov-pin'); setTimeout(()=>document.getElementById('pin-inp').focus(),100); }
 function hidePinOv(){ hov('ov-pin'); _pinCb=null; }
 function checkPin(){
   if(document.getElementById('pin-inp').value===pin){ hidePinOv(); if(_pinCb)_pinCb(); }
   else{ document.getElementById('pin-err').textContent='Falscher PIN'; document.getElementById('pin-inp').classList.add('shake'); document.getElementById('pin-inp').value=''; setTimeout(()=>{ document.getElementById('pin-inp').classList.remove('shake'); document.getElementById('pin-err').textContent=''; },600); }
 }
+function forgotPin(){
+  if(!confirm('PIN vergessen?\n\nDu wirst aus allen Anzeigen entfernt und erhältst einen neuen Code. Alle Verbindungen gehen verloren.\n\nFortfahren?')) return;
+  hidePinOv(); pin=''; ls(LS.pin,''); removeFromAll();
+}
 
-// ── SETTINGS ─────────────────────────────────────────────────────────────────
-function openCfg(){ document.getElementById('cfg-name').value=myName; document.getElementById('cfg-pin').value=''; ov('ov-cfg'); }
+// ══════════════════════════════════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════════════════════════════════
+function openCfg(){
+  if(pin){ _pinCb=()=>{ _openCfg(); }; openPinOv('EINSTELLUNGEN'); }
+  else { _openCfg(); }
+}
+function _openCfg(){ document.getElementById('cfg-name').value=myName; document.getElementById('cfg-pin').value=''; ov('ov-cfg'); }
 function closeCfg(){ hov('ov-cfg'); }
 function saveCfg(){
   const n=(document.getElementById('cfg-name').value||'').trim();
