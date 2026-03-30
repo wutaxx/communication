@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <!--
-╔══════════════════════════════════════════════════════════════════════════╗
-║  WERKSICHT v8.0 · flow-app.html                                         ║
-║  §1 Konstanten  §2 Zustand  §3 Firebase  §4 Codes  §5 Sound            ║
-║  §6 Notifications  §7 Boot  §8 Navigation  §9 Controller               ║
-║  §10 Display  §11 Sichtbarkeit  §12 Alarm  §13 Räume  §14 Cleanup      ║
-║  §15 PIN/Settings  §16 Komfort  §17 Hilfe/Utils  §18 Analytics         ║
-╚══════════════════════════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  WERKSICHT v9.0                                                              ║
+║  §1 Konstanten  §2 Zustand  §3 Firebase  §4 Codes  §5 Sound                ║
+║  §6 Notifications  §7 Boot  §8 Shell/Navigation  §9 Controller              ║
+║  §10 Display  §11 Sichtbarkeit  §12 Alarm  §13 Räume  §14 Cleanup           ║
+║  §15 Ping/Nachrichten  §16 PIN/Settings  §17 Komfort  §18 Hilfe/Utils       ║
+║  §19 Analytics                                                               ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 -->
 <html lang="de">
 <head>
@@ -18,30 +19,77 @@
 <title>Werksicht</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
+/* ── RESET & VARIABLEN ─────────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#070707;--card:#141414;--c2:#1e1e1e;--c3:#262626;--brd:#363636;
-  --txt:#f0f0f0;--mut:#c0c0c0;--dim:#909090;--accent:#22c55e}
-body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;
-  min-height:100vh;overflow-x:hidden;padding-bottom:56px}
+:root{
+  --bg:#070707;--card:#141414;--c2:#1e1e1e;--c3:#262626;
+  --brd:#363636;--txt:#f0f0f0;--mut:#c0c0c0;--dim:#909090;--accent:#22c55e;
+  --top-h:52px;--bot-h:56px;--pbar-h:36px;
+}
+body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;min-height:100vh;overflow:hidden}
 .B{font-family:'Bebas Neue',sans-serif}
 .brand{font-family:'Bebas Neue',sans-serif;letter-spacing:5px;color:var(--accent)}
 
-/* ── SCREENS ── */
-.screen{display:none;min-height:calc(100vh - 56px);flex-direction:column;
-  align-items:center;justify-content:center;padding:20px 15px 8px}
-.screen.active{display:flex}
+/* ── APP SHELL (persistente Rahmenstruktur) ────────────────────────── */
+#app-shell{position:fixed;inset:0;display:flex;flex-direction:column}
 
-/* ── BOTTOM NAV (visible on all screens except display) ── */
-#bottom-nav{position:fixed;bottom:0;left:0;right:0;height:56px;background:#0e0e0e;
-  border-top:1px solid var(--brd);display:flex;align-items:stretch;z-index:50}
-#bottom-nav button{flex:1;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;
-  font-size:11px;color:var(--dim);display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:3px;padding:4px 2px;transition:color .15s}
-#bottom-nav button:hover,#bottom-nav button.active{color:var(--accent)}
-#bottom-nav button .nb-icon{font-size:18px;line-height:1}
-#bottom-nav.hidden{display:none}
+/* Obere Leiste – bleibt auf allen Screens gleich aufgebaut */
+#top-bar{
+  height:var(--top-h);flex-shrink:0;
+  background:rgba(7,7,7,.97);border-bottom:1px solid var(--brd);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 12px;z-index:20;backdrop-filter:blur(4px);
+  position:relative;
+}
+#top-bar-left{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+/* Mitte: Klick öffnet Controller */
+#top-bar-center{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;padding:0 8px;min-width:0;
+  transition:opacity .15s;
+}
+#top-bar-center:hover{opacity:.8}
+#tbc-brand{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:4px;color:var(--dim)}
+#tbc-status{font-size:11px;color:var(--mut);letter-spacing:1px;max-width:100%;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;text-align:center}
+#top-bar-right{display:flex;align-items:center;gap:6px;flex:0 0 auto}
 
-/* ── INPUTS & BUTTONS ── */
+/* Inhalt – scrollbar, füllt den Raum zwischen den Leisten */
+#content{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  display:flex;flex-direction:column;
+}
+
+/* Anwesenheitsleiste – über der unteren Navigationsleiste, nur im Display sichtbar */
+#pbar{
+  flex-shrink:0;height:var(--pbar-h);background:#0a0a0a;
+  border-top:1px solid #1a1a1a;padding:0 11px;
+  display:none;align-items:center;gap:11px;
+  font-size:11px;color:var(--mut);overflow:hidden;flex-wrap:nowrap;
+}
+#pbar.visible{display:flex}
+
+/* Untere Navigationsleiste */
+#bot-nav{
+  height:var(--bot-h);flex-shrink:0;background:#0e0e0e;
+  border-top:1px solid var(--brd);display:flex;align-items:stretch;
+}
+#bot-nav button{
+  flex:1;background:none;border:none;cursor:pointer;
+  font-family:'Inter',sans-serif;font-size:11px;color:var(--dim);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:4px 2px;transition:color .15s;
+}
+#bot-nav button .ni{font-size:18px;line-height:1}
+#bot-nav button.act{color:var(--accent)}
+
+/* Der eigentliche Seiteninhalt wird als View ins #content gerendert */
+.view{display:none;flex-direction:column;flex:1;min-height:calc(100vh - var(--top-h) - var(--bot-h))}
+.view.active{display:flex}
+/* Für Scrollbereiche innerhalb eines Views */
+.view-scroll{flex:1;overflow-y:auto;padding:16px 15px 12px}
+
+/* ── INPUTS & BUTTONS ──────────────────────────────────────────────── */
 .inp{width:100%;background:var(--c2);border:1px solid var(--brd);border-radius:8px;
   padding:10px 13px;color:var(--txt);font-size:14px;outline:none;
   font-family:'Inter',sans-serif;transition:border-color .2s}
@@ -56,6 +104,11 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;
 .btn-g:hover{color:var(--txt);border-color:#666}
 .btn-d{background:#1e0808;border:1px solid #6a2020;color:#f87171;border-radius:7px;
   padding:7px 13px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer}
+.btn-d:hover{background:#2e1010}
+.btn-warn{background:#1e0a00;border:1px solid #f97316;color:#f97316;border-radius:8px;
+  padding:9px 14px;font-size:14px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;gap:8px;justify-content:center;font-weight:600}
+.btn-warn:hover{background:#2e1200}
 .card{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:15px 17px}
 .err{color:#f87171;font-size:13px;min-height:16px}
 .sg2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
@@ -64,13 +117,12 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;
   font-size:13px;letter-spacing:1px;border:1px solid;transition:all .18s;text-align:center;line-height:1.1}
 .sbtn:active{transform:scale(.97)}
 .sbtn:disabled{opacity:.3;cursor:default;transform:none}
-.sdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .tpair{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
 .tbox .tl{font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;color:var(--mut)}
 .tbox .tv{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px}
 .code-box{background:var(--c2);border:1px solid var(--brd);border-radius:8px;
   padding:10px 13px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.code-val{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:6px;color:#fff}
+.code-val{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:6px;color:#fff}
 .witem{display:flex;align-items:center;justify-content:space-between;
   padding:7px 0;border-bottom:1px solid var(--brd);cursor:pointer}
 .witem:last-child{border-bottom:none}
@@ -79,51 +131,27 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;
 .loc-tile{background:var(--c2);border:1px solid var(--brd);border-radius:6px;
   padding:5px 9px;font-size:12px;color:var(--mut);cursor:pointer;transition:all .15s}
 .loc-tile:hover{border-color:#666;color:var(--txt)}
+.pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;display:inline-block}
 
-/* ── MODE CARDS ── */
-#s-mode{gap:16px}
-.mcs{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:460px}
-.mc{flex:1 1 165px;padding:20px 16px;background:var(--card);border:1px solid var(--brd);
-  border-radius:13px;cursor:pointer;transition:all .2s;text-align:center}
-.mc:hover{border-color:#666;background:var(--c2);transform:translateY(-2px)}
-.mc-icon{font-size:26px;margin-bottom:8px}
-.mc-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;margin-bottom:4px}
-.mc-desc{font-size:11px;color:var(--mut);line-height:1.5}
-
-/* ── CONTROLLER ── */
-#s-ctrl{justify-content:flex-start;padding-top:16px}
-.ch{width:100%;max-width:480px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.cb{width:100%;max-width:480px;display:flex;flex-direction:column;gap:10px}
-
-/* ── DISPLAY ── */
-#s-disp{justify-content:flex-start;padding:0;padding-bottom:0}
-.d-glow{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+/* ── DISPLAY KACHELN ───────────────────────────────────────────────── */
+.d-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   width:80vw;height:80vw;max-width:700px;border-radius:50%;pointer-events:none;
   transition:background 1.5s;z-index:0}
-.d-bar{position:fixed;left:0;right:0;height:3px;z-index:10;transition:background 1s}
-.d-shell{position:relative;z-index:1;width:100%;display:flex;flex-direction:column;
-  height:calc(100vh - 56px);overflow:hidden}
-.d-topbar{display:flex;align-items:center;justify-content:space-between;padding:7px 11px;
-  flex-shrink:0;background:rgba(7,7,7,.95);border-bottom:1px solid #222;backdrop-filter:blur(4px)}
-.d-topbar-center{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:4px;
-  color:var(--dim);cursor:pointer;padding:4px 12px;border-radius:6px;transition:color .15s}
-.d-topbar-center:hover{color:var(--mut)}
-.d-own{flex-shrink:0;background:#0e0e0e;border-bottom:1px solid #222;padding:8px 13px;
-  cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:10px}
-.d-own:hover{background:#181818}
-.d-own-hint{font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;flex-shrink:0}
-.d-main{flex:1;display:flex;overflow:hidden}
-.d-center{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.d-bar{position:absolute;left:0;right:0;height:3px;z-index:2;transition:background 1s}
+.d-grid-wrap{position:relative;z-index:1;flex:1;display:flex;overflow:hidden}
 .d-grid{flex:1;display:grid;padding:7px;gap:7px;align-content:stretch}
 .u-card{background:#0e0e0e;border-radius:11px;padding:14px;display:flex;flex-direction:column;
-  justify-content:center;border:1px solid #222;position:relative;overflow:hidden;transition:border-color .6s}
+  justify-content:center;border:1px solid #222;position:relative;overflow:hidden;
+  transition:border-color .6s;cursor:pointer}
+.u-card:hover{background:#111}
 .d-sidebar{width:130px;flex-shrink:0;background:#0a0a0a;border-left:1px solid #1a1a1a;
   overflow-y:auto;padding:7px 5px;display:flex;flex-direction:column;gap:5px}
 .sidebar-lbl{font-size:8px;color:#666;letter-spacing:2px;text-transform:uppercase;padding:2px 4px}
 .absent-card{background:#0d0d0d;border:1px solid #1e1e1e;border-radius:7px;padding:8px 9px}
 .absent-name{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px}
 .d-tl{flex:1;overflow-y:auto;padding:10px 13px 8px}
-.tl-row{display:flex;align-items:stretch;gap:10px;min-height:58px}
+.tl-row{display:flex;align-items:stretch;gap:10px;min-height:58px;cursor:pointer}
+.tl-row:hover .tl-cc{opacity:.8}
 .tl-tc{width:44px;flex-shrink:0;display:flex;flex-direction:column;align-items:center}
 .tl-tl{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;line-height:1;padding-top:10px}
 .tl-vl{flex:1;width:2px;margin:3px auto}
@@ -134,27 +162,25 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;
 .tl-nm{font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px}
 .tl-st{font-family:'Bebas Neue',sans-serif;letter-spacing:2px}
 .tl-sb{font-size:12px;color:var(--mut);margin-top:2px}
-.pbar{background:#0a0a0a;border-top:1px solid #1a1a1a;height:36px;padding:0 11px;
-  display:flex;align-items:center;gap:11px;font-size:11px;color:var(--mut);
-  position:fixed;bottom:56px;left:0;right:0;z-index:10;overflow:hidden;flex-wrap:nowrap}
-.pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.stale-badge{position:absolute;bottom:5px;right:7px;font-size:9px;color:#777;
-  letter-spacing:1px;text-transform:uppercase}
+.stale-badge{position:absolute;bottom:5px;right:7px;font-size:9px;color:#777;letter-spacing:1px;text-transform:uppercase}
 .d-warn-screen{flex:1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;text-align:center;padding:30px;gap:14px;background:#0d0000}
-
-/* ── HAUSALARM EVAC VIEW ── */
-.evac-screen{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#0d0000}
+  justify-content:center;text-align:center;padding:30px;gap:14px;background:#0d0000;position:relative;z-index:1}
+/* Hausalarm Evakuierung */
+.evac-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#0d0000;position:relative;z-index:1}
 .evac-header{padding:10px 14px;background:#1a0000;border-bottom:1px solid #6a0000;
-  display:flex;align-items:center;gap:12px;flex-shrink:0}
+  display:flex;align-items:center;gap:10px;flex-shrink:0}
 .evac-blink{animation:ablink .8s ease-in-out infinite}
 .evac-cols{flex:1;display:flex;overflow:hidden}
 .evac-col{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:5px}
-.evac-col-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;
-  padding:4px 8px;margin-bottom:4px;border-radius:4px}
+.evac-col-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:4px 8px;margin-bottom:4px;border-radius:4px}
 .evac-card{border-radius:8px;padding:9px 11px;border:1px solid}
+/* Sync-Bestätigung */
+#sync-checkmark{position:fixed;bottom:calc(var(--bot-h)+var(--pbar-h)+8px);right:12px;
+  background:#0a1a0a;border:1px solid #22c55e55;border-radius:8px;
+  padding:6px 10px;font-size:11px;color:#22c55e;
+  z-index:30;display:none;animation:fadein .3s ease}
 
-/* ── OVERLAYS ── */
+/* ── OVERLAYS ──────────────────────────────────────────────────────── */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.94);display:none;
   align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(8px)}
 .ov.show{display:flex}
@@ -169,29 +195,34 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;
 .loc-pop-box{background:#222;border:1px solid #444;border-radius:10px;padding:16px;
   min-width:200px;display:flex;flex-direction:column;gap:8px;animation:fadein .2s ease}
 
-/* ── HELP ACCORDION ── */
+/* ── HILFE AKKORDEON ───────────────────────────────────────────────── */
 .help-sec{border-bottom:1px solid var(--brd);padding:8px 0}
 .help-sec:last-child{border-bottom:none}
-.help-tog{display:flex;align-items:center;justify-content:space-between;
-  cursor:pointer;padding:4px 0;font-size:14px;font-weight:500;color:var(--txt)}
+.help-tog{display:flex;align-items:center;justify-content:space-between;cursor:pointer;
+  padding:4px 0;font-size:14px;font-weight:500;color:var(--txt)}
 .help-arr{color:var(--mut);transition:transform .2s;font-size:12px}
 .help-body{display:none;font-size:12px;color:var(--mut);line-height:1.75;padding:8px 0 4px}
 .help-body.open{display:block}
 
-/* ── COMFORT BUTTONS ── */
+/* ── KOMFORT-BUTTONS ───────────────────────────────────────────────── */
 .comfort-btn{width:100%;padding:10px 14px;background:var(--c3);border:1px solid var(--brd);
   border-radius:8px;color:var(--txt);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;
   text-align:left;display:flex;align-items:center;gap:10px;transition:all .15s}
 .comfort-btn:hover{border-color:#666;background:#2e2e2e}
 .comfort-btn .cb-done{margin-left:auto;color:#22c55e;font-size:12px;display:none}
 
-/* ── ALARM ── */
+/* ── ALARM ─────────────────────────────────────────────────────────── */
 .alarm-blink{animation:ablink .6s ease-in-out infinite}
 @keyframes ablink{0%,100%{opacity:1}50%{opacity:.15}}
 .alarm-resp-btn{flex:1;padding:11px;border:1px solid;border-radius:8px;
   font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer;background:transparent}
 
-/* ── ANIMATIONS ── */
+/* ── PING-KARTE ────────────────────────────────────────────────────── */
+.ping-toast{position:fixed;top:calc(var(--top-h)+8px);right:12px;z-index:50;
+  background:#0a1a1a;border:1px solid #60a5fa55;border-radius:10px;padding:10px 14px;
+  max-width:260px;animation:fadein .3s ease;font-size:13px}
+
+/* ── ANIMATIONEN ────────────────────────────────────────────────────── */
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%,75%{transform:translateX(-7px)}50%{transform:translateX(7px)}}
@@ -203,219 +234,236 @@ select.inp{appearance:none;cursor:pointer}
 input[type=time]::-webkit-calendar-picker-indicator{filter:invert(.7);cursor:pointer}
 input[type=range]{accent-color:#f59e0b;width:100%}
 
-/* ── PRIVACY BOX ── */
-#privacy-box{display:none;max-width:480px;background:#0d0d1a;border:1px solid #3a3a7a;
-  border-radius:10px;padding:14px 16px;font-size:12px;color:#aaaadd;line-height:1.7}
+/* ── DATENSCHUTZ-BOX ────────────────────────────────────────────────── */
+#privacy-box{display:none;background:#0d0d1a;border:1px solid #3a3a7a;border-radius:10px;
+  padding:14px 16px;font-size:12px;color:#aaaadd;line-height:1.7;margin-top:10px}
 </style>
 </head>
 <body>
 
-<!-- ════════ BOTTOM NAV ════════ -->
-<div id="bottom-nav">
-  <button onclick="goMode()" id="nb-start"><span class="nb-icon">🏠</span>Start</button>
-  <button onclick="goCtrl()" id="nb-ctrl"><span class="nb-icon">📱</span>Controller</button>
-  <button onclick="goDisp()" id="nb-disp"><span class="nb-icon">🖥️</span>Anzeige</button>
-  <button onclick="showContacts()" id="nb-contacts"><span class="nb-icon">👥</span>Verbindungen</button>
-  <button onclick="openHelp()" id="nb-help"><span class="nb-icon">❓</span>Hilfe</button>
-</div>
+<!-- ════════════ APP-SHELL (persistenter Rahmen) ════════════════════ -->
+<div id="app-shell">
 
-<!-- ════════ SCREENS ════════ -->
+  <!-- OBERE LEISTE (alle Screens) -->
+  <div id="top-bar">
+    <div id="top-bar-left">
+      <!-- Kontextabhängige linke Buttons -->
+      <button class="btn-g" id="tb-back" style="display:none;font-size:12px;padding:5px 9px" onclick="tbBack()">←</button>
+    </div>
+    <!-- Mitte: Markenname + aktueller Status → Klick öffnet Controller -->
+    <div id="top-bar-center" onclick="goCtrl()" title="Zum Controller wechseln">
+      <div id="tbc-brand">WERKSICHT</div>
+      <div id="tbc-status">–</div>
+    </div>
+    <!-- Rechte Buttons (kontextabhängig) -->
+    <div id="top-bar-right">
+      <!-- Verbindung hinzufügen (immer sichtbar, prominent) -->
+      <button class="btn-g" id="tb-add" onclick="showAddRoom()"
+        style="color:#60a5fa;border-color:#2a4a7a;font-size:13px;padding:6px 10px"
+        title="Person hinzufügen">＋ Person</button>
+      <!-- Alarm-Button (prominent) -->
+      <button id="tb-alarm" onclick="ov('ov-alarm-trigger')"
+        style="background:#1e0a00;border:1px solid #f97316;color:#f97316;border-radius:7px;
+               padding:6px 10px;font-size:13px;cursor:pointer;font-weight:700;
+               display:flex;align-items:center;gap:4px"
+        title="Unterstützung anfordern">⚠️ SOS</button>
+    </div>
+  </div>
 
-<!-- MODE -->
-<div class="screen" id="s-mode">
-  <div class="brand" style="font-size:clamp(38px,9vw,68px)">WERKSICHT</div>
-  <div id="mode-greet" style="font-size:11px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;margin-top:-4px"></div>
-  <div class="mcs">
-    <div class="mc" onclick="goCtrl()">
-      <div class="mc-icon">📱</div>
-      <div class="mc-title">CONTROLLER</div>
-      <div class="mc-desc">Status steuern</div>
-    </div>
-    <div class="mc" onclick="goDisp()">
-      <div class="mc-icon">🖥️</div>
-      <div class="mc-title">ANZEIGE</div>
-      <div class="mc-desc">Vollbild-Statusanzeige</div>
-    </div>
-  </div>
-  <!-- Gerätesync prominent -->
-  <div style="background:var(--card);border:1px solid #2a4a2a;border-radius:10px;
-       padding:12px 16px;max-width:460px;width:100%;margin-top:4px">
-    <div style="font-size:11px;color:#22c55e;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px">
-      📲 Weiteres Gerät synchronisieren
-    </div>
-    <div style="font-size:12px;color:var(--mut);margin-bottom:7px">
-      Code vom bereits angemeldeten Gerät eingeben:
-    </div>
-    <div style="display:flex;gap:7px">
-      <input class="inp" id="sync-main" maxlength="6" placeholder="ABC123"
-        style="text-transform:uppercase;letter-spacing:4px;font-size:16px;text-align:center;flex:1" />
-      <button class="btn-g" onclick="doDeviceSync('sync-main','sync-main-err')" style="color:#22c55e;border-color:#2a4a2a">Sync</button>
-    </div>
-    <div class="err" id="sync-main-err" style="margin-top:5px"></div>
-  </div>
-  <div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-top:8px">
-    <button class="btn-g" onclick="openCfg()">⚙ Einstellungen</button>
-    <button class="btn-g" onclick="togglePrivacy()" style="color:#9999cc;border-color:#3a3a7a">🔒 Datenschutz</button>
-  </div>
-  <div id="privacy-box" style="margin-top:10px">
-    <strong style="color:#ccccff">Werksicht – Datenschutz & Rechtliches</strong><br><br>
-    Werksicht ist ein <strong style="color:#ccccff">privates Werkzeug</strong> zur freiwilligen Statusabsprache zwischen einzelnen Personen. Es handelt sich ausdrücklich um <strong style="color:#ccccff">kein öffentliches Angebot und keinen kommerziellen Dienst</strong>. Eine Impressumspflicht nach § 5 TMG besteht daher nicht.<br><br>
-    <strong style="color:#ccccff">Daten:</strong> Nur selbst gewählter Vorname + Status. Firebase, europe-west1 (Belgien), Google Ireland Ltd.<br><br>
-    <span style="color:#777">Nur Privatgebrauch · Kein Tracking · Keine Analyse</span>
-  </div>
-</div>
+  <!-- INHALTSBEREICH -->
+  <div id="content">
 
-<!-- CONTROLLER -->
-<div class="screen" id="s-ctrl">
-  <div class="ch">
-    <div>
-      <div style="display:flex;align-items:center;gap:7px">
-        <div class="brand" style="font-size:19px">WERKSICHT</div>
-        <div class="B" id="ctrl-logo" style="font-size:19px;letter-spacing:2px;color:var(--dim)">· CONTROLLER</div>
-      </div>
-      <div id="ctrl-nl" style="font-size:10px;color:var(--mut);letter-spacing:2px;text-transform:uppercase"></div>
-    </div>
-    <button class="btn-g" style="font-size:12px;padding:6px 10px" onclick="ov('ov-alarm-trigger')" title="Unterstützung">⚠️</button>
-  </div>
-  <div class="cb">
-
-    <!-- ① ANWESENHEIT – neue Logik: mutex zwischen im_werk und mobil -->
-    <div class="card">
-      <div class="B" style="font-size:14px;letter-spacing:2px;color:var(--mut);margin-bottom:8px">ANWESENHEIT</div>
-      <!-- Zeile 1: Aktive Optionen -->
-      <div class="sg3">
-        <button class="sbtn" id="btn-im_werk"        onclick="clickImWerk()">IM WERK</button>
-        <button class="sbtn" id="btn-mobil"           onclick="clickMobil()" style="font-size:11px">MOBILES ARBEITEN</button>
-        <button class="sbtn" id="btn-urlaub"          onclick="clickUrlaub()" style="font-size:11px">🏖 URLAUB</button>
-      </div>
-      <!-- Zeile 2: Kontext-Button (Abmelden / Werk verlassen / ...) -->
-      <button class="sbtn" id="btn-exit-presence" onclick="exitPresence()"
-        style="width:100%;margin-top:6px;background:var(--c2);color:var(--dim);border-color:var(--brd);opacity:.4;cursor:default"
-        disabled>ABMELDEN</button>
-      <!-- Im Werk bis -->
-      <div style="margin-top:9px">
-        <div class="lbl">Im Werk bis: <span id="bis-display" style="color:#a78bfa">–</span></div>
-        <div style="display:flex;gap:6px">
-          <input type="time" class="inp" id="inp-bis" style="flex:1;color-scheme:dark" oninput="onBisChange()" />
-          <button class="btn-g" style="font-size:12px;padding:7px 8px" onclick="clearBis()">✕</button>
+    <!-- ── VIEW: START ─────────────────────────────────────────── -->
+    <div class="view" id="v-mode">
+      <div class="view-scroll" style="display:flex;flex-direction:column;align-items:center;gap:16px">
+        <div style="text-align:center;margin-top:8px">
+          <div class="brand" style="font-size:clamp(38px,9vw,64px)">WERKSICHT</div>
+          <div id="mode-greet" style="font-size:11px;color:var(--mut);letter-spacing:2px;text-transform:uppercase"></div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:460px;width:100%">
+          <div onclick="goCtrl()" style="flex:1 1 165px;padding:20px 16px;background:var(--card);border:1px solid var(--brd);border-radius:13px;cursor:pointer;transition:all .2s;text-align:center" onmouseenter="this.style.borderColor='#666'" onmouseleave="this.style.borderColor='var(--brd)'">
+            <div style="font-size:26px;margin-bottom:8px">📱</div>
+            <div class="B" style="font-size:20px;letter-spacing:3px;margin-bottom:4px">CONTROLLER</div>
+            <div style="font-size:11px;color:var(--mut)">Status steuern</div>
+          </div>
+          <div onclick="goDisp()" style="flex:1 1 165px;padding:20px 16px;background:var(--card);border:1px solid var(--brd);border-radius:13px;cursor:pointer;transition:all .2s;text-align:center" onmouseenter="this.style.borderColor='#666'" onmouseleave="this.style.borderColor='var(--brd)'">
+            <div style="font-size:26px;margin-bottom:8px">🖥️</div>
+            <div class="B" style="font-size:20px;letter-spacing:3px;margin-bottom:4px">ANZEIGE</div>
+            <div style="font-size:11px;color:var(--mut)">Vollbild-Statusanzeige</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:center">
+          <button class="btn-g" onclick="openCfg()">⚙ Einstellungen</button>
+          <button class="btn-g" onclick="showContacts()" style="color:#60a5fa;border-color:#2a4a7a">👥 Verbindungen</button>
+          <button class="btn-g" onclick="togglePrivacy()" style="color:#9999cc;border-color:#3a3a7a">🔒 Datenschutz</button>
+          <button class="btn-g" onclick="openHelp()" style="color:#f59e0b;border-color:#5a3a0a">❓ Hilfe</button>
+        </div>
+        <div id="privacy-box">
+          <strong style="color:#ccccff">Datenschutz & Rechtliches</strong><br><br>
+          Werksicht ist ein <strong style="color:#ccccff">privates Werkzeug</strong> – kein öffentliches Angebot, kein kommerzieller Dienst, keine Impressumspflicht nach §5 TMG. Verbindungen entstehen nur durch gegenseitige, bewusste Einladung.<br><br>
+          Firebase Realtime Database, europe-west1 (<strong style="color:#ccccff">Belgien</strong>), Google Ireland Ltd.<br><br>
+          <span style="color:#777">Nur Privatgebrauch · Kein Tracking · Keine Analyse</span>
         </div>
       </div>
     </div>
 
-    <!-- ② ARBEITSSTATUS -->
-    <div class="card" id="card-workstatus">
-      <div class="B" style="font-size:14px;letter-spacing:2px;color:var(--mut);margin-bottom:8px">ARBEITSSTATUS</div>
-      <div class="sg3">
-        <button class="sbtn" id="btn-am_platz"  onclick="setWorkStatus('am_platz')">AM PLATZ</button>
-        <button class="sbtn" id="btn-einfinden" onclick="setWorkStatus('einfinden')">EIN-FINDEN</button>
-        <button class="sbtn" id="btn-flow"      onclick="setWorkStatus('flow')">FLOW</button>
-      </div>
-      <!-- Kontext-abhängige Schaltfläche: unterwegs (im_werk) oder nicht am Platz (mobil) -->
-      <button class="sbtn" id="btn-ort-status" onclick="clickOrtStatus()" style="width:100%;margin-top:6px">IM WERK UNTERWEGS</button>
-      <!-- Auto-Flow -->
-      <div id="card-af" style="display:none;margin-top:9px;padding-top:9px;border-top:1px solid var(--brd)">
-        <div class="lbl">Auto-Flow nach</div>
-        <select class="inp" id="sel-af" onchange="setAF(this.value)" style="margin-top:4px">
-          <option value="0">Kein automatischer Wechsel</option>
-          <option value="10">10 Min</option><option value="15">15 Min</option>
-          <option value="20">20 Min</option><option value="25">25 Min</option>
-          <option value="30">30 Min</option><option value="45">45 Min</option>
-        </select>
-      </div>
-      <!-- Unterwegs-Felder (im_werk) -->
-      <div id="card-uw" style="display:none;margin-top:9px;padding-top:9px;border-top:1px solid var(--brd)">
-        <div class="lbl">Aufenthaltsort</div>
-        <input class="inp" id="inp-ort" placeholder="z. B. Lager · Besprechungsraum 3" style="margin-top:4px" />
-        <div class="lbl" style="margin-top:7px">Voraussichtlich zurück</div>
-        <input type="time" class="inp" id="inp-ort-bis" style="margin-top:4px;color-scheme:dark" />
-        <div class="lbl" style="margin-top:7px">Gespeicherte Orte</div>
-        <div class="loc-tiles" id="loc-tiles-ctrl"></div>
-      </div>
-      <!-- Nicht am Platz (mobil) -->
-      <div id="card-nap" style="display:none;margin-top:9px;padding-top:9px;border-top:1px solid var(--brd)">
-        <div class="lbl">Voraussichtlich zurück</div>
-        <input type="time" class="inp" id="inp-nap-bis" style="margin-top:4px;color-scheme:dark" oninput="onNapBisChange()" />
-      </div>
-    </div>
+    <!-- ── VIEW: CONTROLLER ────────────────────────────────────── -->
+    <div class="view" id="v-ctrl">
+      <div class="view-scroll" style="display:flex;flex-direction:column;gap:10px;max-width:480px;width:100%;margin:0 auto;padding-bottom:16px">
 
-    <!-- ③ STATUS-ZUSAMMENFASSUNG -->
-    <div class="card">
-      <div class="lbl" style="margin-bottom:7px">Aktueller Status</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
-        <div class="sdot" id="c-sdot"></div>
-        <div class="B" id="c-pname" style="font-size:14px;letter-spacing:2px"></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:9px"></div>
-        <div class="B" id="c-wname" style="font-size:18px;letter-spacing:2px"></div>
-      </div>
-      <div class="tpair" id="c-timers"></div>
-    </div>
+        <!-- Sync-Status-Anzeige -->
+        <div id="ctrl-sync-status" style="display:none;font-size:11px;color:#22c55e;text-align:center;background:#0a1a0a;border-radius:6px;padding:5px">✓ Alle Geräte synchronisiert</div>
 
-    <!-- ④ PAIRING-CODE -->
-    <div class="card">
-      <div class="lbl" style="margin-bottom:7px">Mein Pairing-Code (rotiert jede Minute)</div>
-      <div class="code-box">
-        <div>
-          <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Zum Verbinden eingeben</div>
-          <div class="code-val B" id="my-code">––––––</div>
+        <!-- ANWESENHEIT -->
+        <div class="card">
+          <div class="B" style="font-size:14px;letter-spacing:2px;color:var(--mut);margin-bottom:8px">ANWESENHEIT</div>
+          <div class="sg3">
+            <button class="sbtn" id="btn-im_werk"       onclick="clickImWerk()">IM WERK</button>
+            <button class="sbtn" id="btn-mobil"          onclick="clickMobil()" style="font-size:11px">MOBILES ARBEITEN</button>
+            <button class="sbtn" id="btn-urlaub"         onclick="clickUrlaub()" style="font-size:11px">🏖 URLAUB</button>
+          </div>
+          <button class="sbtn" id="btn-exit-presence" onclick="exitPresence()"
+            style="width:100%;margin-top:6px;background:var(--c2);color:var(--dim);border-color:var(--brd);opacity:.4;cursor:default" disabled>
+            ABMELDEN
+          </button>
+          <div style="margin-top:9px">
+            <div class="lbl">Im Werk bis: <span id="bis-display" style="color:#a78bfa">–</span></div>
+            <div style="display:flex;gap:6px">
+              <input type="time" class="inp" id="inp-bis" style="flex:1;color-scheme:dark" oninput="onBisChange()" />
+              <button class="btn-g" style="font-size:12px;padding:7px 8px" onclick="clearBis()">✕</button>
+            </div>
+          </div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
-          <button class="btn-g" id="copy-btn" onclick="copyCode()" style="font-size:12px;padding:5px 9px">Kopieren</button>
-          <div id="code-timer" style="font-size:10px;color:var(--mut)"></div>
+
+        <!-- ARBEITSSTATUS -->
+        <div class="card" id="card-workstatus">
+          <div class="B" style="font-size:14px;letter-spacing:2px;color:var(--mut);margin-bottom:8px">ARBEITSSTATUS</div>
+          <div class="sg3">
+            <button class="sbtn" id="btn-am_platz"  onclick="setWorkStatus('am_platz')">AM PLATZ</button>
+            <button class="sbtn" id="btn-einfinden" onclick="setWorkStatus('einfinden')">EIN-FINDEN</button>
+            <button class="sbtn" id="btn-flow"      onclick="setWorkStatus('flow')">FLOW</button>
+          </div>
+          <div style="margin-top:6px">
+            <button class="sbtn" id="btn-ort-status" onclick="clickOrtStatus()" style="width:100%">IM WERK UNTERWEGS</button>
+          </div>
+          <!-- Auto-Flow -->
+          <div id="card-af" style="display:none;margin-top:9px;padding-top:9px;border-top:1px solid var(--brd)">
+            <div class="lbl">Auto-Flow nach</div>
+            <select class="inp" id="sel-af" onchange="setAF(this.value)" style="margin-top:4px">
+              <option value="0">Kein automatischer Wechsel</option>
+              <option value="10">10 Min</option><option value="15">15 Min</option>
+              <option value="20">20 Min</option><option value="25">25 Min</option>
+              <option value="30">30 Min</option><option value="45">45 Min</option>
+            </select>
+          </div>
+          <!-- Unterwegs-Felder -->
+          <div id="card-uw" style="display:none;margin-top:9px;padding-top:9px;border-top:1px solid var(--brd)">
+            <div class="lbl">Aufenthaltsort</div>
+            <input class="inp" id="inp-ort" placeholder="z. B. Lager · Besprechungsraum 3" style="margin-top:4px" />
+            <div class="lbl" style="margin-top:7px">Voraussichtlich zurück</div>
+            <input type="time" class="inp" id="inp-ort-bis" style="margin-top:4px;color-scheme:dark" />
+            <div class="lbl" style="margin-top:7px">Gespeicherte Orte</div>
+            <div class="loc-tiles" id="loc-tiles-ctrl"></div>
+          </div>
+          <!-- Nicht am Platz (mobil) -->
+          <div id="card-nap" style="display:none;margin-top:9px;padding-top:9px;border-top:1px solid var(--brd)">
+            <div class="lbl">Voraussichtlich zurück</div>
+            <input type="time" class="inp" id="inp-nap-bis" style="margin-top:4px;color-scheme:dark" oninput="onNapBisChange()" />
+          </div>
         </div>
+
+        <!-- STATUS-ZUSAMMENFASSUNG -->
+        <div class="card">
+          <div class="lbl" style="margin-bottom:7px">Aktueller Status</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+            <div class="sdot" id="c-sdot" style="width:9px;height:9px;border-radius:50%"></div>
+            <div class="B" id="c-pname" style="font-size:14px;letter-spacing:2px"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:9px"></div>
+            <div class="B" id="c-wname" style="font-size:18px;letter-spacing:2px"></div>
+          </div>
+          <div class="tpair" id="c-timers"></div>
+        </div>
+
+        <!-- PAIRING-CODE -->
+        <div class="card">
+          <div class="lbl" style="margin-bottom:7px">Mein Pairing-Code (rotiert jede Minute)</div>
+          <div class="code-box">
+            <div>
+              <div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Zum Verbinden weitergeben</div>
+              <div class="code-val B" id="my-code">––––––</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+              <button class="btn-g" id="copy-btn" onclick="copyCode()" style="font-size:12px;padding:5px 9px">Kopieren</button>
+              <div id="code-timer" style="font-size:10px;color:var(--mut)"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WATCHER-LISTE -->
+        <div class="card">
+          <div class="lbl" style="margin-bottom:7px">Mein Status wird angezeigt bei</div>
+          <div id="watcher-list"><div style="color:var(--mut);font-size:13px">Niemand zeigt deinen Status an.</div></div>
+        </div>
+
+        <div style="font-size:10px;color:#444;text-align:center">Werksicht · Sync alle 4 Sek.</div>
       </div>
     </div>
 
-    <!-- ⑤ WATCHER-LISTE -->
-    <div class="card">
-      <div class="lbl" style="margin-bottom:7px">Mein Status wird angezeigt bei</div>
-      <div id="watcher-list"><div style="color:var(--mut);font-size:13px">Niemand zeigt deinen Status an.</div></div>
-    </div>
-
-    <div style="font-size:10px;color:#444;text-align:center">Werksicht · Sync alle 4 Sek.</div>
-  </div>
-</div>
-
-<!-- DISPLAY -->
-<div class="screen" id="s-disp">
-  <div class="d-glow" id="d-glow"></div>
-  <div class="d-bar" id="d-bt" style="top:0"></div>
-  <div class="d-bar" id="d-bb" style="bottom:92px"></div>
-  <div class="d-shell">
-    <div class="d-topbar">
-      <div style="display:flex;gap:5px">
-        <button class="btn-g" id="view-toggle" onclick="toggleView()" style="font-size:11px;padding:5px 8px">⏱</button>
-        <button class="btn-g" onclick="showAddRoom()" style="font-size:11px;padding:5px 8px">＋</button>
+    <!-- ── VIEW: DISPLAY ───────────────────────────────────────── -->
+    <div class="view" id="v-disp" style="position:relative;overflow:hidden">
+      <div class="d-glow" id="d-glow"></div>
+      <div class="d-bar" id="d-bt" style="top:0"></div>
+      <div class="d-bar" id="d-bb" style="bottom:0"></div>
+      <!-- Eigener Status-Streifen (klickbar → Controller) -->
+      <div id="d-own" onclick="goCtrl()"
+        style="flex-shrink:0;background:#0e0e0e;border-bottom:1px solid #222;padding:8px 13px;
+               cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:10px;
+               position:relative;z-index:1">
+        <div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;flex-shrink:0">▸ ICH</div>
+        <div id="d-own-content" style="flex:1;overflow:hidden"></div>
       </div>
-      <!-- Klicken wechselt zu Controller -->
-      <div class="d-topbar-center" onclick="goCtrl()" title="Zum Controller wechseln">WERKSICHT ▸ CONTROLLER</div>
-      <button class="btn-g" onclick="ov('ov-alarm-trigger')" style="font-size:11px;padding:5px 8px;color:#f97316;border-color:#5a2a00">⚠</button>
+      <!-- Grid-Bereich -->
+      <div class="d-grid-wrap" id="d-main">
+        <div class="d-center" id="d-center" style="flex:1;overflow:hidden;display:flex;flex-direction:column"></div>
+        <div class="d-sidebar" id="d-sidebar" style="display:none"></div>
+      </div>
     </div>
-    <div class="d-own" id="d-own" onclick="openOwnStatus()" title="Klicken zum Ändern"></div>
-    <div class="d-main" id="d-main">
-      <div class="d-center" id="d-center"></div>
-      <div class="d-sidebar" id="d-sidebar" style="display:none"></div>
-    </div>
-  </div>
-  <div class="pbar" id="pbar"></div>
-</div>
 
-<!-- ════════ OVERLAYS ════════ -->
+  </div><!-- end #content -->
+
+  <!-- PRESENCE-BAR -->
+  <div id="pbar"></div>
+
+  <!-- UNTERE NAVIGATIONSLEISTE -->
+  <div id="bot-nav">
+    <button onclick="goMode()" id="nb-start"><span class="ni">🏠</span>Start</button>
+    <button onclick="goCtrl()" id="nb-ctrl"><span class="ni">📱</span>Controller</button>
+    <button onclick="goDisp()" id="nb-disp"><span class="ni">🖥️</span>Anzeige</button>
+    <button onclick="showContacts()" id="nb-conn"><span class="ni">👥</span>Verbindungen</button>
+    <button onclick="openHelp()" id="nb-help"><span class="ni">❓</span>Hilfe</button>
+  </div>
+
+</div><!-- end #app-shell -->
+
+<!-- Sync-Bestätigung -->
+<div id="sync-checkmark">✓ Alle Geräte synchron</div>
+
+<!-- ════════════ OVERLAYS ════════════════════════════════════════════ -->
 
 <!-- DISCLAIMER -->
 <div class="ov show" id="ov-disclaimer">
   <div class="ov-box ov-lg">
     <div class="brand" style="font-size:26px">WERKSICHT</div>
     <div style="font-size:14px;font-weight:500">Willkommen & Nutzungshinweise</div>
-    <div style="font-size:13px;color:var(--mut);line-height:1.75;max-height:280px;overflow-y:auto;
-         border:1px solid var(--brd);border-radius:8px;padding:12px;background:var(--c2)">
+    <div style="font-size:13px;color:var(--mut);line-height:1.75;max-height:280px;overflow-y:auto;border:1px solid var(--brd);border-radius:8px;padding:12px;background:var(--c2)">
       <strong style="color:var(--txt)">Wozu dient Werksicht?</strong><br>
-      Werksicht hilft bei der täglichen Absprache: niemanden unnötig unterbrechen wenn die Person im Flow ist; herausfinden ob jemand noch im Werk ist; einen Aufenthaltsort schnell finden; oder gemeinsam sicherstellen dass nie jemand unbeabsichtigt alleine bleibt.<br><br>
+      Werksicht hilft bei der täglichen Absprache: niemanden unnötig unterbrechen wenn die Person im Flow ist; herausfinden ob jemand noch im Werk ist; einen Aufenthaltsort schnell finden.<br><br>
       <strong style="color:var(--txt)">Was Werksicht ist</strong><br>
       Ein privates, freiwilliges Hilfsmittel – wie eine WhatsApp-Statusfunktion. Kein öffentliches Angebot, kein kommerzieller Dienst. Verbindungen entstehen nur durch gegenseitige, bewusste Einladung.<br><br>
       <strong style="color:#f87171">Haftungsausschluss</strong><br>
-      Alle Status-Informationen sind <strong style="color:#f87171">unverbindlich und ohne Gewähr.</strong> Technische Fehler, vergessene Updates oder falsche Angaben können jederzeit vorkommen. <strong style="color:#f87171">Die App ersetzt keine direkte Überprüfung und keine professionellen Notfallsysteme.</strong> Nutzung auf eigenes Risiko.
+      Alle Status-Informationen sind <strong style="color:#f87171">unverbindlich und ohne Gewähr.</strong> Da die Nutzung freiwillig ist, können Personen nicht erfasst sein. Statusinformationen dürfen nie als zuverlässig angenommen werden – <strong style="color:#f87171">insbesondere nicht in sicherheitsrelevanten Situationen.</strong> Die direkte Kommunikation hat immer Vorrang. Die App ersetzt keine professionellen Notfallsysteme. Nutzung auf eigenes Risiko.
     </div>
     <button class="btn-p" style="background:#22c55e" onclick="acceptDisclaimer()">Ich stimme zu – Weiter</button>
     <div style="font-size:10px;color:var(--dim);text-align:center">Erscheint einmalig pro Gerät</div>
@@ -430,12 +478,14 @@ input[type=range]{accent-color:#f59e0b;width:100%}
     <input class="inp" id="inp-name-s" placeholder="z. B. Max Müller" onkeydown="if(event.key==='Enter')saveName()" />
     <div class="err" id="name-err"></div>
     <button class="btn-p" style="background:#22c55e" onclick="saveName()">Los geht's</button>
+    <!-- Gerätesync NUR hier beim Setup anbieten -->
     <div style="border-top:1px solid var(--brd);padding-top:10px">
-      <div style="font-size:12px;color:var(--mut);margin-bottom:7px">Bereits auf einem anderen Gerät angemeldet?</div>
-      <div class="lbl">Aktuellen Code des anderen Geräts eingeben</div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:7px">Bereits auf einem anderen <strong style="color:var(--txt)">eigenen</strong> Gerät angemeldet?</div>
+      <div class="lbl">Weiteres eigenes Gerät synchronisieren</div>
+      <div style="font-size:11px;color:var(--dim);margin-bottom:7px">Aktuellen Code des anderen eigenen Geräts eingeben – übernimmt Identität und alle Verbindungen.</div>
       <input class="inp" id="inp-sync-setup" maxlength="6" placeholder="ABC123"
         style="text-transform:uppercase;letter-spacing:4px;font-size:18px;text-align:center;margin-top:4px" />
-      <button class="btn-g" style="width:100%;margin-top:6px" onclick="doDeviceSync('inp-sync-setup','sync-setup-err')">Gerät synchronisieren</button>
+      <button class="btn-g" style="width:100%;margin-top:6px" onclick="doDeviceSync('inp-sync-setup','sync-setup-err')">Eigenes Gerät synchronisieren</button>
       <div class="err" id="sync-setup-err"></div>
     </div>
   </div>
@@ -459,22 +509,22 @@ input[type=range]{accent-color:#f59e0b;width:100%}
            <div style="font-size:11px;color:var(--mut)">Sicherstellen dass Alarme hörbar sind</div></div>
       <span class="cb-done">✓</span>
     </button>
-    <button class="comfort-btn" id="cbtn-install" onclick="comfortInstall(this)">
+    <button class="comfort-btn" onclick="comfortInstall(this)">
       <span style="font-size:18px">📲</span>
       <div><div style="font-size:13px;font-weight:500">Als App installieren</div>
-           <div style="font-size:11px;color:var(--mut)" id="install-hint">Installiere Werksicht als App</div></div>
+           <div style="font-size:11px;color:var(--mut)" id="install-hint">Chrome/Edge: Menü → App installieren · iOS: Teilen → Homescreen</div></div>
       <span class="cb-done">✓</span>
     </button>
     <button class="comfort-btn" onclick="comfortHomepage(this)">
       <span style="font-size:18px">🏠</span>
       <div><div style="font-size:13px;font-weight:500">Als Startseite festlegen</div>
-           <div style="font-size:11px;color:var(--mut)">Anleitung für deinen Browser</div></div>
+           <div style="font-size:11px;color:var(--mut)">Browser-spezifische Anleitung</div></div>
       <span class="cb-done">✓</span>
     </button>
     <button class="comfort-btn" onclick="comfortFullscreen(this)">
       <span style="font-size:18px">⛶</span>
       <div><div style="font-size:13px;font-weight:500">Vollbild aktivieren</div>
-           <div style="font-size:11px;color:var(--mut)">Für Monitor-Anzeige empfohlen</div></div>
+           <div style="font-size:11px;color:var(--mut)">F11 / ⌘+Ctrl+F</div></div>
       <span class="cb-done">✓</span>
     </button>
     <button class="btn-p" style="background:#22c55e;margin-top:4px" onclick="finishComfort()">Fertig – Los geht's</button>
@@ -485,7 +535,7 @@ input[type=range]{accent-color:#f59e0b;width:100%}
 <div class="ov" id="ov-room">
   <div class="ov-box ov-lg">
     <div class="B" style="font-size:20px;letter-spacing:3px;color:#60a5fa">PERSON HINZUFÜGEN</div>
-    <div style="font-size:13px;color:var(--mut)">Pairing-Code eingeben (rotiert jede Minute!)<br>Tracking ist <strong style="color:var(--txt)">gegenseitig</strong>.</div>
+    <div style="font-size:13px;color:var(--mut)">Pairing-Code der anderen Person eingeben (rotiert jede Minute!).<br>Tracking ist <strong style="color:var(--txt)">gegenseitig</strong>.</div>
     <input class="inp" id="inp-rcode" maxlength="6" placeholder="ABC123"
       style="text-transform:uppercase;letter-spacing:5px;font-size:20px;text-align:center"
       onkeydown="if(event.key==='Enter')addRoom()" />
@@ -493,10 +543,6 @@ input[type=range]{accent-color:#f59e0b;width:100%}
     <div style="display:flex;gap:8px">
       <button class="btn-g" onclick="hideAddRoom()" style="flex:1">Abbrechen</button>
       <button class="btn-p" style="flex:1;background:#60a5fa" onclick="addRoom()">Hinzufügen</button>
-    </div>
-    <div style="border-top:1px solid var(--brd);padding-top:10px">
-      <div class="lbl" style="margin-bottom:7px">Verbundene Personen</div>
-      <div id="room-list"></div>
     </div>
   </div>
 </div>
@@ -523,11 +569,13 @@ input[type=range]{accent-color:#f59e0b;width:100%}
   <div class="ov-box ov-lg">
     <div class="brand" style="font-size:18px">WERKSICHT</div>
     <div class="B" style="font-size:20px;letter-spacing:3px">EINSTELLUNGEN</div>
-    <div><div class="lbl">Dein Name (ich)</div><input class="inp" id="cfg-name" /></div>
+    <div><div class="lbl">Dein Name</div><input class="inp" id="cfg-name" /></div>
     <div><div class="lbl">Neuer PIN (leer = kein PIN)</div>
          <input type="password" class="inp" id="cfg-pin" placeholder="Neuen PIN eingeben" /></div>
+    <!-- Gerätesync in Einstellungen -->
     <div style="border-top:1px solid var(--brd);padding-top:10px">
-      <div class="lbl" style="margin-bottom:7px">📲 Weiteres Gerät synchronisieren</div>
+      <div class="lbl" style="margin-bottom:5px">Weiteres eigenes Gerät synchronisieren</div>
+      <div style="font-size:11px;color:var(--dim);margin-bottom:7px">Nur für eigene Geräte! Übernimmt vollständig die Identität dieses Kontos.</div>
       <div style="display:flex;gap:7px">
         <input class="inp" id="cfg-sync" maxlength="6" placeholder="ABC123"
           style="text-transform:uppercase;letter-spacing:4px;text-align:center;flex:1" />
@@ -535,8 +583,9 @@ input[type=range]{accent-color:#f59e0b;width:100%}
       </div>
       <div class="err" id="cfg-sync-err"></div>
     </div>
+    <!-- Komfort -->
     <div style="border-top:1px solid var(--brd);padding-top:10px">
-      <div class="lbl" style="margin-bottom:7px">Komfort</div>
+      <div class="lbl" style="margin-bottom:7px">Komfort-Funktionen</div>
       <div style="display:flex;gap:7px;flex-wrap:wrap">
         <button class="btn-g" onclick="comfortNotifications(null)" style="font-size:12px">🔔 Benachrichtigungen</button>
         <button class="btn-g" onclick="comfortSound(null)" style="font-size:12px">🔊 Ton testen</button>
@@ -548,16 +597,9 @@ input[type=range]{accent-color:#f59e0b;width:100%}
     <!-- Benutzerdaten löschen -->
     <div style="border-top:1px solid var(--brd);padding-top:10px">
       <div class="lbl" style="margin-bottom:7px">Benutzerdaten</div>
-      <div style="font-size:12px;color:var(--mut);margin-bottom:8px">
-        Entfernt dich aus allen Verbindungen und löscht deine Daten aus der Datenbank.
-      </div>
       <div class="sg2">
-        <button class="btn-d" onclick="closeCfg();removeDevice()" style="font-size:12px">
-          Nur dieses Gerät entfernen
-        </button>
-        <button class="btn-d" onclick="closeCfg();removeAll()" style="font-size:12px;border-color:#8a2020">
-          Nutzer vollständig löschen
-        </button>
+        <button class="btn-d" onclick="closeCfg();removeDevice()" style="font-size:12px">Nur dieses Gerät entfernen</button>
+        <button class="btn-d" onclick="closeCfg();removeAll()" style="font-size:12px;border-color:#8a2020">Nutzer vollständig löschen</button>
       </div>
     </div>
     <div style="display:flex;gap:8px">
@@ -582,10 +624,8 @@ input[type=range]{accent-color:#f59e0b;width:100%}
 <div class="ov" id="ov-unterwegs">
   <div class="ov-box">
     <div class="B" style="font-size:20px;letter-spacing:3px;color:#60a5fa">IM WERK UNTERWEGS</div>
-    <div><div class="lbl">Aufenthaltsort</div>
-         <input class="inp" id="inp-ort-pop" placeholder="z. B. Lager · Besprechungsraum 3" /></div>
-    <div><div class="lbl">Voraussichtlich zurück</div>
-         <input type="time" class="inp" id="inp-ort-bis-pop" style="color-scheme:dark" /></div>
+    <div><div class="lbl">Aufenthaltsort</div><input class="inp" id="inp-ort-pop" placeholder="z. B. Lager · Besprechungsraum 3" /></div>
+    <div><div class="lbl">Voraussichtlich zurück</div><input type="time" class="inp" id="inp-ort-bis-pop" style="color-scheme:dark" /></div>
     <div class="lbl">Gespeicherte Orte</div>
     <div class="loc-tiles" id="loc-tiles-pop"></div>
     <button class="btn-p" style="background:#60a5fa;margin-top:4px" onclick="confirmUnterwegs()">Status setzen</button>
@@ -594,34 +634,22 @@ input[type=range]{accent-color:#f59e0b;width:100%}
   </div>
 </div>
 
-<!-- SCHNELLSTATUS -->
-<div class="ov" id="ov-own-status">
-  <div class="ov-box">
-    <div class="brand" style="font-size:18px">STATUS ÄNDERN (ich)</div>
-    <div class="sg3" style="gap:6px">
-      <button class="sbtn" onclick="qs('p','im_werk')"       style="background:var(--c2);color:#22c55e;border-color:#22c55e55">IM WERK</button>
-      <button class="sbtn" onclick="qs('p','mobil')"          style="background:var(--c2);color:#a78bfa;border-color:#a78bfa55;font-size:11px">MOBILES ARBEITEN</button>
-      <button class="sbtn" onclick="qs('p','werk_verlassen')" style="background:var(--c2);color:#f97316;border-color:#f9731655;font-size:11px">WERK VERLASSEN</button>
-    </div>
-    <div style="height:1px;background:var(--brd);margin:2px 0"></div>
-    <div class="sg3" style="gap:6px">
-      <button class="sbtn" onclick="qs('w','am_platz')"  style="background:var(--c2);color:#22c55e;border-color:#22c55e55">AM PLATZ</button>
-      <button class="sbtn" onclick="qs('w','einfinden')" style="background:var(--c2);color:#f59e0b;border-color:#f59e0b55">EIN-FINDEN</button>
-      <button class="sbtn" onclick="qs('w','flow')"      style="background:var(--c2);color:#ef4444;border-color:#ef444455">FLOW</button>
-    </div>
-    <button class="sbtn" onclick="qs('w','unterwegs')" style="background:var(--c2);color:#60a5fa;border-color:#60a5fa55;width:100%">IM WERK UNTERWEGS</button>
-    <button class="btn-g" onclick="hov('ov-own-status');goCtrl()" style="width:100%;text-align:center">→ Zum Controller</button>
-    <button class="btn-g" onclick="hov('ov-own-status')" style="width:100%;text-align:center">Schließen</button>
-  </div>
-</div>
-
 <!-- VERBINDUNGSLISTE -->
 <div class="ov" id="ov-contacts">
-  <div class="ov-box ov-lg" style="max-height:85vh">
+  <div class="ov-box ov-lg" style="max-height:88vh">
     <div class="brand" style="font-size:18px">WERKSICHT</div>
     <div class="B" style="font-size:20px;letter-spacing:3px">MEINE VERBINDUNGEN</div>
-    <div style="font-size:12px;color:var(--mut)">Status sichtbar wenn du aktiv bist.</div>
-    <div id="contact-list" style="font-size:13px;overflow-y:auto;flex:1"></div>
+    <!-- Eigener Code oben -->
+    <div style="background:var(--c2);border:1px solid var(--brd);border-radius:8px;padding:11px 14px">
+      <div class="lbl" style="margin-bottom:5px">Mein Pairing-Code (weitergeben zum Verbinden)</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div class="B" id="contacts-my-code" style="font-size:24px;letter-spacing:6px;color:#fff"></div>
+        <button class="btn-g" onclick="copyCode()" style="font-size:12px">Kopieren</button>
+      </div>
+      <div id="contacts-code-timer" style="font-size:10px;color:var(--dim);margin-top:3px"></div>
+    </div>
+    <div style="font-size:11px;color:var(--dim)">Status sichtbar wenn du aktiv bist (Im Werk / Mobiles Arbeiten).</div>
+    <div id="contact-list" style="font-size:13px;overflow-y:auto;flex:1;max-height:50vh"></div>
     <button class="btn-g" onclick="hov('ov-contacts')" style="width:100%">Schließen</button>
   </div>
 </div>
@@ -640,55 +668,43 @@ input[type=range]{accent-color:#f59e0b;width:100%}
 <div class="ov" id="ov-alarm-trigger">
   <div class="ov-box ov-lg">
     <div class="brand" style="font-size:18px">WERKSICHT</div>
-    <div class="B" style="font-size:20px;letter-spacing:3px;color:#f97316">UNTERSTÜTZUNG</div>
-
-    <!-- HELFENDE HAND -->
+    <div class="B" style="font-size:20px;letter-spacing:3px;color:#f97316">UNTERSTÜTZUNG ANFORDERN</div>
+    <!-- Helfende Hand -->
     <div style="background:var(--c2);border:1px solid var(--brd);border-radius:9px;padding:14px">
       <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:8px">🤝 Helfende Hand</div>
-      <div style="font-size:12px;color:var(--mut);margin-bottom:8px">Stiller Hinweis – kein Alarmton</div>
-      <div><div class="lbl">Was wird gesucht?</div>
-           <input class="inp" id="help-desc" placeholder="z. B. Spanisch-Kenntnisse · 3 kräftige Helfer" /></div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:8px">Stiller Hinweis – kein Alarmton. Verschwindet wenn genug Helfer reagiert haben.</div>
+      <div><div class="lbl">Was wird gesucht?</div><input class="inp" id="help-desc" placeholder="z. B. Spanisch-Kenntnisse · 3 kräftige Helfer" /></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px">
-        <div><div class="lbl">Anz. Helfer benötigt</div>
-             <input type="number" class="inp" id="help-count" min="1" max="20" value="1" style="text-align:center" /></div>
-        <div><div class="lbl">Wo?</div>
-             <input class="inp" id="help-ort" placeholder="z. B. Lager EG" /></div>
+        <div><div class="lbl">Anz. benötigt</div><input type="number" class="inp" id="help-count" min="1" max="20" value="1" style="text-align:center" /></div>
+        <div><div class="lbl">Wo?</div><input class="inp" id="help-ort" placeholder="Lager EG" /></div>
       </div>
       <button class="btn-p" style="background:#22c55e;margin-top:9px" onclick="triggerAlarm('help')">Senden</button>
     </div>
-
-    <!-- PERSÖNLICHE NOTLAGE: Sofortmeldung, Details danach -->
+    <!-- Persönliche Notlage -->
     <div id="notlage-block" style="background:var(--c2);border:1px solid var(--brd);border-radius:9px;padding:14px">
       <div style="font-size:14px;font-weight:600;color:#f59e0b;margin-bottom:6px">⚠️ Persönliche Notlage</div>
-      <div style="font-size:12px;color:#f87171;margin-bottom:9px;line-height:1.5">
-        Alarm wird <strong>sofort</strong> ausgelöst. Details können danach nachgereicht werden.
-      </div>
+      <div style="font-size:12px;color:#f87171;margin-bottom:9px">Alarm wird <strong>sofort</strong> ausgelöst – Details danach nachreichen!</div>
       <div class="lbl">Alarmstufe (1 gering – 10 Lebensgefahr)</div>
       <input type="range" id="alarm-level" min="1" max="10" value="3" oninput="updateAlarmLevel(this.value)" />
       <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mut)">
         <span>1</span><span id="alarm-lvl-lbl" style="color:#f59e0b;font-weight:600">3 – Im Netzwerk</span><span>10</span>
       </div>
-      <button class="btn-p" id="notlage-trigger-btn" style="background:#f59e0b;margin-top:9px;color:#000" onclick="triggerAlarm('notlage')">
-        Notlage melden (sofort)
-      </button>
+      <button class="btn-p" id="notlage-trigger-btn" style="background:#f59e0b;margin-top:9px;color:#000" onclick="triggerAlarm('notlage')">Notlage melden (sofort)</button>
     </div>
-
-    <!-- HAUSALARM -->
+    <!-- Hausalarm -->
     <div style="background:#1a0500;border:1px solid #ef4444;border-radius:9px;padding:14px">
       <div style="font-size:14px;font-weight:600;color:#ef4444;margin-bottom:6px">🚨 HAUSALARM – Evakuierung</div>
       <div style="font-size:12px;color:#f87171;line-height:1.6;margin-bottom:9px">
         ⚠️ <strong>ALLE SOFORT DAS GEBÄUDE VERLASSEN!</strong><br>
-        Kein Betreten von Gefahrenbereichen! Sammelplatz aufsuchen!<br>
-        Nur Rettungskräfte und Brandschutzhelfer dürfen eintreten.
+        Kein Eintreten in Gefahrenbereiche! Sammelplatz aufsuchen!
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
         <button class="sbtn" onclick="setHausReason('Feuer')" style="background:var(--c2);color:#ef4444;border-color:#ef444455;font-size:12px;padding:8px 10px">🔥 Feuer</button>
         <button class="sbtn" onclick="setHausReason('Gasalarm')" style="background:var(--c2);color:#f59e0b;border-color:#f59e0b55;font-size:12px;padding:8px 10px">⚡ Gas</button>
-        <input class="inp" id="haus-reason-inp" placeholder="Anderen Grund" style="flex:1;min-width:120px" />
+        <input class="inp" id="haus-reason-inp" placeholder="Anderen Grund" style="flex:1;min-width:100px" />
       </div>
-      <button class="btn-p" style="background:#ef4444;margin-top:9px" onclick="triggerAlarm('haus')">🚨 HAUSALARM</button>
+      <button class="btn-p" style="background:#ef4444;margin-top:9px" onclick="triggerAlarm('haus')">🚨 HAUSALARM AUSLÖSEN</button>
     </div>
-
     <button class="btn-g" onclick="hov('ov-alarm-trigger')" style="width:100%;text-align:center">Abbrechen</button>
   </div>
 </div>
@@ -699,26 +715,16 @@ input[type=range]{accent-color:#f59e0b;width:100%}
     <div class="B" style="font-size:28px;letter-spacing:4px;text-align:center" id="alm-type-lbl">ALARM</div>
     <div id="alm-person" style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:3px;color:#fff;text-align:center"></div>
     <div id="alm-own-badge" style="display:none;font-size:12px;color:var(--mut);text-align:center">(ausgelöst durch mich)</div>
-    <div id="alm-detail" style="font-size:13px;text-align:center;line-height:1.7;background:var(--c2);border-radius:8px;padding:11px;color:var(--txt)">
-      Warte auf Details…
-    </div>
-
-    <!-- Notlage: Details nachreichen (nur für Auslöser, nach Alarm-Auslösung) -->
+    <div id="alm-detail" style="font-size:13px;text-align:center;line-height:1.7;background:var(--c2);border-radius:8px;padding:11px;color:var(--txt)">Warte auf Details…</div>
     <div id="alm-notlage-details" style="display:none;background:var(--c2);border-radius:8px;padding:12px">
-      <div style="font-size:12px;color:#f59e0b;margin-bottom:8px">Details nachreichen (werden sofort übermittelt):</div>
+      <div style="font-size:12px;color:#f59e0b;margin-bottom:8px">Details nachreichen (live an alle übermittelt):</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
-        <div><div class="lbl">Was ist passiert?</div>
-             <input class="inp" id="alm-was" placeholder="z. B. Sturz" oninput="pushNotlageDetail()" /></div>
-        <div><div class="lbl">Betroffene</div>
-             <input type="number" class="inp" id="alm-anzahl" min="1" value="1" style="text-align:center" oninput="pushNotlageDetail()" /></div>
-        <div><div class="lbl">Wo?</div>
-             <input class="inp" id="alm-ort" placeholder="z. B. Halle 2" oninput="pushNotlageDetail()" /></div>
-        <div><div class="lbl">Benötigte Hilfe</div>
-             <input class="inp" id="alm-hilfe" placeholder="z. B. Erste-Hilfe" oninput="pushNotlageDetail()" /></div>
+        <div><div class="lbl">Was passiert?</div><input class="inp" id="alm-was" placeholder="z. B. Sturz" oninput="pushNotlageDetail()" /></div>
+        <div><div class="lbl">Betroffene</div><input type="number" class="inp" id="alm-anzahl" min="1" value="1" style="text-align:center" oninput="pushNotlageDetail()" /></div>
+        <div><div class="lbl">Wo?</div><input class="inp" id="alm-ort" placeholder="z. B. Halle 2" oninput="pushNotlageDetail()" /></div>
+        <div><div class="lbl">Benötigte Hilfe</div><input class="inp" id="alm-hilfe" placeholder="Erste-Hilfe" oninput="pushNotlageDetail()" /></div>
       </div>
     </div>
-
-    <!-- Notruf -->
     <div id="alm-notruf" style="display:none;background:#1a0000;border:1px solid #ef444466;border-radius:8px;padding:11px;font-size:13px;color:#f87171;line-height:1.6">
       ☎️ <strong>Wurde der Notruf (112) gewählt?</strong>
       <div style="display:flex;gap:7px;margin-top:8px">
@@ -726,16 +732,12 @@ input[type=range]{accent-color:#f59e0b;width:100%}
         <button class="btn-p" style="flex:1;background:#ef4444;font-size:13px" onclick="setNotruf(false)">Nein – 112 wählen!</button>
       </div>
     </div>
-
-    <!-- Hausalarm: Grund aktualisieren -->
     <div id="alm-haus-reason" style="display:none">
       <div style="display:flex;gap:6px">
         <input class="inp" id="alm-reason-inp" placeholder="Grund aktualisieren" style="flex:1" />
         <button class="btn-g" onclick="updateHausReason()" style="font-size:12px">OK</button>
       </div>
     </div>
-
-    <!-- Reaktions-Buttons (Empfänger) -->
     <div id="alm-responses-btns" style="display:none">
       <div class="lbl" style="margin-bottom:7px">Meine Reaktion</div>
       <div style="display:flex;gap:7px;flex-wrap:wrap">
@@ -744,24 +746,40 @@ input[type=range]{accent-color:#f59e0b;width:100%}
         <button class="alarm-resp-btn" style="color:#f97316;border-color:#f9731655" onclick="sendResponse('need_more')">🔔 Mehr Hilfe nötig</button>
       </div>
     </div>
-
-    <!-- Hausalarm: In Sicherheit -->
     <div id="alm-haus-safety-btn" style="display:none">
       <button class="btn-p" style="background:#22c55e" onclick="reportSafe()">✓ Ich bin in Sicherheit</button>
     </div>
-
-    <!-- Reaktionsübersicht -->
     <div id="alm-resp-display" style="font-size:12px;color:var(--mut);background:var(--c2);border-radius:7px;padding:8px;line-height:1.6;min-height:32px"></div>
-
-    <!-- Hausalarm: Bestätigungszähler -->
     <div id="alm-conf-count" style="display:none;font-size:12px;color:var(--mut);text-align:center"></div>
-
-    <!-- Alarm beenden -->
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn-d" id="alm-end-btn" onclick="requestEndAlarm()" style="flex:1">Alarm beenden</button>
       <button class="btn-g" id="alm-dismiss-btn" onclick="dismissAlarm()" style="flex:0 0 auto">Ausblenden</button>
     </div>
     <div style="font-size:10px;color:var(--dim);text-align:center" id="alm-end-hint"></div>
+  </div>
+</div>
+
+<!-- PING/NACHRICHT -->
+<div class="ov" id="ov-ping">
+  <div class="ov-box">
+    <div class="B" id="ping-title" style="font-size:20px;letter-spacing:3px;color:#60a5fa">NACHRICHT</div>
+    <div style="font-size:13px;color:var(--mut)" id="ping-desc"></div>
+    <textarea class="inp" id="ping-msg" placeholder="Kurze Nachricht (optional, max. 120 Zeichen)" maxlength="120"
+      style="resize:none;height:70px;font-size:13px"></textarea>
+    <div style="display:flex;gap:8px">
+      <button class="btn-g" onclick="hov('ov-ping')" style="flex:1">Abbrechen</button>
+      <button class="btn-p" style="flex:1;background:#60a5fa" onclick="sendPing()">Senden 📣</button>
+    </div>
+  </div>
+</div>
+
+<!-- MEHR HILFE NÖTIG -->
+<div class="ov" id="ov-more-help">
+  <div class="ov-box">
+    <div class="B" style="font-size:20px;letter-spacing:3px;color:#f97316">WEITERE HILFE?</div>
+    <div style="font-size:13px;color:var(--mut)">Du bist vor Ort. Wird weitere Unterstützung benötigt?</div>
+    <button class="btn-p" style="background:#ef4444" onclick="reAlarm()">Ja – Alarm erneut senden</button>
+    <button class="btn-p" style="background:#22c55e" onclick="endFromOnsite()">Nein – Situation unter Kontrolle</button>
   </div>
 </div>
 
@@ -785,47 +803,41 @@ input[type=range]{accent-color:#f59e0b;width:100%}
   </div>
 </div>
 
-<!-- MEHR HILFE NÖTIG - Bestätigung -->
-<div class="ov" id="ov-more-help">
-  <div class="ov-box">
-    <div class="B" style="font-size:20px;letter-spacing:3px;color:#f97316">WEITERE HILFE?</div>
-    <div style="font-size:13px;color:var(--mut)">Du bist vor Ort. Wird weitere Unterstützung benötigt?</div>
-    <button class="btn-p" style="background:#ef4444" onclick="reAlarm()">Ja – Alarm erneut senden</button>
-    <button class="btn-p" style="background:#22c55e" onclick="endFromOnsite()">Nein – Situation unter Kontrolle</button>
-  </div>
-</div>
+<!-- Ping Toast Container -->
+<div id="ping-toasts" style="position:fixed;top:calc(var(--top-h)+8px);right:12px;z-index:50;display:flex;flex-direction:column;gap:8px;max-width:260px"></div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 // §1  KONSTANTEN
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 const DB='https://werksicht-default-rtdb.europe-west1.firebasedatabase.app';
 const PRESENCE={
-  im_werk:        {lbl:'IM WERK',         a:'#22c55e',present:true },
-  mobil:          {lbl:'MOBIL',            a:'#a78bfa',present:false},
-  werk_verlassen: {lbl:'WERK VERLASSEN',   a:'#f97316',present:false},
-  urlaub:         {lbl:'URLAUB',           a:'#60a5fa',present:false},
-  abgemeldet:     {lbl:'ABGEMELDET',       a:'#555',   present:false},
+  im_werk:       {lbl:'IM WERK',          a:'#22c55e',present:true },
+  mobil:         {lbl:'MOBILES ARBEITEN', a:'#a78bfa',present:false},
+  werk_verlassen:{lbl:'WERK VERLASSEN',   a:'#f97316',present:false},
+  urlaub:        {lbl:'URLAUB',           a:'#60a5fa',present:false},
+  abgemeldet:    {lbl:'ABGEMELDET',       a:'#555',   present:false},
 };
 const WORK={
-  am_platz: {lbl:'AM PLATZ',         a:'#22c55e',glow:'rgba(34,197,94,.09)' },
-  einfinden:{lbl:'EINFINDEN',        a:'#f59e0b',glow:'rgba(245,158,11,.09)'},
-  flow:     {lbl:'FLOW',             a:'#ef4444',glow:'rgba(239,68,68,.09)' },
-  unterwegs:{lbl:'IM WERK UNTERWEGS',a:'#60a5fa',glow:'rgba(96,165,250,.09)'},
-  nicht_am_platz:{lbl:'NICHT AM PLATZ',a:'#888', glow:'rgba(128,128,128,.06)'},
+  am_platz:     {lbl:'AM PLATZ',          a:'#22c55e',glow:'rgba(34,197,94,.09)' },
+  einfinden:    {lbl:'EINFINDEN',         a:'#f59e0b',glow:'rgba(245,158,11,.09)'},
+  flow:         {lbl:'FLOW',              a:'#ef4444',glow:'rgba(239,68,68,.09)' },
+  unterwegs:    {lbl:'IM WERK UNTERWEGS', a:'#60a5fa',glow:'rgba(96,165,250,.09)'},
+  nicht_am_platz:{lbl:'NICHT AM PLATZ',  a:'#888',   glow:'rgba(128,128,128,.06)'},
 };
 const GRACE_MS=10*60*1000, STALE_MS=8*3600*1000, CLEANUP_MS=90*24*3600*1000;
+// Multi-Device Sync: Remote gewinnt wenn Zeitstempel um mehr als diese Schwelle neuer ist
+const SYNC_TOLERANCE_MS=1500;
 
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 // §2  LOKALER ZUSTAND
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 const LS={uid:'wk_uid',name:'wk_name',pin:'wk_pin',af:'wk_af',
-  locs:'wk_locs',disc:'wk_disc',nicks:'wk_nicks',comfort:'wk_comfort',
-  devices:'wk_devices'}; // wk_devices: list of device-codes for same uid
+  locs:'wk_locs',disc:'wk_disc',nicks:'wk_nicks',comfort:'wk_comfort'};
 
-let myUid   = lg(LS.uid)   || genUid();
-let myName  = lg(LS.name)  || '';
-let pin     = lg(LS.pin)   || '';
+let myUid   = lg(LS.uid)  || genUid();
+let myName  = lg(LS.name) || '';
+let pin     = lg(LS.pin)  || '';
 let afMin   = parseInt(lg(LS.af)||'0');
 let savedLocs=JSON.parse(lg(LS.locs)||'[]');
 let nicks   = JSON.parse(lg(LS.nicks)||'{}');
@@ -837,48 +849,55 @@ let myState={
   bisZeit:null,anlaufStart:null,anlaufDur:null,flowStart:null,
   ort:'',ortBis:'',napBis:'',lastPresChange:null,name:myName,t:Date.now()
 };
+// Letzter vom lokalen Gerät geschriebener Zeitstempel
+// (um Remote-Adoptierung von eigenem Push zu unterscheiden)
+let myLastPushT=0;
 
 let users={},watching=[],watchers={};
 let _ivD,_ivC,_ivT,_ivCode,_ivAlarm;
-let _pinCb,newContactCb=null;
+let _pinCb, newContactCb=null;
 let dispView='tiles';
 let locPopIdx=-1,locPopCtx='ctrl';
 let prevOthers=-1;
 let activeAlarm=null,stopAlarmSfx=null,alarmDismissed=false;
 let hausReasonPending='';
-let evacSafe=new Set(); // UIDs die sich als "in Sicherheit" gemeldet haben
+let evacSafe=new Set();
+let pingTarget=null;
+let lastPollPingT=0;
+let currentView='v-mode'; // aktive View-ID
 
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 // §3  FIREBASE
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 async function fbGet(path){try{const r=await fetch(`${DB}${path}.json`);return r.ok?await r.json():null;}catch{return null;}}
 async function fbPut(path,d){try{const r=await fetch(`${DB}${path}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});return r.ok;}catch{return false;}}
 async function fbDel(path){try{const r=await fetch(`${DB}${path}.json`,{method:'DELETE'});return r.ok;}catch{return false;}}
-async function fbInc(path){// Atomisch inkrementieren für Analytics
-  const cur=await fbGet(path)||0;
-  await fbPut(path,cur+1);
-}
+async function fbInc(path){try{const c=await fbGet(path)||0;await fbPut(path,c+1);}catch{}}
 
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 // §4  KRYPTOGRAFISCHE CODE-ROTATION
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 function genUid(){const a=new Uint8Array(16);crypto.getRandomValues(a);const u='wk_'+Array.from(a).map(b=>b.toString(16).padStart(2,'0')).join('');ls(LS.uid,u);return u;}
-function genCode6(){const a=new Uint32Array(1);crypto.getRandomValues(a);return (a[0]%2176782336).toString(36).toUpperCase().padStart(6,'0').substring(0,6);}
-
+function genCode6(){const a=new Uint32Array(1);crypto.getRandomValues(a);return(a[0]%2176782336).toString(36).toUpperCase().padStart(6,'0').substring(0,6);}
 async function rotateCode(){
-  if(myCode&&(Date.now()-codeTime)<60000) return;
+  if(myCode&&(Date.now()-codeTime)<60000)return;
   let nc,tries=0;
   do{nc=genCode6();const ex=await fbGet(`/flowapp/codes/${nc}`);if(!ex||ex.uid===myUid)break;tries++;}while(tries<5);
   const old=myCode;
   await fbPut(`/flowapp/codes/${nc}`,{uid:myUid,name:myName,t:Date.now()});
-  if(old&&old!==nc) await fbDel(`/flowapp/codes/${old}`);
-  myCode=nc; codeTime=Date.now();
+  if(old&&old!==nc)await fbDel(`/flowapp/codes/${old}`);
+  myCode=nc;codeTime=Date.now();
+  // Code in allen offenen UI-Elementen aktualisieren
+  document.querySelectorAll('#my-code,#contacts-my-code').forEach(el=>{el.textContent=nc;});
 }
-function updateCodeTimer(){const el=document.getElementById('code-timer');if(!el)return;const rem=Math.max(0,60-Math.floor((Date.now()-codeTime)/1000));el.textContent=`Neu in ${rem}s`;}
+function updateCodeTimer(){
+  const rem=Math.max(0,60-Math.floor((Date.now()-codeTime)/1000));
+  document.querySelectorAll('#code-timer,#contacts-code-timer').forEach(el=>{el.textContent=`Neu in ${rem}s`;});
+}
 
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 // §5  SOUND
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 let _actx=null;
 function getACtx(){if(!_actx)_actx=new(window.AudioContext||window.webkitAudioContext)();return _actx;}
 function playBeeps(n,freq=880,dur=350,gap=550){
@@ -898,27 +917,19 @@ function startAlarmLoop(freq=660,onMs=5000,offMs=5000){
   return()=>{run=false;};
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 // §6  NOTIFICATIONS
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 let notifPerm='default';
 async function reqNotif(){if('Notification'in window)notifPerm=await Notification.requestPermission();return notifPerm;}
 function notify(title,body,persist=false){if(notifPerm!=='granted')return;try{new Notification(title,{body,requireInteraction:persist,silent:false});}catch(e){}}
 
-// ═══════════════════════════════════════════════════════════════
-// §7  BOOT
-// ═══════════════════════════════════════════════════════════════
-// Service Worker registrieren
-if('serviceWorker'in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
-
-// PWA Install-Event abfangen
+// ═════════════════════════════════════════════════════════════════
+// §7  BOOT & DISCLAIMER
+// ═════════════════════════════════════════════════════════════════
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 let _deferredInstall=null;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();_deferredInstall=e;updateInstallHint();});
-function updateInstallHint(){
-  const el=document.getElementById('install-hint');if(!el)return;
-  if(_deferredInstall) el.textContent='Klicken zum Installieren (Chrome/Edge/Android)';
-  else el.textContent='iOS: Teilen → "Zum Home-Bildschirm"';
-}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();_deferredInstall=e;});
 
 (()=>{if(!discOK){ov('ov-disclaimer');}else{boot2();}})();
 function acceptDisclaimer(){ls(LS.disc,'yes');discOK=true;hov('ov-disclaimer');boot2();}
@@ -935,9 +946,13 @@ async function saveName(){
 }
 function finishComfort(){ls(LS.comfort,'yes');hov('ov-comfort');goMode();}
 
-// ═══════════════════════════════════════════════════════════════
-// DEVICE SYNC – vollständige UID-Übernahme
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
+// DEVICE SYNC – UID vollständig übernehmen
+// Strategie: Gerät B übernimmt vollständig die UID von Gerät A.
+// Gerät B's alten Datensatz aus Firebase löschen.
+// Danach teilen beide Geräte dieselbe UID, lesen und schreiben denselben Knoten.
+// Das neuere `t`-Feld entscheidet welcher Status gilt (§9).
+// ═════════════════════════════════════════════════════════════════
 async function doDeviceSync(inputId,errId){
   const code=(document.getElementById(inputId).value||'').trim().toUpperCase();
   const errEl=document.getElementById(errId);
@@ -946,166 +961,200 @@ async function doDeviceSync(inputId,errId){
   const cd=await fbGet(`/flowapp/codes/${code}`);
   if(!cd||!cd.uid){errEl.textContent='Code nicht gefunden. Aktuellen Code verwenden!';return;}
   const targetUid=cd.uid;
-  if(targetUid===myUid){errEl.textContent='Das ist dein eigener Code.';return;}
-
+  if(targetUid===myUid){errEl.textContent='Das ist bereits dein aktuelles Gerät.';return;}
   errEl.textContent='Synchronisiere…';
   const oldUid=myUid;
-
-  // 1. Altes UID-Profil aus Firebase entfernen (war ein separater Nutzer)
-  if(oldUid!==targetUid){
-    // Alle mit oldUid verbundenen Nutzer informieren, dass wir wechseln
-    const myOldWatchers=await fbGet(`/flowapp/watchers/${oldUid}`)||{};
-    for(const [uid,data] of Object.entries(myOldWatchers)){
-      await fbDel(`/flowapp/watching/${uid}/${oldUid}`);
-      await fbDel(`/flowapp/watchers/${uid}/${oldUid}`);
-    }
-    const myOldWatching=await fbGet(`/flowapp/watching/${oldUid}`)||{};
-    for(const [uid] of Object.entries(myOldWatching)){
-      await fbDel(`/flowapp/watchers/${uid}/${oldUid}`);
-    }
-    await fbDel(`/flowapp/rooms/${oldUid}`);
-    await fbDel(`/flowapp/watchers/${oldUid}`);
-    await fbDel(`/flowapp/watching/${oldUid}`);
-    if(myCode) await fbDel(`/flowapp/codes/${myCode}`);
-  }
-
-  // 2. Neue UID übernehmen
-  myUid=targetUid; ls(LS.uid,myUid);
-  myName=cd.name||myName; ls(LS.name,myName);
-  myState.name=myName;
-
-  // 3. Bestehenden Status aus Firebase laden
+  // Alten Datensatz bereinigen
+  const ow=await fbGet(`/flowapp/watchers/${oldUid}`)||{};
+  for(const u of Object.keys(ow)){await fbDel(`/flowapp/watching/${u}/${oldUid}`);await fbDel(`/flowapp/watchers/${u}/${oldUid}`);}
+  const owg=await fbGet(`/flowapp/watching/${oldUid}`)||{};
+  for(const u of Object.keys(owg)){await fbDel(`/flowapp/watchers/${u}/${oldUid}`);await fbDel(`/flowapp/watching/${oldUid}/${u}`);}
+  await fbDel(`/flowapp/rooms/${oldUid}`);
+  await fbDel(`/flowapp/watchers/${oldUid}`);
+  await fbDel(`/flowapp/watching/${oldUid}`);
+  if(myCode)await fbDel(`/flowapp/codes/${myCode}`);
+  // Neue Identität
+  myUid=targetUid;ls(LS.uid,myUid);
+  myName=cd.name||myName;ls(LS.name,myName);myState.name=myName;
+  // Remote-Status laden
   const st=await fbGet(`/flowapp/rooms/${myUid}`);
-  if(st){myState={...myState,...st};}
-
-  // 4. Neuen Code für dieses Gerät generieren
-  myCode=''; codeTime=0;
-  await rotateCode();
-
-  errEl.textContent='';
+  if(st&&st.t){myState={...myState,...st};myLastPushT=st.t;}
+  myCode='';codeTime=0;await rotateCode();
+  errEl.textContent='✓ Synchronisiert!';
   document.getElementById(inputId).value='';
-  hov('ov-name'); goMode();
+  setTimeout(()=>{errEl.textContent='';},3000);
+  goMode();
 }
 
-// ═══════════════════════════════════════════════════════════════
-// §8  NAVIGATION
-// ═══════════════════════════════════════════════════════════════
-function show(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+// ═════════════════════════════════════════════════════════════════
+// §8  SHELL / NAVIGATION
+// ═════════════════════════════════════════════════════════════════
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  // Bottom Nav: auf Display ausblenden wegen Platzmangel, aber trotzdem über pbar
-  document.getElementById('bottom-nav').classList.toggle('hidden',false);
-  document.querySelectorAll('#bottom-nav button').forEach(b=>b.classList.remove('active'));
-  const map={s_mode:'nb-start',s_ctrl:'nb-ctrl',s_disp:'nb-disp'};
-  const nb=map[id.replace('-','_')];if(nb)document.getElementById(nb)?.classList.add('active');
+  currentView=id;
+  // Bottom Nav Highlight
+  const map={v_mode:'nb-start',v_ctrl:'nb-ctrl',v_disp:'nb-disp'};
+  document.querySelectorAll('#bot-nav button').forEach(b=>b.classList.remove('act'));
+  const nb=map[id.replace('-','_')];if(nb)document.getElementById(nb).classList.add('act');
+  // Presence-Bar nur im Display
+  document.getElementById('pbar').classList.toggle('visible',id==='v-disp');
+  // Back-Button: im Controller und Display zeigen
+  document.getElementById('tb-back').style.display=(id==='v-ctrl'||id==='v-disp')?'block':'none';
+  updateTopBarStatus();
 }
+
+function tbBack(){goMode();}
+
 function ov(id){document.getElementById(id).classList.add('show');}
 function hov(id){document.getElementById(id).classList.remove('show');}
 function clearIvs(){[_ivD,_ivC,_ivT,_ivCode,_ivAlarm].forEach(clearInterval);}
 
-function goMode(){clearIvs();show('s-mode');document.getElementById('mode-greet').textContent=myName?`Hallo, ${myName} (ich)`:'';}
-function togglePrivacy(){const el=document.getElementById('privacy-box');el.style.display=el.style.display==='block'?'none':'block';}
+function goMode(){
+  clearIvs();
+  showView('v-mode');
+  document.getElementById('mode-greet').textContent=myName?`${myName} (ich)`:'';
+}
+
+function togglePrivacy(){
+  const el=document.getElementById('privacy-box');
+  el.style.display=el.style.display==='block'?'none':'block';
+}
 function openHelp(){buildHelp();ov('ov-help');}
 
-// ═══════════════════════════════════════════════════════════════
-// §9  CONTROLLER
-// ═══════════════════════════════════════════════════════════════
+// Top-Bar Mitte: aktuellen Status anzeigen
+function updateTopBarStatus(){
+  const pr=PRESENCE[myState.presence]?.lbl||'–';
+  const ws=WORK[myState.workStatus]?.lbl||'';
+  const workOk=myState.presence==='im_werk'||myState.presence==='mobil';
+  document.getElementById('tbc-status').textContent=workOk?`${pr} · ${ws}`:pr;
+  document.getElementById('tbc-status').style.color=effColor(myState);
+}
+
+// ═════════════════════════════════════════════════════════════════
+// §9  CONTROLLER-LOGIK
+// ═════════════════════════════════════════════════════════════════
 function goCtrl(){if(pin){_pinCb=_openCtrl;openPinOv('CONTROLLER');}else{_openCtrl();}}
 async function _openCtrl(){
-  show('s-ctrl');
-  document.getElementById('ctrl-nl').textContent=`${myName} (ich)`;
+  showView('v-ctrl');
   document.getElementById('sel-af').value=afMin;
-  if(myState.bisZeit) document.getElementById('inp-bis').value=myState.bisZeit;
-  if(myState.ort)     document.getElementById('inp-ort').value=myState.ort;
-  if(myState.ortBis)  document.getElementById('inp-ort-bis').value=myState.ortBis;
-  if(myState.napBis)  document.getElementById('inp-nap-bis').value=myState.napBis;
+  if(myState.bisZeit)document.getElementById('inp-bis').value=myState.bisZeit;
+  if(myState.ort)document.getElementById('inp-ort').value=myState.ort;
+  if(myState.ortBis)document.getElementById('inp-ort-bis').value=myState.ortBis;
+  if(myState.napBis)document.getElementById('inp-nap-bis').value=myState.napBis;
   renderLocTiles('ctrl');
   await rotateCode();
-  document.getElementById('my-code').textContent=myCode;
   renderCtrl();await refreshWatchers();
   _ivT=setInterval(()=>{renderCtrl();updateCodeTimer();},1000);
-  _ivCode=setInterval(async()=>{await rotateCode();document.getElementById('my-code').textContent=myCode;},5000);
-  _ivC=setInterval(async()=>{checkAF();await pushState();await refreshWatchers();await cleanInactive();},4000);
+  _ivCode=setInterval(async()=>{await rotateCode();},5000);
+  _ivC=setInterval(async()=>{
+    checkAF();
+    await syncOwnStateFromRemote(); // Multi-Device Sync
+    await pushState();
+    await refreshWatchers();
+    await cleanInactive();
+    await pollPings();
+  },4000);
   _ivAlarm=setInterval(pollAlarms,3000);
   trackEvent('ctrl_opened');
+}
+
+// ─── MULTI-DEVICE SYNC ────────────────────────────────────────────
+// Remote gewinnt wenn remote.t um SYNC_TOLERANCE_MS neuer als myLastPushT
+async function syncOwnStateFromRemote(){
+  const remote=await fbGet(`/flowapp/rooms/${myUid}`);
+  if(!remote||!remote.t)return;
+  // Wenn remote deutlich neuer als unser letzter Push → übernehmen
+  if(remote.t>myLastPushT+SYNC_TOLERANCE_MS){
+    myState={...myState,...remote};
+    myLastPushT=remote.t;
+    renderCtrl();
+    updateTopBarStatus();
+    // UI-Felder aktualisieren
+    if(myState.bisZeit)document.getElementById('inp-bis').value=myState.bisZeit;
+    if(myState.ort)document.getElementById('inp-ort').value=myState.ort||'';
+    if(myState.ortBis)document.getElementById('inp-ort-bis').value=myState.ortBis||'';
+    showSyncCheck();
+  }
+}
+
+function showSyncCheck(){
+  const el=document.getElementById('sync-checkmark');
+  el.style.display='block';
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>{el.style.display='none';},2500);
+  // Auch in Controller-View
+  const cs=document.getElementById('ctrl-sync-status');
+  if(cs){cs.style.display='block';clearTimeout(cs._t);cs._t=setTimeout(()=>{cs.style.display='none';},2500);}
 }
 
 function renderCtrl(){
   const pr=myState.presence,ws=myState.workStatus;
   const pa=PRESENCE[pr]?.a||'#555',wa=WORK[ws]?.a||'#22c55e',ac=effColor(myState);
-  document.getElementById('ctrl-logo').style.color=ac;
-
-  // Anwesenheits-Buttons: mutex-Logik
-  const activePresence=pr==='im_werk'?'im_werk':pr==='mobil'?'mobil':pr==='urlaub'?'urlaub':null;
+  updateTopBarStatus();
+  // Anwesenheits-Buttons
+  const activeP=pr==='im_werk'?'im_werk':pr==='mobil'?'mobil':pr==='urlaub'?'urlaub':null;
   ['im_werk','mobil','urlaub'].forEach(k=>{
     const b=document.getElementById('btn-'+k);if(!b)return;
     const c=PRESENCE[k]?.a||'#555';
-    const isActive=k===pr;
-    const isDisabled=!!activePresence&&!isActive; // gesperrt wenn anderes aktiv
-    b.style.cssText=isActive
+    const dis=!!activeP&&k!==pr;
+    b.style.cssText=k===pr
       ?`background:${c};color:#000;border-color:${c}`
-      :`background:var(--c2);color:${isDisabled?'#444':c};border-color:${isDisabled?'#2a2a2a':c+'55'}`;
-    b.disabled=isDisabled;
+      :`background:var(--c2);color:${dis?'#444':c};border-color:${dis?'#2a2a2a':c+'55'}`;
+    b.disabled=dis;
   });
-
-  // Kontext-Button (Abmelden/Werk verlassen/...)
-  const exitBtn=document.getElementById('btn-exit-presence');
-  if(activePresence){
-    exitBtn.disabled=false; exitBtn.style.opacity='1'; exitBtn.style.cursor='pointer';
-    const labels={im_werk:'WERK VERLASSEN',mobil:'MOBILES ARBEITEN BEENDEN',urlaub:'URLAUB BEENDEN'};
-    const colors={im_werk:'#f97316',mobil:'#a78bfa',urlaub:'#60a5fa'};
-    const c=colors[activePresence];
-    exitBtn.textContent=labels[activePresence]||'ABMELDEN';
-    exitBtn.style.cssText=`width:100%;margin-top:6px;background:var(--c2);color:${c};border:1px solid ${c}55;padding:11px 5px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;transition:all .18s`;
+  // Exit-Button
+  const eb=document.getElementById('btn-exit-presence');
+  if(activeP){
+    eb.disabled=false;eb.style.opacity='1';eb.style.cursor='pointer';
+    const lbls={im_werk:'WERK VERLASSEN',mobil:'MOBILES ARBEITEN BEENDEN',urlaub:'URLAUB BEENDEN'};
+    const cols={im_werk:'#f97316',mobil:'#a78bfa',urlaub:'#60a5fa'};
+    const c=cols[activeP];
+    eb.textContent=lbls[activeP]||'ABMELDEN';
+    eb.style.cssText=`width:100%;margin-top:6px;background:var(--c2);color:${c};border:1px solid ${c}55;padding:11px 5px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;transition:all .18s`;
   } else {
-    exitBtn.disabled=true; exitBtn.style.opacity='0.4'; exitBtn.style.cursor='default';
-    exitBtn.textContent='ABMELDEN';
-    exitBtn.style.cssText=`width:100%;margin-top:6px;background:var(--c2);color:var(--dim);border:1px solid var(--brd);padding:11px 5px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;cursor:default;opacity:.4;transition:all .18s`;
+    eb.disabled=true;eb.style.opacity='0.4';eb.style.cursor='default';
+    eb.textContent='ABMELDEN';
+    eb.style.cssText=`width:100%;margin-top:6px;background:var(--c2);color:var(--dim);border:1px solid var(--brd);padding:11px 5px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;cursor:default;opacity:.4;transition:all .18s`;
   }
-
-  // Arbeitsstatus-Sektion
   const workOk=pr==='im_werk'||pr==='mobil';
   document.getElementById('card-workstatus').style.opacity=workOk?'1':'0.35';
   document.querySelectorAll('#card-workstatus .sbtn').forEach(b=>{b.disabled=!workOk;});
   if(workOk){
-    ['am_platz','einfinden','flow','unterwegs','nicht_am_platz'].forEach(k=>{
+    ['am_platz','einfinden','flow'].forEach(k=>{
       const b=document.getElementById('btn-'+k);if(!b)return;
       const c=WORK[k]?.a||'#555';
       b.style.cssText=k===ws?`background:${c};color:#000;border-color:${c}`:`background:var(--c2);color:${c};border-color:${c}55`;
     });
   }
-
-  // Kontext-Orts-Button: "Im Werk unterwegs" (im_werk) vs "Nicht am Platz" (mobil)
-  const ortBtn=document.getElementById('btn-ort-status');
+  // Kontext-Orts-Button
+  const ob=document.getElementById('btn-ort-status');
   if(pr==='mobil'){
-    ortBtn.textContent='NICHT AM PLATZ';
-    ortBtn.style.color=WORK.nicht_am_platz.a; ortBtn.style.borderColor=WORK.nicht_am_platz.a+'55';
-    if(ws==='nicht_am_platz'){ ortBtn.style.background=WORK.nicht_am_platz.a; ortBtn.style.color='#000'; }
-    else ortBtn.style.background='var(--c2)';
+    ob.textContent='NICHT AM PLATZ';ob.style.color=WORK.nicht_am_platz.a;ob.style.borderColor=WORK.nicht_am_platz.a+'55';
+    ob.style.background=ws==='nicht_am_platz'?WORK.nicht_am_platz.a:'var(--c2)';
+    ob.style.color=ws==='nicht_am_platz'?'#000':WORK.nicht_am_platz.a;
   } else {
-    ortBtn.textContent='IM WERK UNTERWEGS';
-    ortBtn.style.color=WORK.unterwegs.a; ortBtn.style.borderColor=WORK.unterwegs.a+'55';
-    if(ws==='unterwegs'){ ortBtn.style.background=WORK.unterwegs.a; ortBtn.style.color='#000'; }
-    else ortBtn.style.background='var(--c2)';
+    ob.textContent='IM WERK UNTERWEGS';ob.style.color=WORK.unterwegs.a;ob.style.borderColor=WORK.unterwegs.a+'55';
+    ob.style.background=ws==='unterwegs'?WORK.unterwegs.a:'var(--c2)';
+    ob.style.color=ws==='unterwegs'?'#000':WORK.unterwegs.a;
   }
-
   document.getElementById('card-af').style.display=(ws==='einfinden'&&workOk)?'block':'none';
   document.getElementById('card-uw').style.display=(ws==='unterwegs'&&pr==='im_werk')?'block':'none';
   document.getElementById('card-nap').style.display=(ws==='nicht_am_platz'&&pr==='mobil')?'block':'none';
   document.getElementById('bis-display').textContent=myState.bisZeit||'–';
-  document.getElementById('c-sdot').style.cssText=`width:9px;height:9px;border-radius:50%;background:${pa};box-shadow:0 0 7px ${pa}`;
+  document.getElementById('c-sdot').style.cssText=`width:9px;height:9px;border-radius:50%;flex-shrink:0;background:${pa};box-shadow:0 0 7px ${pa}`;
   document.getElementById('c-pname').style.color=pa;
   document.getElementById('c-pname').textContent=PRESENCE[pr]?.lbl||'';
   document.getElementById('c-wname').style.color=workOk?wa:'#555';
   document.getElementById('c-wname').textContent=workOk?WORK[ws]?.lbl||'':'–';
   let h='';
-  if(myState.anlaufStart&&ws==='einfinden') h+=`<div class="tbox"><div class="tl">Einfinden seit</div><div class="tv" style="color:var(--mut)">${fmtSince(myState.anlaufStart)}</div></div>`;
-  if(myState.anlaufDur!=null&&ws==='flow')  h+=`<div class="tbox"><div class="tl">Einfindezeit</div><div class="tv" style="color:var(--dim)">${fmtMs(myState.anlaufDur)}</div></div>`;
-  if(myState.flowStart&&ws==='flow')        h+=`<div class="tbox"><div class="tl" style="color:${wa}">Flow seit</div><div class="tv" style="color:${wa}">${fmtSince(myState.flowStart)}</div></div>`;
+  if(myState.anlaufStart&&ws==='einfinden')h+=`<div class="tbox"><div class="tl">Einfinden seit</div><div class="tv" style="color:var(--mut)">${fmtSince(myState.anlaufStart)}</div></div>`;
+  if(myState.anlaufDur!=null&&ws==='flow')h+=`<div class="tbox"><div class="tl">Einfindezeit</div><div class="tv" style="color:var(--dim)">${fmtMs(myState.anlaufDur)}</div></div>`;
+  if(myState.flowStart&&ws==='flow')h+=`<div class="tbox"><div class="tl" style="color:${wa}">Flow seit</div><div class="tv" style="color:${wa}">${fmtSince(myState.flowStart)}</div></div>`;
   document.getElementById('c-timers').innerHTML=h;
 }
 
-// Anwesenheits-Setter
+// Anwesenheit
 function clickImWerk(){
   if(myState.presence==='mobil'){alert('Bitte zuerst "Mobiles Arbeiten beenden".');return;}
   const t=new Date();t.setMinutes(Math.ceil(t.getMinutes()/15)*15,0,0);
@@ -1116,44 +1165,34 @@ async function confirmImWerk(noCommit){
   const v=noCommit?null:(document.getElementById('inp-bis-pop').value||null);
   hov('ov-im-werk');
   const ns={...myState,presence:'im_werk',lastPresChange:Date.now()};
-  if(v!==undefined) ns.bisZeit=v;
+  if(v!==undefined)ns.bisZeit=v;
   myState=ns;await pushState();renderCtrl();
 }
-function clickMobil(){
-  if(myState.presence==='im_werk'){alert('Bitte zuerst "Werk verlassen".');return;}
-  setPresence('mobil');
-}
+function clickMobil(){if(myState.presence==='im_werk'){alert('Bitte zuerst "Werk verlassen".');return;}setPresence('mobil');}
 function clickUrlaub(){
   if(myState.presence==='im_werk'){alert('Bitte zuerst "Werk verlassen".');return;}
   if(myState.presence==='mobil'){alert('Bitte zuerst "Mobiles Arbeiten beenden".');return;}
   setPresence('urlaub');
 }
 async function exitPresence(){
-  const pr=myState.presence;
   const exitMap={im_werk:'werk_verlassen',mobil:'abgemeldet',urlaub:'abgemeldet'};
-  const exitStatus=exitMap[pr]||'abgemeldet';
-  const ns={...myState,presence:exitStatus,lastPresChange:Date.now(),bisZeit:null};
+  const ns={...myState,presence:exitMap[myState.presence]||'abgemeldet',lastPresChange:Date.now(),bisZeit:null};
   myState=ns;await pushState();renderCtrl();
 }
 async function setPresence(pr){
   const ns={...myState,presence:pr,lastPresChange:Date.now()};
-  if(['werk_verlassen','abgemeldet','urlaub'].includes(pr)) ns.bisZeit=null;
+  if(['werk_verlassen','abgemeldet','urlaub'].includes(pr))ns.bisZeit=null;
   myState=ns;await pushState();renderCtrl();
 }
-
-// Arbeitsstatus
 async function setWorkStatus(ws){
-  if(myState.presence!=='im_werk'&&myState.presence!=='mobil') return;
+  if(myState.presence!=='im_werk'&&myState.presence!=='mobil')return;
   const now=Date.now(),ns={...myState,workStatus:ws};
-  if(ws==='einfinden')     {ns.anlaufStart=now;ns.anlaufDur=null;ns.flowStart=null;}
-  else if(ws==='flow')     {if(myState.anlaufStart)ns.anlaufDur=now-myState.anlaufStart;ns.flowStart=now;ns.anlaufStart=null;}
-  else                     {ns.anlaufStart=null;ns.anlaufDur=null;ns.flowStart=null;}
+  if(ws==='einfinden'){ns.anlaufStart=now;ns.anlaufDur=null;ns.flowStart=null;}
+  else if(ws==='flow'){if(myState.anlaufStart)ns.anlaufDur=now-myState.anlaufStart;ns.flowStart=now;ns.anlaufStart=null;}
+  else{ns.anlaufStart=null;ns.anlaufDur=null;ns.flowStart=null;}
   ns.t=Date.now();myState=ns;await pushState();renderCtrl();trackEvent('status_changed');
 }
-function clickOrtStatus(){
-  if(myState.presence==='mobil'){setWorkStatus('nicht_am_platz');}
-  else{clickUnterwegs();}
-}
+function clickOrtStatus(){if(myState.presence==='mobil'){setWorkStatus('nicht_am_platz');}else{clickUnterwegs();}}
 function onBisChange(){myState.bisZeit=document.getElementById('inp-bis').value||null;pushState();}
 function clearBis(){document.getElementById('inp-bis').value='';myState.bisZeit=null;pushState();}
 function onNapBisChange(){myState.napBis=document.getElementById('inp-nap-bis').value||'';pushState();}
@@ -1163,10 +1202,9 @@ function checkAF(){
     myState.anlaufDur=Date.now()-myState.anlaufStart;myState.workStatus='flow';myState.flowStart=Date.now();myState.anlaufStart=null;pushState();
   }
 }
-
-// Unterwegs-Popup
+// Unterwegs
 function clickUnterwegs(){
-  if(myState.presence!=='im_werk') return;
+  if(myState.presence!=='im_werk')return;
   document.getElementById('inp-ort-pop').value=myState.ort||'';
   document.getElementById('inp-ort-bis-pop').value=myState.ortBis||'';
   renderLocTiles('pop');ov('ov-unterwegs');
@@ -1186,11 +1224,15 @@ async function confirmUnterwegsFree(){
 }
 
 async function pushState(){
-  myState.name=myName;myState.t=Date.now();
+  myState.name=myName;
+  myState.t=Date.now();
+  myLastPushT=myState.t; // eigenen Push merken → Remote-Sync ignoriert ihn
   await fbPut(`/flowapp/rooms/${myUid}`,myState);
+  updateTopBarStatus();
 }
 function copyCode(){navigator.clipboard?.writeText(myCode).then(()=>{const b=document.getElementById('copy-btn');b.textContent='✓';setTimeout(()=>b.textContent='Kopieren',2000);});}
 
+// ─── WATCHER-LISTE ────────────────────────────────────────────────
 async function refreshWatchers(){
   const data=await fbGet(`/flowapp/watchers/${myUid}`)||{};
   watchers=data;
@@ -1206,24 +1248,25 @@ async function refreshWatchers(){
 }
 async function removeWatcher(uid2,nick){
   if(!confirm(`${nick} entfernen?`))return;
-  await fbDel(`/flowapp/watchers/${myUid}/${uid2}`);
-  await fbDel(`/flowapp/watching/${uid2}/${myUid}`);
-  await fbDel(`/flowapp/watching/${myUid}/${uid2}`);
-  await fbDel(`/flowapp/watchers/${uid2}/${myUid}`);
+  await mutualRemove(myUid,uid2);
   await refreshWatchers();
 }
-
-// Gerät entfernen vs. Nutzer vollständig löschen
+// Gegenseitiges Entfernen
+async function mutualRemove(a,b){
+  await fbDel(`/flowapp/watchers/${a}/${b}`);
+  await fbDel(`/flowapp/watching/${b}/${a}`);
+  await fbDel(`/flowapp/watching/${a}/${b}`);
+  await fbDel(`/flowapp/watchers/${b}/${a}`);
+}
+// Geräte-Verwaltung
 async function removeDevice(){
-  if(!confirm('Dieses Gerät aus allen Verbindungen entfernen?\nDeine UID und Verbindungen in Firebase bleiben bestehen.'))return;
-  if(myCode) await fbDel(`/flowapp/codes/${myCode}`);
+  if(!confirm('Dieses Gerät aus allen Verbindungen entfernen?\nDeine Firebase-Daten bleiben bestehen.'))return;
+  if(myCode)await fbDel(`/flowapp/codes/${myCode}`);
   myCode='';codeTime=0;
-  // localStorage zurücksetzen außer UID
-  ls(LS.comfort,'');
-  alert('Dieses Gerät wurde entfernt. Auf anderen Geräten bleibt alles erhalten.');
+  alert('Gerät entfernt.');
 }
 async function removeAll(){
-  if(!confirm('Nutzer vollständig löschen?\nAlle Verbindungen und Daten werden aus der Datenbank entfernt.\nDiese Aktion ist nicht rückgängig zu machen!'))return;
+  if(!confirm('Nutzer vollständig löschen?\nAlle Verbindungen und Firebase-Daten werden unwiderruflich entfernt!'))return;
   const mw=await fbGet(`/flowapp/watchers/${myUid}`)||{};
   for(const u of Object.keys(mw)){await fbDel(`/flowapp/watching/${u}/${myUid}`);await fbDel(`/flowapp/watchers/${u}/${myUid}`);}
   const mwg=await fbGet(`/flowapp/watching/${myUid}`)||{};
@@ -1231,33 +1274,44 @@ async function removeAll(){
   await fbDel(`/flowapp/rooms/${myUid}`);
   await fbDel(`/flowapp/watchers/${myUid}`);
   await fbDel(`/flowapp/watching/${myUid}`);
-  if(myCode) await fbDel(`/flowapp/codes/${myCode}`);
-  // localStorage vollständig löschen
+  if(myCode)await fbDel(`/flowapp/codes/${myCode}`);
   Object.values(LS).forEach(k=>localStorage.removeItem(k));
-  alert('Nutzer vollständig gelöscht. Die Seite wird neu geladen.');
+  alert('Nutzer vollständig gelöscht. Seite wird neu geladen.');
   location.reload();
 }
 
-function openOwnStatus(){ov('ov-own-status');}
-async function qs(type,val){
-  if(type==='p'){if(val==='im_werk'){hov('ov-own-status');clickImWerk();}else{await setPresence(val);hov('ov-own-status');}}
-  else{if(val==='unterwegs'){hov('ov-own-status');clickUnterwegs();}else{await setWorkStatus(val);hov('ov-own-status');}}
-}
-
-// ═══════════════════════════════════════════════════════════════
-// §10  DISPLAY
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
+// §10  DISPLAY-LOGIK
+// ═════════════════════════════════════════════════════════════════
 async function goDisp(){
-  show('s-disp');await syncDisp();renderDisp();
+  showView('v-disp');
+  await loadWatchingData();
+  await syncDisp();
+  renderDisp();
   _ivT=setInterval(()=>renderDisp(),1000);
   _ivD=setInterval(async()=>{await syncDisp();renderDisp();},4000);
   _ivAlarm=setInterval(pollAlarms,3000);
+  _ivC=setInterval(async()=>{await pollPings();await syncOwnStateFromRemote();if(myLastPushT>0)await pushState();},4000);
   trackEvent('disp_opened');
 }
-async function syncDisp(){
-  if(!canSeeOthers()){users={};watching=[];return;}
+
+// Verbindungen laden (unabhängig von canSeeOthers für Kontaktliste)
+async function loadWatchingData(){
   const wdata=await fbGet(`/flowapp/watching/${myUid}`)||{};
   watching=Object.keys(wdata).map(uid=>({uid,nick:nickFor(uid,wdata[uid]?.name||uid)}));
+  // Gegenseitige Verbindungen sicherstellen (Bug-Fix: fehlende watching-Einträge ergänzen)
+  for(const [uid,info] of Object.entries(await fbGet(`/flowapp/watchers/${myUid}`)||{})){
+    if(!watching.find(w=>w.uid===uid)){
+      // watcher sieht mich, ich sehe sie aber nicht → ergänzen
+      await fbPut(`/flowapp/watching/${myUid}/${uid}`,{name:info.name||uid,t:Date.now()});
+      watching.push({uid,nick:nickFor(uid,info.name||uid)});
+    }
+  }
+}
+
+async function syncDisp(){
+  if(!canSeeOthers()){users={};return;}
+  await loadWatchingData();
   const rooms=await fbGet('/flowapp/rooms')||{};
   users={};watching.forEach(({uid})=>{if(rooms[uid])users[uid]=rooms[uid];});
 }
@@ -1270,14 +1324,15 @@ function renderDisp(){
 
   // Hausalarm-Ansicht hat Priorität
   if(activeAlarm&&activeAlarm.type==='haus'&&!alarmDismissed){
-    renderEvacScreen(active,inWerk);
+    renderEvacScreen(active);
     renderOwnStrip();
     document.getElementById('pbar').innerHTML='';
     return;
   }
 
-  const ac=inWerk.length?effColor(users[inWerk[0].uid]):mobil.length?effColor(users[mobil[0].uid]):'#22c55e';
-  const gl=inWerk.length?effGlow(users[inWerk[0].uid]):mobil.length?effGlow(users[mobil[0].uid]):'rgba(34,197,94,.09)';
+  // Hintergrund-Effekte
+  const fst=inWerk.length>0?users[inWerk[0].uid]:mobil.length>0?users[mobil[0].uid]:null;
+  const ac=fst?effColor(fst):'#22c55e', gl=fst?effGlow(fst):'rgba(34,197,94,.09)';
   document.getElementById('d-glow').style.background=`radial-gradient(circle,${gl} 0%,transparent 65%)`;
   const grad=`linear-gradient(90deg,transparent,${ac},transparent)`;
   document.getElementById('d-bt').style.background=grad;
@@ -1285,54 +1340,66 @@ function renderDisp(){
 
   renderOwnStrip();
 
-  // Sidebar für Abwesende
+  // Abwesend-Sidebar
   const sb=document.getElementById('d-sidebar');
-  if(absent.length){sb.style.display='flex';sb.innerHTML=`<div class="sidebar-lbl">NICHT IM WERK</div>`+absent.map(({uid})=>{
-    const d=users[uid];if(!d)return'';
-    const ac2=PRESENCE[d.presence]?.a||'#555';
-    const elapsed=Date.now()-d.t;
-    const timeText=elapsed<10*60*1000?`vor ${fmtMs(elapsed)}`:elapsed<24*3600*1000?'heute abgemeldet':'heute noch nicht eingeloggt';
-    const fresh=elapsed<STALE_MS;
-    return `<div class="absent-card">
-      <div class="absent-name" style="color:${ac2}">${nickFor(uid,d.name||uid)}</div>
-      <div style="font-size:9px;color:${ac2};margin-top:1px">${PRESENCE[d.presence]?.lbl||''}</div>
-      <div style="font-size:10px;color:${fresh?'#999':'#555'};margin-top:3px">${timeText}</div>
-      ${!fresh?'<div style="font-size:9px;color:#555;margin-top:2px">⚠ Ggf. nicht aktuell</div>':''}
-    </div>`;
-  }).join('');}else{sb.style.display='none';}
+  if(absent.length){
+    sb.style.display='flex';
+    sb.innerHTML=`<div class="sidebar-lbl">NICHT IM WERK</div>`+absent.map(({uid})=>{
+      const d=users[uid];if(!d)return'';
+      const ac2=PRESENCE[d.presence]?.a||'#555';
+      const elapsed=Date.now()-d.t;
+      const timeText=elapsed<10*60*1000?`vor ${fmtMs(elapsed)}`:elapsed<24*3600*1000?'heute abgemeldet':'heute noch nicht eingeloggt';
+      const fresh=elapsed<STALE_MS;
+      return `<div class="absent-card">
+        <div class="absent-name" style="color:${ac2}">${nickFor(uid,d.name||uid)}</div>
+        <div style="font-size:9px;color:${ac2};margin-top:1px">${PRESENCE[d.presence]?.lbl||''}</div>
+        <div style="font-size:10px;color:${fresh?'#999':'#555'};margin-top:3px">${timeText}</div>
+        ${!fresh?'<div style="font-size:9px;color:#555;margin-top:2px">⚠ Ggf. nicht aktuell</div>':''}
+      </div>`;
+    }).join('');
+  } else {sb.style.display='none';}
 
   const center=document.getElementById('d-center');
   if(!canSeeOthers()){
     center.innerHTML=`<div style="flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;color:var(--mut);font-size:14px;flex-direction:column;gap:12px">
       <div style="font-size:36px">🔒</div>
       <div>Status anderer sichtbar wenn du <strong style="color:var(--txt)">Im Werk</strong> oder <strong style="color:var(--txt)">Mobil</strong> bist.</div>
-    </div>`;document.getElementById('pbar').innerHTML='';return;
+    </div>`;
+    document.getElementById('pbar').innerHTML='';return;
   }
   if(!active.length){
     center.innerHTML=`<div style="flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;color:var(--mut);font-size:14px">
-      Noch keine Personen verknüpft.<br>Klicke auf <strong style="color:var(--txt)">＋</strong>.</div>`;
+      Noch keine Personen verknüpft.<br>Klicke auf <strong style="color:var(--txt)">＋ Person</strong> oben rechts.</div>`;
     document.getElementById('pbar').innerHTML='';return;
   }
 
-  // Sound-Warnungen (nur wenn selbst im Werk)
+  // Sound-Warnungen
   const othersInWerk=inWerk.length;
   if(othersInWerk!==prevOthers){
     if(prevOthers>=0&&myState.presence==='im_werk'){
       if(othersInWerk===3&&prevOthers>3)playBeeps(1);
       else if(othersInWerk===2&&prevOthers>2)playBeeps(2);
       else if(othersInWerk===1&&prevOthers>1)playBeeps(3);
-      else if(othersInWerk===0&&prevOthers>0){playBeeps(10,660);}
+      else if(othersInWerk===0&&prevOthers>0)playBeeps(10,660);
     }
     prevOthers=othersInWerk;
   }
 
+  // Vollbild-Warnung (abgeschwächt: "möglicherweise")
   if(othersInWerk===0&&myState.presence==='im_werk'&&active.length>0){
     center.innerHTML=`<div class="d-warn-screen warnpulse">
       <div style="font-size:clamp(55px,14vw,110px)">⚠️</div>
-      <div class="B" style="font-size:clamp(36px,9vw,75px);color:#f97316;letter-spacing:4px">NIEMAND IM WERK!</div>
-      <div style="font-size:clamp(13px,1.8vw,18px);color:#f97316;line-height:1.6">Du bist die einzige anwesende Person.</div>
-      <div style="font-size:11px;color:#666;margin-top:6px">Status-Anzeigen sind unverbindlich und ohne Gewähr.</div>
-    </div>`;renderPbar(active);return;
+      <div class="B" style="font-size:clamp(30px,7vw,65px);color:#f97316;letter-spacing:4px">MÖGLICHERWEISE ALLEIN!</div>
+      <div style="font-size:clamp(13px,1.8vw,18px);color:#f97316;max-width:480px;line-height:1.7">
+        Du bist möglicherweise die einzige anwesende Person.<br>
+        <strong>Vergewissere dich beim Verlassen, dass du niemanden zurücklässt –<br>
+        auch Personen, die die App nicht nutzen!</strong>
+      </div>
+      <div style="font-size:11px;color:#555;margin-top:6px;max-width:400px">
+        Da die Nutzung freiwillig ist, können nicht alle Anwesenden erfasst sein. Status-Anzeigen sind unverbindlich.
+      </div>
+    </div>`;
+    renderPbar(active);return;
   }
 
   center.innerHTML='';center.style.display='flex';center.style.flexDirection='column';
@@ -1341,49 +1408,7 @@ function renderDisp(){
   renderPbar(active);
 }
 
-// Hausalarm-Evakuierungsansicht
-function renderEvacScreen(active,inWerk){
-  const safe=active.filter(({uid})=>evacSafe.has(uid));
-  const unknown=active.filter(({uid})=>!evacSafe.has(uid));
-  const center=document.getElementById('d-center');
-  const alarm=activeAlarm;
-  center.innerHTML=`
-    <div class="evac-screen">
-      <div class="evac-header">
-        <div class="evac-blink" style="font-size:28px">🚨</div>
-        <div>
-          <div class="B" style="font-size:20px;letter-spacing:3px;color:#ef4444">HAUSALARM · EVAKUIERUNG</div>
-          <div style="font-size:13px;color:#f87171">${alarm?.reason?`Grund: ${alarm.reason}`:'Bitte sofort das Gebäude verlassen!'}</div>
-        </div>
-        <button class="btn-g" onclick="reportSafe()" style="margin-left:auto;color:#22c55e;border-color:#22c55e55;font-size:12px;padding:6px 10px">✓ Ich bin in Sicherheit</button>
-      </div>
-      <div class="evac-cols">
-        <div class="evac-col">
-          <div class="evac-col-title" style="background:#1a0000;color:#f87171">⚠ UNBEKANNT (${unknown.length})</div>
-          ${unknown.map(({uid})=>{
-            const d=users[uid]||{};
-            return `<div class="evac-card" style="border-color:#3a0000;background:#120000;color:#f87171">
-              <div class="B" style="font-size:14px">${nickFor(uid,d.name||uid)}</div>
-              <div style="font-size:11px;color:#888">${PRESENCE[d.presence]?.lbl||'?'}</div>
-            </div>`;
-          }).join('')}
-        </div>
-        <div class="evac-col">
-          <div class="evac-col-title" style="background:#0a1a0a;color:#22c55e">✓ IN SICHERHEIT (${safe.length})</div>
-          ${safe.map(({uid})=>{
-            const d=users[uid]||{};
-            return `<div class="evac-card" style="border-color:#0a3a0a;background:#050f05;color:#22c55e">
-              <div class="B" style="font-size:14px">${nickFor(uid,d.name||uid)}</div>
-            </div>`;
-          }).join('')}
-        </div>
-      </div>
-    </div>`;
-  document.getElementById('d-sidebar').style.display='none';
-}
-
 function renderOwnStrip(){
-  const el=document.getElementById('d-own');
   const pa=PRESENCE[myState.presence]?.a||'#555',ac=effColor(myState);
   const pw=['werk_verlassen','abgemeldet','urlaub'].includes(myState.presence);
   const ws=myState.workStatus;
@@ -1394,13 +1419,12 @@ function renderOwnStrip(){
     else if(ws==='unterwegs'&&myState.ort)det=`<span style="font-size:10px;color:#bbb;margin-left:7px">${myState.ort}${myState.ortBis?' bis '+myState.ortBis:''}</span>`;
   }
   const bis=(!pw&&myState.bisZeit)?`<span style="font-size:10px;color:#a78bfa;margin-left:7px">bis ${myState.bisZeit}</span>`:'';
-  el.innerHTML=`
-    <div class="d-own-hint">▸ klicken</div>
+  document.getElementById('d-own-content').innerHTML=`
     <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
       <div style="width:8px;height:8px;border-radius:50%;background:${pa};box-shadow:0 0 5px ${pa};flex-shrink:0"></div>
-      <span class="B" style="font-size:16px;letter-spacing:2px;color:${pa}">${PRESENCE[myState.presence]?.lbl||''}</span>
-      ${!pw?`<span style="color:#444">·</span><span class="B" style="font-size:16px;letter-spacing:2px;color:${ac}">${WORK[myState.workStatus]?.lbl||''}</span>`:''}
-      <span style="font-size:11px;color:var(--mut)">${myName} (ich)</span>
+      <span class="B" style="font-size:15px;letter-spacing:2px;color:${pa}">${PRESENCE[myState.presence]?.lbl||''}</span>
+      <span style="font-size:12px;color:var(--mut)">${myName} (ich)</span>
+      ${!pw?`<span style="color:#444">·</span><span class="B" style="font-size:15px;letter-spacing:2px;color:${ac}">${WORK[myState.workStatus]?.lbl||''}</span>`:''}
       ${det}${bis}
     </div>`;
 }
@@ -1416,10 +1440,10 @@ function renderTiles(active,wrap){
     const d=users[uid];if(!d)return;
     const stale=Date.now()-d.t>STALE_MS,ac=effColor(d),gl=effGlow(d);
     const isMobil=d.presence==='mobil';
+    const hasHelp=activeAlarm?.type==='help'&&activeAlarm?.triggeredBy===uid&&!alarmDismissed;
     const card=document.createElement('div');card.className='u-card';card.style.borderColor=ac+'33';card.style.opacity=stale?'0.55':'1';
-    // Helfende Hand: Highlight wenn aktiver Help-Alarm von diesem Nutzer
-    const hasHelp=activeAlarm?.type==='help'&&activeAlarm?.triggeredBy===uid;
     if(hasHelp){card.style.boxShadow=`0 0 12px #22c55e44`;card.style.borderColor='#22c55e55';}
+    card.onclick=()=>openUserAction(uid);
     card.innerHTML=`
       <div style="position:absolute;inset:0;background:${gl};border-radius:11px;pointer-events:none"></div>
       <div style="position:relative">
@@ -1439,42 +1463,24 @@ function renderTiles(active,wrap){
 function tileDetail(d,ac,ss,compact){
   const pw=['werk_verlassen','abgemeldet','urlaub'].includes(d.presence);
   const bisH=(!pw&&d.bisZeit)?`<div style="font-size:${compact?'9px':ss};color:#a78bfa;margin-top:5px">Im Werk bis <strong>${d.bisZeit}</strong></div>`:'';
-  if(pw) return '';
+  if(pw)return'';
   const w=d.workStatus;let h='';
-  if(w==='am_platz'){
-    h=`<div style="font-size:${ss};color:#ccc;margin-top:8px;font-weight:300">Verfügbar – sprich mich an</div>
-       ${!compact?`<div class="pulse" style="width:9px;height:9px;border-radius:50%;background:${ac};box-shadow:0 0 11px ${ac};margin:11px 0 0"></div>`:''}`;
-  }else if(w==='einfinden'){
-    h=`<div style="font-size:${ss};color:#ccc;margin-top:7px;font-weight:300">Ich finde mich ein – komm später.</div>
-       <div style="display:inline-block;background:#0f0f0f;border:1px solid ${ac}33;border-radius:8px;padding:7px 14px;margin-top:8px">
-         <div style="font-size:8px;color:#aaa;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Einfinden seit</div>
-         <div class="B" style="font-size:${compact?'15px':'clamp(18px,3.5vw,38px)'};color:${ac};letter-spacing:3px">${fmtSince(d.anlaufStart)}</div>
-       </div>`;
-  }else if(w==='flow'){
-    h=`${!compact?`<div style="font-size:${ss};color:#aaa;font-style:italic;margin:6px 0 3px;letter-spacing:1px">– Bin im Work-Flow –</div>`:''}
+  if(w==='am_platz'){h=`<div style="font-size:${ss};color:#ccc;margin-top:8px;font-weight:300">Verfügbar – sprich mich an</div>${!compact?`<div class="pulse" style="width:9px;height:9px;border-radius:50%;background:${ac};box-shadow:0 0 11px ${ac};margin:11px 0 0"></div>`:''}`;
+  }else if(w==='einfinden'){h=`<div style="font-size:${ss};color:#ccc;margin-top:7px;font-weight:300">Ich finde mich ein – komm später.</div><div style="display:inline-block;background:#0f0f0f;border:1px solid ${ac}33;border-radius:8px;padding:7px 14px;margin-top:8px"><div style="font-size:8px;color:#aaa;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Einfinden seit</div><div class="B" style="font-size:${compact?'15px':'clamp(18px,3.5vw,38px)'};color:${ac};letter-spacing:3px">${fmtSince(d.anlaufStart)}</div></div>`;
+  }else if(w==='flow'){h=`${!compact?`<div style="font-size:${ss};color:#aaa;font-style:italic;margin:6px 0 3px;letter-spacing:1px">– Bin im Work-Flow –</div>`:''}
        <div style="font-size:${compact?'12px':ss};color:#eee;font-weight:600;margin-bottom:4px">Bitte nicht stören!</div>
        <div style="display:flex;gap:7px;margin-top:6px;flex-wrap:wrap">
-         <div style="background:#0f0f0f;border:1px solid #333;border-radius:7px;padding:6px 10px">
-           <div style="font-size:8px;color:#aaa;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Einfindezeit</div>
-           <div class="B" style="font-size:${compact?'13px':'clamp(13px,2.5vw,26px)'};color:#aaa;letter-spacing:2px">${fmtMs(d.anlaufDur)}</div>
-         </div>
-         <div style="background:#0f0f0f;border:2px solid ${ac}55;border-radius:7px;padding:6px 10px">
-           <div style="font-size:8px;color:${ac};letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Flow seit</div>
-           <div class="B" style="font-size:${compact?'13px':'clamp(13px,2.5vw,26px)'};color:${ac};letter-spacing:2px">${fmtSince(d.flowStart)}</div>
-         </div>
+         <div style="background:#0f0f0f;border:1px solid #333;border-radius:7px;padding:6px 10px"><div style="font-size:8px;color:#aaa;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Einfindezeit</div><div class="B" style="font-size:${compact?'13px':'clamp(13px,2.5vw,26px)'};color:#aaa;letter-spacing:2px">${fmtMs(d.anlaufDur)}</div></div>
+         <div style="background:#0f0f0f;border:2px solid ${ac}55;border-radius:7px;padding:6px 10px"><div style="font-size:8px;color:${ac};letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Flow seit</div><div class="B" style="font-size:${compact?'13px':'clamp(13px,2.5vw,26px)'};color:${ac};letter-spacing:2px">${fmtSince(d.flowStart)}</div></div>
        </div>`;
-  }else if(w==='unterwegs'){
-    h=`<div style="font-size:${ss};color:#ccc;margin-top:7px">Unterwegs${d.ort?` · <strong style="color:#eee">${d.ort}</strong>`:''}</div>
-       ${d.ortBis?`<div style="font-size:${compact?'10px':ss};color:#bbb;margin-top:2px">Zurück: <strong>${d.ortBis}</strong></div>`:''}`;
-  }else if(w==='nicht_am_platz'){
-    h=`<div style="font-size:${ss};color:#aaa;margin-top:7px">Nicht am Platz${d.napBis?` · zurück: <strong>${d.napBis}</strong>`:''}`;
-  }
+  }else if(w==='unterwegs'){h=`<div style="font-size:${ss};color:#ccc;margin-top:7px">Unterwegs${d.ort?` · <strong style="color:#eee">${d.ort}</strong>`:''}</div>${d.ortBis?`<div style="font-size:${compact?'10px':ss};color:#bbb;margin-top:2px">Zurück: <strong>${d.ortBis}</strong></div>`:''}`;
+  }else if(w==='nicht_am_platz'){h=`<div style="font-size:${ss};color:#aaa;margin-top:7px">Nicht am Platz${d.napBis?` · zurück: <strong>${d.napBis}</strong>`:''}` ;}
   return h+bisH;
 }
 
 function renderTimeline(active,wrap){
   const prio={am_platz:2,einfinden:3,flow:4,unterwegs:5,nicht_am_platz:6};
-  const sorted=[...active].sort((a,b)=>{const da=users[a.uid],db=users[b.uid];if(!da||!db)return 0;if(da.bisZeit&&db.bisZeit)return da.bisZeit.localeCompare(db.bisZeit);if(da.bisZeit)return -1;if(db.bisZeit)return 1;return (prio[da.workStatus]||9)-(prio[db.workStatus]||9);});
+  const sorted=[...active].sort((a,b)=>{const da=users[a.uid],db=users[b.uid];if(!da||!db)return 0;if(da.bisZeit&&db.bisZeit)return da.bisZeit.localeCompare(db.bisZeit);if(da.bisZeit)return -1;if(db.bisZeit)return 1;return(prio[da.workStatus]||9)-(prio[db.workStatus]||9);});
   const tl=document.createElement('div');tl.className='d-tl';
   const now=new Date();
   tl.innerHTML=`<div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;padding-bottom:7px;border-bottom:1px solid var(--brd);margin-bottom:7px">WERKSICHT · ZEITPLAN · ${p(now.getHours())}:${p(now.getMinutes())} Uhr</div>`;
@@ -1483,15 +1489,10 @@ function renderTimeline(active,wrap){
     const ac=effColor(d),stale=Date.now()-d.t>STALE_MS,isLast=i===sorted.length-1;
     const isMobil=d.presence==='mobil';
     const row=document.createElement('div');row.className='tl-row';
+    row.onclick=()=>openUserAction(uid);
     row.innerHTML=`
-      <div class="tl-tc">
-        <div class="tl-tl" style="color:${d.bisZeit?'#a78bfa':'#555'}">${d.bisZeit||'–'}</div>
-        ${!isLast?`<div class="tl-vl" style="background:${d.bisZeit?'#a78bfa33':'#222'}"></div>`:''}
-      </div>
-      <div class="tl-dc">
-        <div class="tl-dot" style="background:${stale?'#444':ac};box-shadow:0 0 6px ${stale?'#444':ac}44"></div>
-        ${!isLast?`<div class="tl-vl2"></div>`:''}
-      </div>
+      <div class="tl-tc"><div class="tl-tl" style="color:${d.bisZeit?'#a78bfa':'#555'}">${d.bisZeit||'–'}</div>${!isLast?`<div class="tl-vl" style="background:${d.bisZeit?'#a78bfa33':'#222'}"></div>`:''}</div>
+      <div class="tl-dc"><div class="tl-dot" style="background:${stale?'#444':ac};box-shadow:0 0 6px ${stale?'#444':ac}44"></div>${!isLast?`<div class="tl-vl2"></div>`:''}</div>
       <div class="tl-cc" style="opacity:${stale?'0.5':'1'}">
         <div class="tl-nm" style="color:${ac}">${nickFor(uid,d.name||uid)}${isMobil?' 🏠':''}${stale?' (nicht aktuell)':''}</div>
         <div class="tl-st B" style="font-size:clamp(14px,2.6vw,24px);color:${ac}">${PRESENCE[d.presence]?.lbl||''} · ${WORK[d.workStatus]?.lbl||''}</div>
@@ -1501,33 +1502,90 @@ function renderTimeline(active,wrap){
   });
   wrap.appendChild(tl);
 }
-function tlSub(d){const w=d.workStatus;let s='';if(w==='am_platz')s='Verfügbar';else if(w==='einfinden')s=`Einfinden seit ${fmtSince(d.anlaufStart)}`;else if(w==='flow')s=`Flow: ${fmtSince(d.flowStart)}`;else if(w==='unterwegs')s=`Unterwegs${d.ort?' · '+d.ort:''}${d.ortBis?' bis '+d.ortBis:''}`;else if(w==='nicht_am_platz')s=`Nicht am Platz${d.napBis?' bis '+d.napBis:''}`;if(d.bisZeit)s+=(s?' · ':'')+`Im Werk bis ${d.bisZeit}`;return s;}
+
+function tlSub(d){
+  const w=d.workStatus;let s='';
+  if(w==='am_platz')s='Verfügbar';
+  else if(w==='einfinden')s=`Einfinden seit ${fmtSince(d.anlaufStart)}`;
+  else if(w==='flow')s=`Flow: ${fmtSince(d.flowStart)} · Einfindezeit: ${fmtMs(d.anlaufDur)}`;
+  else if(w==='unterwegs')s=`Unterwegs${d.ort?' · '+d.ort:''}${d.ortBis?' bis '+d.ortBis:''}`;
+  else if(w==='nicht_am_platz')s=`Nicht am Platz${d.napBis?' bis '+d.napBis:''}`;
+  if(d.bisZeit)s+=(s?' · ':'')+`Im Werk bis ${d.bisZeit}`;
+  return s;
+}
 
 function renderPbar(active){
+  // ── Presence-Bar: Namen + direkt "bis XX:XX" dahinter, keine Doppelnennung ──
   const inW=active.filter(({uid})=>users[uid]?.presence==='im_werk');
   const mob=active.filter(({uid})=>users[uid]?.presence==='mobil');
   const left=active.filter(({uid})=>users[uid]?.presence==='werk_verlassen');
-  const bis=active.filter(({uid})=>{const d=users[uid];return d&&d.bisZeit&&d.presence==='im_werk';});
   let pb='';
-  if(inW.length)pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#22c55e"></span><span>Im Werk: <strong style="color:var(--txt)">${inW.map(({uid})=>nickFor(uid,users[uid]?.name||uid)).join(', ')}</strong></span></span>`;
-  if(mob.length)pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#a78bfa"></span><span style="color:#a78bfa">Mobil: ${mob.map(({uid})=>nickFor(uid,users[uid]?.name||uid)).join(', ')}</span></span>`;
-  if(left.length)pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#f97316"></span><span>Weg: ${left.map(({uid})=>nickFor(uid,users[uid]?.name||uid)).join(', ')}</span></span>`;
-  if(bis.length)pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#a78bfa"></span><span style="color:#a78bfa">${bis.map(({uid})=>`${nickFor(uid,users[uid]?.name||uid)} bis ${users[uid].bisZeit}`).join(' · ')}</span></span>`;
-  if(!inW.length&&active.length>0)pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0;color:#f97316"><span class="pdot" style="background:#f97316"></span><span>⚠ Niemand im Werk!</span></span>`;
+  if(inW.length){
+    const names=inW.map(({uid})=>{
+      const d=users[uid];
+      const nick=nickFor(uid,d?.name||uid);
+      return d?.bisZeit?`${nick} (bis ${d.bisZeit})`:nick;
+    }).join(', ');
+    pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#22c55e"></span><span>Im Werk: <strong style="color:var(--txt)">${names}</strong></span></span>`;
+  }
+  if(mob.length){
+    const names=mob.map(({uid})=>nickFor(uid,users[uid]?.name||uid)).join(', ');
+    pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#a78bfa"></span><span style="color:#a78bfa">Mobil: ${names}</span></span>`;
+  }
+  if(left.length){
+    const names=left.map(({uid})=>nickFor(uid,users[uid]?.name||uid)).join(', ');
+    pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#f97316"></span><span>Weg: ${names}</span></span>`;
+  }
+  if(!inW.length&&active.length>0)pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0;color:#f97316"><span class="pdot" style="background:#f97316"></span><span>⚠ Möglicherweise niemand im Werk</span></span>`;
   document.getElementById('pbar').innerHTML=pb;
 }
-function toggleView(){dispView=dispView==='tiles'?'timeline':'tiles';document.getElementById('view-toggle').textContent=dispView==='tiles'?'⏱':'⊞';renderDisp();}
 
-// ═══════════════════════════════════════════════════════════════
+// Hausalarm-Evakuierungsansicht
+function renderEvacScreen(active){
+  const safe=active.filter(({uid})=>evacSafe.has(uid));
+  const unknown=active.filter(({uid})=>!evacSafe.has(uid));
+  const alarm=activeAlarm;
+  const center=document.getElementById('d-center');
+  center.innerHTML=`
+    <div class="evac-wrap">
+      <div class="evac-header">
+        <div class="evac-blink" style="font-size:28px">🚨</div>
+        <div>
+          <div class="B" style="font-size:18px;letter-spacing:3px;color:#ef4444">HAUSALARM · EVAKUIERUNG</div>
+          <div style="font-size:13px;color:#f87171">${alarm?.reason?`Grund: ${alarm.reason}`:'Bitte sofort das Gebäude verlassen!'}</div>
+        </div>
+        <button class="btn-p" onclick="reportSafe()" style="background:#22c55e;margin-left:auto;padding:7px 12px;font-size:12px;border-radius:7px;flex-shrink:0">✓ In Sicherheit</button>
+      </div>
+      <div class="evac-cols">
+        <div class="evac-col">
+          <div class="evac-col-title" style="background:#1a0000;color:#f87171">⚠ UNBEKANNT (${unknown.length})</div>
+          ${unknown.map(({uid})=>{const d=users[uid]||{};return `<div class="evac-card" style="border-color:#3a0000;background:#120000;color:#f87171"><div class="B" style="font-size:14px">${nickFor(uid,d.name||uid)}</div><div style="font-size:11px;color:#888">${PRESENCE[d.presence]?.lbl||'?'}</div></div>`;}).join('')}
+        </div>
+        <div class="evac-col">
+          <div class="evac-col-title" style="background:#0a1a0a;color:#22c55e">✓ IN SICHERHEIT (${safe.length})</div>
+          ${safe.map(({uid})=>{const d=users[uid]||{};return `<div class="evac-card" style="border-color:#0a3a0a;background:#050f05;color:#22c55e"><div class="B" style="font-size:14px">${nickFor(uid,d.name||uid)}</div></div>`;}).join('')}
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('d-sidebar').style.display='none';
+}
+
+function toggleView(){
+  dispView=dispView==='tiles'?'timeline':'tiles';
+  document.getElementById('view-toggle').textContent=dispView==='tiles'?'⏱':'⊞';
+  renderDisp();
+}
+
+// ═════════════════════════════════════════════════════════════════
 // §11  SICHTBARKEIT
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 function canSeeOthers(){const pr=myState.presence;if(pr==='im_werk'||pr==='mobil')return true;if(myState.lastPresChange&&Date.now()-myState.lastPresChange<GRACE_MS)return true;return false;}
 function effColor(state){if(!state)return'#22c55e';if(state.presence==='werk_verlassen')return PRESENCE.werk_verlassen.a;if(state.presence==='mobil')return PRESENCE.mobil.a;if(state.presence==='urlaub')return PRESENCE.urlaub.a;if(state.presence==='abgemeldet')return PRESENCE.abgemeldet.a;return WORK[state.workStatus]?.a||'#22c55e';}
 function effGlow(state){if(!state||['werk_verlassen','abgemeldet','urlaub'].includes(state.presence))return'rgba(249,115,22,.09)';if(state.presence==='mobil')return'rgba(167,139,250,.09)';return WORK[state.workStatus]?.glow||'rgba(34,197,94,.09)';}
 
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 // §12  ALARM-SYSTEM (State Machine)
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 function updateAlarmLevel(v){
   const n=parseInt(v);
   const lbl=n<=3?`${n} – Im Netzwerk`:n<=6?`${n} – Alle im Werk`:`${n} – ${n===10?'LEBENSGEFAHR':'KRITISCH'}`;
@@ -1543,22 +1601,13 @@ function setHausReason(r){hausReasonPending=r;document.getElementById('haus-reas
 async function triggerAlarm(type){
   hov('ov-alarm-trigger');
   const level=parseInt(document.getElementById('alarm-level')?.value||'3');
-
   const alarm={type,level,triggeredBy:myUid,triggeredByName:myName,
     t:Date.now(),active:true,responses:{},endConfs:{},notruf:null,
     desc:'',ort:'',count:1,was:'',anzahl:1,hilfe:'',reason:''};
-
-  if(type==='help'){
-    alarm.desc=document.getElementById('help-desc').value||'';
-    alarm.count=parseInt(document.getElementById('help-count').value||'1');
-    alarm.ort=document.getElementById('help-ort').value||'';
-  } else if(type==='haus'){
-    alarm.reason=document.getElementById('haus-reason-inp').value||hausReasonPending||'';
-  }
-  // Notlage: SOFORT senden, Details kommen danach
-
+  if(type==='help'){alarm.desc=document.getElementById('help-desc').value||'';alarm.count=parseInt(document.getElementById('help-count').value||'1');alarm.ort=document.getElementById('help-ort').value||'';}
+  else if(type==='haus'){alarm.reason=document.getElementById('haus-reason-inp').value||hausReasonPending||'';}
   await fbPut('/flowapp/alarms/active',alarm);
-  activeAlarm=alarm; alarmDismissed=false;
+  activeAlarm=alarm;alarmDismissed=false;
   showAlarmOverlay(alarm,true);
   trackEvent('alarm_'+type);
 }
@@ -1566,70 +1615,32 @@ async function triggerAlarm(type){
 function showAlarmOverlay(alarm,isOwn=false){
   const typeColors={help:'#22c55e',notlage:alarm.level>=4?'#ef4444':'#f59e0b',haus:'#ef4444'};
   const typeLbls={help:'🤝 HELFENDE HAND',notlage:'⚠️ PERSÖNLICHE NOTLAGE',haus:'🚨 HAUSALARM'};
-  const ovEl=document.getElementById('ov-alarm-active');
-  ovEl.style.background=alarm.type==='haus'||alarm.level>=7?'rgba(20,0,0,.97)':'rgba(0,0,0,.94)';
-  ovEl.style.borderColor=alarm.type==='haus'?'#ef4444':'var(--brd)';
+  document.getElementById('ov-alarm-active').style.background=alarm.type==='haus'||alarm.level>=7?'rgba(20,0,0,.97)':'rgba(0,0,0,.94)';
   document.getElementById('alm-type-lbl').textContent=typeLbls[alarm.type]||'ALARM';
   document.getElementById('alm-type-lbl').style.color=typeColors[alarm.type]||'#f97316';
   const nameEl=document.getElementById('alm-person');
   nameEl.textContent=alarm.triggeredByName||'';nameEl.style.color=typeColors[alarm.type]||'#fff';
   if(alarm.type!=='help')nameEl.classList.add('alarm-blink');else nameEl.classList.remove('alarm-blink');
   document.getElementById('alm-own-badge').style.display=isOwn?'block':'none';
-
-  // Detail-Zeile
   let detail='';
-  if(alarm.type==='help'){
-    if(alarm.desc)detail+=`<strong>${alarm.desc}</strong><br>`;
-    if(alarm.count>1)detail+=`Benötigt: ${alarm.count} Personen<br>`;
-    if(alarm.ort)detail+=`Wo: <strong>${alarm.ort}</strong>`;
-    if(!detail)detail='Hilfe erbeten.';
-  }else if(alarm.type==='notlage'){
-    if(alarm.was)detail+=`Was: <strong>${alarm.was}</strong><br>`;
-    if(alarm.anzahl>1)detail+=`Betroffene: ${alarm.anzahl}<br>`;
-    if(alarm.ort)detail+=`Wo: <strong>${alarm.ort}</strong><br>`;
-    if(alarm.hilfe)detail+=`Benötigt: ${alarm.hilfe}<br>`;
-    if(!alarm.was&&!alarm.ort)detail='Notlage gemeldet – Details werden nachgereicht…';
-    detail+=`Stufe ${alarm.level}/10`;
-  }else if(alarm.type==='haus'){
-    detail=alarm.reason?`Grund: <strong>${alarm.reason}</strong><br>`:'';
-    detail+=`<strong style="color:#f87171">⚠️ GEBÄUDE SOFORT VERLASSEN!<br>Sammelplatz aufsuchen!<br>NICHT in Gefahrenbereiche!</strong>`;
-  }
+  if(alarm.type==='help'){if(alarm.desc)detail+=`<strong>${alarm.desc}</strong><br>`;if(alarm.count>1)detail+=`Benötigt: ${alarm.count} Personen<br>`;if(alarm.ort)detail+=`Wo: <strong>${alarm.ort}</strong>`;if(!detail)detail='Hilfe erbeten.';}
+  else if(alarm.type==='notlage'){if(alarm.was)detail+=`Was: <strong>${alarm.was}</strong><br>`;if(alarm.anzahl>1)detail+=`Betroffene: ${alarm.anzahl}<br>`;if(alarm.ort)detail+=`Wo: <strong>${alarm.ort}</strong><br>`;if(alarm.hilfe)detail+=`Benötigt: ${alarm.hilfe}<br>`;if(!alarm.was&&!alarm.ort)detail='Notlage gemeldet – Details werden nachgereicht…';detail+=`Stufe ${alarm.level}/10`;}
+  else if(alarm.type==='haus'){detail=alarm.reason?`Grund: <strong>${alarm.reason}</strong><br>`:'';detail+=`<strong style="color:#f87171">⚠️ GEBÄUDE SOFORT VERLASSEN!<br>Sammelplatz aufsuchen!</strong>`;}
   document.getElementById('alm-detail').innerHTML=detail;
   document.getElementById('alm-detail').style.color=alarm.type==='haus'?'#f87171':'var(--txt)';
-
-  // Notlage-Details nachreichen (nur für Auslöser)
   document.getElementById('alm-notlage-details').style.display=(isOwn&&alarm.type==='notlage')?'block':'none';
   if(isOwn&&alarm.type==='notlage'){document.getElementById('alm-was').value=alarm.was||'';document.getElementById('alm-anzahl').value=alarm.anzahl||1;document.getElementById('alm-ort').value=alarm.ort||'';document.getElementById('alm-hilfe').value=alarm.hilfe||'';}
-
-  // Notruf (bei ernstem Alarm, für Auslöser)
   document.getElementById('alm-notruf').style.display=(isOwn&&alarm.type!=='help'&&alarm.level>=3&&alarm.notruf===null)?'block':'none';
-
-  // Hausalarm-Grund (für Auslöser)
   document.getElementById('alm-haus-reason').style.display=(alarm.type==='haus'&&isOwn)?'block':'none';
-
-  // Reaktions-Buttons: für Empfänger, NICHT bei Hausalarm
   document.getElementById('alm-responses-btns').style.display=(!isOwn&&alarm.type!=='haus')?'block':'none';
-
-  // Hausalarm: In-Sicherheit für alle (auch Auslöser)
   document.getElementById('alm-haus-safety-btn').style.display=alarm.type==='haus'?'block':'none';
-
-  // Beenden-Button
-  const endBtn=document.getElementById('alm-end-btn');
-  endBtn.textContent=isOwn?'Alarm beenden':'Alarm als beendet bestätigen';
-
-  // Hausalarm Bestätigungszähler
-  const confCount=document.getElementById('alm-conf-count');
-  confCount.style.display=alarm.type==='haus'?'block':'none';
-
-  // Dismiss-Button: bei Helfender Hand für alle, bei Notlage nur Empfänger
-  const dismissBtn=document.getElementById('alm-dismiss-btn');
-  dismissBtn.style.display=(alarm.type==='help'||(!isOwn&&alarm.type==='notlage'))?'inline-block':'none';
-
+  const endBtn=document.getElementById('alm-end-btn');endBtn.textContent=isOwn?'Alarm beenden':'Alarm als beendet bestätigen';
+  document.getElementById('alm-conf-count').style.display=alarm.type==='haus'?'block':'none';
+  // Dismiss: bei Helfender Hand für alle, bei Notlage für Empfänger
+  document.getElementById('alm-dismiss-btn').style.display=(alarm.type==='help'||(!isOwn&&alarm.type==='notlage'))?'inline-block':'none';
   document.getElementById('alm-end-hint').textContent=alarm.type==='haus'?'Hausalarm: min. 2 Min. aktiv · 50% müssen bestätigen':'';
   renderAlarmResponses(alarm);
   ov('ov-alarm-active');
-
-  // Sound
   if(stopAlarmSfx){stopAlarmSfx();stopAlarmSfx=null;}
   if(alarm.type==='help'){playBeeps(1,440,400);}
   else if(alarm.type==='notlage'){playBeeps(alarm.level<=3?5:10,alarm.level<=3?660:880);}
@@ -1642,14 +1653,10 @@ function renderAlarmResponses(alarm){
   const icons={coming:'🏃 Eilt zur Hilfe',onsite:'✅ Vor Ort',need_more:'🔔 Mehr Hilfe nötig'};
   const lines=Object.values(r).map(v=>`${icons[v.type]||'?'}: <strong>${v.name}</strong>`);
   document.getElementById('alm-resp-display').innerHTML=lines.length?lines.join('<br>'):'(Noch keine Reaktionen)';
-  // Helfende Hand: prüfen ob genug Helfer
   if(alarm.type==='help'&&alarm.count>0){
     const coming=Object.values(r).filter(v=>v.type==='coming'||v.type==='onsite').length;
-    if(coming>=alarm.count&&!alarmDismissed){
-      dismissAlarm();// Genug Helfer → automatisch ausblenden
-    }
+    if(coming>=alarm.count)dismissAlarm();
   }
-  // Hausalarm: Bestätigungszähler
   if(alarm.type==='haus'){
     const total=watching.length+Object.keys(watchers).length+1;
     const conf=Object.keys(alarm.endConfs||{}).length;
@@ -1658,17 +1665,15 @@ function renderAlarmResponses(alarm){
   }
 }
 
-// Notlage-Details live pushen
 let _detailDebounce=null;
 function pushNotlageDetail(){
   clearTimeout(_detailDebounce);
   _detailDebounce=setTimeout(async()=>{
-    if(!activeAlarm||activeAlarm.type!=='notlage') return;
-    const upd={was:document.getElementById('alm-was').value,anzahl:parseInt(document.getElementById('alm-anzahl').value)||1,ort:document.getElementById('alm-ort').value,hilfe:document.getElementById('alm-hilfe').value};
-    await fbPut('/flowapp/alarms/active/was',upd.was);
-    await fbPut('/flowapp/alarms/active/anzahl',upd.anzahl);
-    await fbPut('/flowapp/alarms/active/ort',upd.ort);
-    await fbPut('/flowapp/alarms/active/hilfe',upd.hilfe);
+    if(!activeAlarm||activeAlarm.type!=='notlage')return;
+    await fbPut('/flowapp/alarms/active/was',document.getElementById('alm-was').value);
+    await fbPut('/flowapp/alarms/active/anzahl',parseInt(document.getElementById('alm-anzahl').value)||1);
+    await fbPut('/flowapp/alarms/active/ort',document.getElementById('alm-ort').value);
+    await fbPut('/flowapp/alarms/active/hilfe',document.getElementById('alm-hilfe').value);
   },800);
 }
 
@@ -1676,106 +1681,62 @@ async function setNotruf(ok){await fbPut('/flowapp/alarms/active/notruf',ok);doc
 async function updateHausReason(){const r=document.getElementById('alm-reason-inp').value;if(!r)return;await fbPut('/flowapp/alarms/active/reason',r);}
 
 async function sendResponse(type){
-  if(!activeAlarm) return;
+  if(!activeAlarm)return;
   await fbPut(`/flowapp/alarms/active/responses/${myUid}`,{type,name:myName,t:Date.now()});
-  if(type==='onsite'&&activeAlarm.type==='notlage'){
-    // Vor-Ort: fragen ob mehr Hilfe nötig
-    hov('ov-alarm-active'); ov('ov-more-help');
-  }
-  if(type==='need_more'){
-    // Mehr Hilfe: Alarm erneut auslösen
-    await reAlarm();
-  }
+  if(type==='onsite'&&activeAlarm.type==='notlage'){hov('ov-alarm-active');ov('ov-more-help');}
+  if(type==='need_more')await reAlarm();
 }
 
 async function reAlarm(){
-  hov('ov-more-help');
-  if(!activeAlarm) return;
-  const level=activeAlarm.level;
-  playBeeps(level<=3?5:10,level<=3?660:880);
+  hov('ov-more-help');if(!activeAlarm)return;
+  playBeeps(activeAlarm.level<=3?5:10,activeAlarm.level<=3?660:880);
   notify('WERKSICHT: WEITERE HILFE BENÖTIGT',`${activeAlarm.triggeredByName} – Bitte weitere Unterstützung!`,true);
   await fbPut('/flowapp/alarms/active/reAlarmAt',Date.now());
 }
-
 async function endFromOnsite(){hov('ov-more-help');await requestEndAlarm();}
 
 async function reportSafe(){
   evacSafe.add(myUid);
-  if(activeAlarm) await fbPut(`/flowapp/alarms/active/safe/${myUid}`,{name:myName,t:Date.now()});
+  if(activeAlarm)await fbPut(`/flowapp/alarms/active/safe/${myUid}`,{name:myName,t:Date.now()});
   hov('ov-alarm-active');renderDisp();
 }
 
-// Alarm ausblenden (nur UI, Alarm läuft weiter für andere)
 function dismissAlarm(){alarmDismissed=true;hov('ov-alarm-active');renderDisp();}
 
 async function requestEndAlarm(){
-  if(!activeAlarm) return;
+  if(!activeAlarm)return;
   const isOwn=activeAlarm.triggeredBy===myUid;
-  if(isOwn){
-    if(!confirm('Alarm wirklich beenden?')) return;
-    if(activeAlarm.type==='haus'&&Date.now()-activeAlarm.t<2*60*1000){alert('Hausalarm frühestens nach 2 Min. beendbar.');return;}
-    await fbDel('/flowapp/alarms/active'); endAlarmLocal();
-  } else {
-    await fbPut(`/flowapp/alarms/active/endConfs/${myUid}`,true);
-    alert('Bestätigung gespeichert.');
-  }
+  if(isOwn){if(!confirm('Alarm wirklich beenden?'))return;if(activeAlarm.type==='haus'&&Date.now()-activeAlarm.t<2*60*1000){alert('Hausalarm frühestens nach 2 Min. beendbar.');return;}await fbDel('/flowapp/alarms/active');endAlarmLocal();}
+  else{await fbPut(`/flowapp/alarms/active/endConfs/${myUid}`,true);alert('Bestätigung gespeichert.');}
 }
 
-function endAlarmLocal(){
-  hov('ov-alarm-active');activeAlarm=null;alarmDismissed=false;evacSafe.clear();
-  if(stopAlarmSfx){stopAlarmSfx();stopAlarmSfx=null;}
-  document.getElementById('alm-person').classList.remove('alarm-blink');
-  renderDisp();
-}
+function endAlarmLocal(){hov('ov-alarm-active');activeAlarm=null;alarmDismissed=false;evacSafe.clear();if(stopAlarmSfx){stopAlarmSfx();stopAlarmSfx=null;}document.getElementById('alm-person').classList.remove('alarm-blink');renderDisp();}
 
 async function pollAlarms(){
   const alarm=await fbGet('/flowapp/alarms/active');
-  if(!alarm||!alarm.active){if(activeAlarm){endAlarmLocal();}return;}
-  const affects=alarm.type==='haus'||alarm.triggeredBy===myUid||
-    watching.some(w=>w.uid===alarm.triggeredBy)||Object.keys(watchers).includes(alarm.triggeredBy);
-  if(!affects) return;
-
-  // Evakuierungs-Status laden
-  if(alarm.type==='haus'&&alarm.safe){Object.keys(alarm.safe).forEach(uid=>evacSafe.add(uid));}
-
+  if(!alarm||!alarm.active){if(activeAlarm)endAlarmLocal();return;}
+  const affects=alarm.type==='haus'||alarm.triggeredBy===myUid||watching.some(w=>w.uid===alarm.triggeredBy)||Object.keys(watchers).includes(alarm.triggeredBy);
+  if(!affects)return;
+  if(alarm.type==='haus'&&alarm.safe)Object.keys(alarm.safe).forEach(uid=>evacSafe.add(uid));
   if(!activeAlarm||activeAlarm.t!==alarm.t){
     activeAlarm=alarm;alarmDismissed=false;
-    if(!document.getElementById('ov-alarm-active').classList.contains('show'))
-      showAlarmOverlay(alarm,alarm.triggeredBy===myUid);
+    if(!document.getElementById('ov-alarm-active').classList.contains('show'))showAlarmOverlay(alarm,alarm.triggeredBy===myUid);
   } else {
     activeAlarm={...activeAlarm,...alarm};
-    // Detail-Updates live einarbeiten (für Notlage)
-    if(!alarmDismissed&&document.getElementById('ov-alarm-active').classList.contains('show')){
-      let detail='';
-      if(alarm.type==='notlage'){
-        if(alarm.was)detail+=`Was: <strong>${alarm.was}</strong><br>`;
-        if(alarm.anzahl>1)detail+=`Betroffene: ${alarm.anzahl}<br>`;
-        if(alarm.ort)detail+=`Wo: <strong>${alarm.ort}</strong><br>`;
-        if(alarm.hilfe)detail+=`Benötigt: ${alarm.hilfe}<br>`;
-        if(!alarm.was&&!alarm.ort)detail='Notlage gemeldet – Details werden nachgereicht…';
-        detail+=`Stufe ${alarm.level}/10`;
-        document.getElementById('alm-detail').innerHTML=detail;
-      }
+    if(document.getElementById('ov-alarm-active').classList.contains('show')){
+      renderAlarmResponses(alarm);
+      if(alarm.type==='notlage'){let det='';if(alarm.was)det+=`Was: <strong>${alarm.was}</strong><br>`;if(alarm.anzahl>1)det+=`Betroffene: ${alarm.anzahl}<br>`;if(alarm.ort)det+=`Wo: <strong>${alarm.ort}</strong><br>`;if(alarm.hilfe)det+=`Benötigt: ${alarm.hilfe}<br>`;if(!alarm.was&&!alarm.ort)det='Notlage gemeldet – Details werden nachgereicht…';det+=`Stufe ${alarm.level}/10`;document.getElementById('alm-detail').innerHTML=det;}
       if(alarm.reason)document.getElementById('alm-detail').innerHTML=`Grund: <strong>${alarm.reason}</strong><br><strong style="color:#f87171">⚠️ GEBÄUDE SOFORT VERLASSEN!</strong>`;
       if(alarm.notruf!==null)document.getElementById('alm-notruf').style.display='none';
     }
-    renderAlarmResponses(alarm);
   }
-
-  // 50%-Check Hausalarm
-  if(alarm.type==='haus'){
-    const total=watching.length+Object.keys(watchers).length+1;
-    const conf=Object.keys(alarm.endConfs||{}).length;
-    if(conf>=Math.ceil(total*0.5)&&Date.now()-alarm.t>=2*60*1000){
-      await fbDel('/flowapp/alarms/active');endAlarmLocal();
-    }
-  }
+  if(alarm.type==='haus'){const total=watching.length+Object.keys(watchers).length+1;const conf=Object.keys(alarm.endConfs||{}).length;if(conf>=Math.ceil(total*0.5)&&Date.now()-alarm.t>=2*60*1000){await fbDel('/flowapp/alarms/active');endAlarmLocal();}}
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 // §13  RAUM-VERWALTUNG
-// ═══════════════════════════════════════════════════════════════
-function showAddRoom(){document.getElementById('inp-rcode').value='';document.getElementById('room-err').textContent='';renderRoomList();ov('ov-room');setTimeout(()=>document.getElementById('inp-rcode').focus(),100);}
+// ═════════════════════════════════════════════════════════════════
+function showAddRoom(){document.getElementById('inp-rcode').value='';document.getElementById('room-err').textContent='';ov('ov-room');setTimeout(()=>document.getElementById('inp-rcode').focus(),100);}
 function hideAddRoom(){hov('ov-room');}
 
 async function addRoom(){
@@ -1790,12 +1751,15 @@ async function addRoom(){
   const already=await fbGet(`/flowapp/watching/${myUid}/${theirUid}`);
   if(already){document.getElementById('room-err').textContent='Person bereits verknüpft.';return;}
   const theirName=cd.name||theirUid;
+  // Gegenseitige Verknüpfung BEIDE Richtungen zuverlässig schreiben
   await fbPut(`/flowapp/watching/${myUid}/${theirUid}`,{name:theirName,t:Date.now()});
   await fbPut(`/flowapp/watchers/${theirUid}/${myUid}`,{name:myName,t:Date.now()});
   await fbPut(`/flowapp/watching/${theirUid}/${myUid}`,{name:myName,t:Date.now()});
   await fbPut(`/flowapp/watchers/${myUid}/${theirUid}`,{name:theirName,t:Date.now()});
-  document.getElementById('room-err').textContent='';document.getElementById('inp-rcode').value='';
-  await syncDisp();renderRoomList();
+  document.getElementById('room-err').textContent='';
+  document.getElementById('inp-rcode').value='';
+  hov('ov-room');
+  await loadWatchingData();
   const dup=watching.some(w=>w.nick===theirName)||Object.values(nicks).includes(theirName);
   document.getElementById('new-contact-msg').textContent=dup?`"${theirName}" – Name existiert bereits. Umbenennen?`:`"${theirName}" verknüpft. Namen anpassen?`;
   document.getElementById('inp-contact-name').value=theirName;
@@ -1803,24 +1767,25 @@ async function addRoom(){
   trackEvent('connection_added');
 }
 
-async function saveContactName(){const nick=(document.getElementById('inp-contact-name').value||'').trim();if(nick&&newContactCb){nicks[newContactCb]=nick;ls(LS.nicks,JSON.stringify(nicks));}hov('ov-new-contact');newContactCb=null;renderRoomList();}
-async function removeRoom(uid2){if(!confirm(`Entfernen?`))return;await fbDel(`/flowapp/watching/${myUid}/${uid2}`);await fbDel(`/flowapp/watchers/${uid2}/${myUid}`);await fbDel(`/flowapp/watching/${uid2}/${myUid}`);await fbDel(`/flowapp/watchers/${myUid}/${uid2}`);await syncDisp();renderDisp();renderRoomList();}
-
-function renderRoomList(){
-  const el=document.getElementById('room-list');
-  if(!watching.length){el.innerHTML=`<div style="color:var(--mut);font-size:13px">Noch keine Personen.</div>`;return;}
-  const sorted=[...watching].sort((a,b)=>nickFor(a.uid,a.nick).localeCompare(nickFor(b.uid,b.nick)));
-  el.innerHTML=sorted.map(({uid,nick})=>`
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--brd)">
-      <span style="color:var(--txt);font-size:14px">${nickFor(uid,nick)}</span>
-      <button class="btn-d" onclick="removeRoom('${uid}')" style="font-size:11px;padding:4px 8px">Entfernen</button>
-    </div>`).join('');
+async function saveContactName(){
+  const nick=(document.getElementById('inp-contact-name').value||'').trim();
+  if(nick&&newContactCb){nicks[newContactCb]=nick;ls(LS.nicks,JSON.stringify(nicks));}
+  hov('ov-new-contact');newContactCb=null;
 }
 
+async function removeRoom(uid2){
+  const nick=nickFor(uid2,watching.find(r=>r.uid===uid2)?.nick||uid2);
+  if(!confirm(`${nick} entfernen? Gegenseitige Verbindung wird aufgelöst.`))return;
+  await mutualRemove(myUid,uid2);
+  await loadWatchingData();renderDisp();
+}
+
+// Verbindungsliste mit eigenem Code oben
 function showContacts(){
+  document.getElementById('contacts-my-code').textContent=myCode;
   const allUids=new Set([...watching.map(w=>w.uid),...Object.keys(watchers)]);
   const el=document.getElementById('contact-list');
-  if(!allUids.size){el.innerHTML=`<div style="color:var(--mut)">Keine Verbindungen.</div>`;}
+  if(!allUids.size){el.innerHTML=`<div style="color:var(--mut);padding-top:8px">Keine Verbindungen vorhanden.</div>`;}
   else{
     const canSee=canSeeOthers();
     const sorted=[...allUids].sort((a,b)=>nickFor(a,users[a]?.name||a).localeCompare(nickFor(b,users[b]?.name||b)));
@@ -1828,13 +1793,11 @@ function showContacts(){
       const nick=nickFor(uid,users[uid]?.name||uid);
       const d=users[uid];
       const iW=watching.some(w=>w.uid===uid),isWatcher=!!watchers[uid];
-      const rel=iW&&isWatcher?'↔ Gegenseitig':iW?'→ Ich sehe sie/ihn':isWatcher?'← Sie/er sieht mich':'';
+      const rel=iW&&isWatcher?'↔ Gegenseitig':iW?'→ Ich sehe sie/ihn':'← Sie/er sieht mich';
       const statusLine=canSee&&d?`<span style="font-size:11px;color:${effColor(d)};margin-left:7px">${PRESENCE[d.presence]?.lbl||''}</span>`:'';
       return `<div style="padding:7px 0;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;gap:8px">
-        <div>
-          <span style="font-size:14px;color:var(--txt)">${i+1}. ${nick}</span>${statusLine}<br>
-          <span style="font-size:10px;color:var(--dim)">${rel}</span>
-        </div>
+        <div><span style="font-size:14px;color:var(--txt)">${i+1}. ${nick}</span>${statusLine}<br>
+          <span style="font-size:10px;color:var(--dim)">${rel}</span></div>
         <button class="btn-g" style="font-size:11px;padding:4px 8px" onclick="renameContact('${uid}','${nick.replace(/'/g,"\\'")}')">Umbenennen</button>
       </div>`;
     }).join('');
@@ -1842,11 +1805,12 @@ function showContacts(){
   }
   ov('ov-contacts');
 }
+
 function renameContact(uid2,cur){const n=prompt(`Neuen Namen für "${cur}":`,cur);if(n&&n.trim()){nicks[uid2]=n.trim();ls(LS.nicks,JSON.stringify(nicks));showContacts();}}
 
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 // §14  AUFRÄUM-LOGIK
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 async function cleanInactive(){
   for(const {uid} of watching){
     const d=users[uid];
@@ -1859,42 +1823,86 @@ async function cleanInactive(){
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// §15  PIN & EINSTELLUNGEN
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
+// §15  PING / NACHRICHT
+// ═════════════════════════════════════════════════════════════════
+// Nutzer anpingen (aus Kachel oder Timeline)
+function openUserAction(uid){
+  const d=users[uid];if(!d)return;
+  const nick=nickFor(uid,d.name||uid);
+  // Ping-Dialog öffnen
+  pingTarget=uid;
+  document.getElementById('ping-title').textContent=`AN: ${nick}`;
+  document.getElementById('ping-desc').textContent=`Kurze Nachricht oder Ping (kein Ton auf deren Seite, erscheint als Toast)`;
+  document.getElementById('ping-msg').value='';
+  ov('ov-ping');
+}
+
+async function sendPing(){
+  if(!pingTarget)return;
+  const msg=(document.getElementById('ping-msg').value||'').trim().substring(0,120);
+  await fbPut(`/flowapp/pings/${pingTarget}/${myUid}`,{from:myName,msg,t:Date.now()});
+  hov('ov-ping');pingTarget=null;
+}
+
+// Polling für eingehende Pings
+async function pollPings(){
+  const pings=await fbGet(`/flowapp/pings/${myUid}`)||{};
+  for(const[uid,data] of Object.entries(pings)){
+    if(data.t>lastPollPingT){
+      lastPollPingT=data.t;
+      showPingToast(data.from,data.msg);
+      notify(`Werksicht: Ping von ${data.from}`,data.msg||'');
+      // Ping nach Anzeige löschen
+      await fbDel(`/flowapp/pings/${myUid}/${uid}`);
+    }
+  }
+  if(Object.keys(pings).length===0&&lastPollPingT===0)lastPollPingT=Date.now();
+}
+
+function showPingToast(from,msg){
+  const c=document.getElementById('ping-toasts');
+  const t=document.createElement('div');
+  t.className='ping-toast';
+  t.innerHTML=`<div style="font-size:12px;color:var(--dim);margin-bottom:4px">📣 Ping von <strong style="color:var(--txt)">${from}</strong></div>${msg?`<div style="font-size:13px;color:var(--txt)">${msg}</div>`:'<div style="font-size:12px;color:var(--mut)">(kein Text)</div>'}<button onclick="this.parentElement.remove()" style="margin-top:7px;width:100%;background:var(--c2);border:1px solid var(--brd);color:var(--mut);border-radius:5px;padding:4px;font-size:11px;cursor:pointer">Schließen</button>`;
+  c.prepend(t);
+  setTimeout(()=>t.remove(),30000);
+}
+
+// ═════════════════════════════════════════════════════════════════
+// §16  PIN & EINSTELLUNGEN
+// ═════════════════════════════════════════════════════════════════
 function openPinOv(title){document.getElementById('pin-title').textContent=title;document.getElementById('pin-inp').value='';document.getElementById('pin-err').textContent='';ov('ov-pin');setTimeout(()=>document.getElementById('pin-inp').focus(),100);}
 function hidePinOv(){hov('ov-pin');_pinCb=null;}
 function checkPin(){if(document.getElementById('pin-inp').value===pin){hidePinOv();if(_pinCb)_pinCb();}else{document.getElementById('pin-err').textContent='Falscher PIN';document.getElementById('pin-inp').classList.add('shake');document.getElementById('pin-inp').value='';setTimeout(()=>{document.getElementById('pin-inp').classList.remove('shake');document.getElementById('pin-err').textContent='';},600);}}
-function forgotPin(){if(!confirm('PIN vergessen?\n\nAlle Verbindungen werden gelöscht.\n\nFortfahren?'))return;hidePinOv();pin='';ls(LS.pin,'');removeAll();}
+function forgotPin(){if(!confirm('PIN vergessen?\nAlle Verbindungen werden gelöscht, neuer Code vergeben.'))return;hidePinOv();pin='';ls(LS.pin,'');removeAll();}
 function openCfg(){if(pin){_pinCb=_openCfg;openPinOv('EINSTELLUNGEN');}else{_openCfg();}}
 function _openCfg(){document.getElementById('cfg-name').value=myName;document.getElementById('cfg-pin').value='';ov('ov-cfg');}
 function closeCfg(){hov('ov-cfg');}
-function saveCfg(){const n=(document.getElementById('cfg-name').value||'').trim();const p2=document.getElementById('cfg-pin').value;if(n){myName=n;ls(LS.name,n);myState.name=n;}if(p2!==''){pin=p2;ls(LS.pin,p2);}closeCfg();if(document.getElementById('s-ctrl').classList.contains('active'))renderCtrl();if(document.getElementById('s-mode').classList.contains('active'))goMode();}
+function saveCfg(){const n=(document.getElementById('cfg-name').value||'').trim();const p2=document.getElementById('cfg-pin').value;if(n){myName=n;ls(LS.name,n);myState.name=n;}if(p2!==''){pin=p2;ls(LS.pin,p2);}closeCfg();updateTopBarStatus();if(currentView==='v-ctrl')renderCtrl();}
 
-// ═══════════════════════════════════════════════════════════════
-// §16  KOMFORT-FUNKTIONEN
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
+// §17  KOMFORT-FUNKTIONEN
+// ═════════════════════════════════════════════════════════════════
 async function comfortNotifications(btn){
   const perm=await reqNotif();
   if(perm==='granted'){notify('Werksicht','Benachrichtigungen aktiv ✓');if(btn)btn.querySelector('.cb-done').style.display='block';else alert('Benachrichtigungen sind aktiv ✓');}
-  else{alert('Benachrichtigungen wurden nicht erlaubt.\nChrome/Edge: Klicke auf das 🔒-Schloss in der Adressleiste → Benachrichtigungen → Erlauben\nFirefox: Klicke auf das Schloss-Symbol → Weitere Informationen → Benachrichtigungen');}
+  else{const ua=navigator.userAgent;const hint=/Chrome/.test(ua)?'Klicke auf 🔒 in der Adressleiste → Benachrichtigungen → Erlauben':/Firefox/.test(ua)?'Adressleiste → Schloss-Symbol → Weitere Infos → Benachrichtigungen':'Browsereinstellungen → Datenschutz → Benachrichtigungen';alert('Benachrichtigungen wurden nicht erlaubt.\n\n'+hint);}
 }
 function comfortSound(btn){playBeeps(2,660,300);if(btn)btn.querySelector('.cb-done').style.display='block';else alert('Ton abgespielt. Falls kein Ton: Systemlautstärke prüfen.');}
 function comfortInstall(btn){
   if(_deferredInstall){_deferredInstall.prompt();_deferredInstall.userChoice.then(r=>{if(r.outcome==='accepted'&&btn)btn.querySelector('.cb-done').style.display='block';});}
-  else{alert('App installieren:\n📱 iOS Safari: Teilen-Button (□↑) → "Zum Home-Bildschirm"\n📱 Android Chrome: Menü (⋮) → "App installieren"\n💻 Chrome/Edge Desktop: ⊕ in der Adressleiste');}
+  else{alert('App installieren:\n📱 iOS Safari: Teilen-Button (□↑) → "Zum Home-Bildschirm"\n📱 Android Chrome: Menü (⋮) → "App installieren"\n💻 Chrome/Edge Desktop: ⊕-Symbol rechts in der Adressleiste → Installieren');}
 }
 function comfortHomepage(btn){
-  const url=window.location.href;
-  const ua=navigator.userAgent;
-  let txt=`Als Startseite festlegen:\n\n`;
-  if(/Chrome/.test(ua)&&!/Edge/.test(ua))txt+=`Chrome: ⋮ → Einstellungen → Beim Start → Bestimmte Seite → ${url}`;
+  const url=window.location.href;const ua=navigator.userAgent;
+  let txt='Als Startseite festlegen:\n\n';
+  if(/Chrome/.test(ua)&&!/Edg/.test(ua))txt+=`Chrome: ⋮ → Einstellungen → Beim Start → Bestimmte Seite → ${url}`;
   else if(/Firefox/.test(ua))txt+=`Firefox: ☰ → Einstellungen → Startseite → Eigene URLs → ${url}`;
   else if(/Edg/.test(ua))txt+=`Edge: ⋯ → Einstellungen → Start, Startseite und neue Tabs → ${url}`;
   else if(/Safari/.test(ua))txt+=`Safari: Einstellungen → Safari → Startseite → ${url}`;
-  else txt+=`Browsermenü → Einstellungen → Startseite → ${url}`;
-  alert(txt);
-  if(btn)btn.querySelector('.cb-done').style.display='block';
+  else txt+=`Browser-Menü → Einstellungen → Startseite → ${url}`;
+  alert(txt);if(btn)btn.querySelector('.cb-done').style.display='block';
 }
 function comfortFullscreen(btn){
   if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen();
@@ -1902,13 +1910,13 @@ function comfortFullscreen(btn){
   if(btn)btn.querySelector('.cb-done').style.display='block';
 }
 
-// ═══════════════════════════════════════════════════════════════
-// §17  HILFSFUNKTIONEN & HILFE
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
+// §18  HILFE & HILFSFUNKTIONEN
+// ═════════════════════════════════════════════════════════════════
 function lg(k){return localStorage.getItem(k);}
 function ls(k,v){localStorage.setItem(k,v);}
 function p(n){return String(n).padStart(2,'0');}
-function fmtMs(ms){if(!ms&&ms!==0)return '–';const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return h>0?`${h}:${p(m)}:${p(sc)}`:`${p(m)}:${p(sc)}`;}
+function fmtMs(ms){if(!ms&&ms!==0)return'–';const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return h>0?`${h}:${p(m)}:${p(sc)}`:`${p(m)}:${p(sc)}`;}
 function fmtSince(ts){return ts?fmtMs(Date.now()-ts):'–';}
 function nickFor(uid,fallback){return nicks[uid]||fallback||uid;}
 
@@ -1920,13 +1928,14 @@ function deleteSavedLoc(){if(locPopIdx<0)return;savedLocs.splice(locPopIdx,1);ls
 
 function buildHelp(){
   const sections=[
-    ['🚀 Erste Schritte','Name eingeben → Komfort-Setup → Startseite.\n\nController = Status steuern. Anzeige = Vollbild für den Monitor.\n\nVerbinden: Pairing-Code kopieren und an andere Person schicken. Diese gibt ihn bei ＋ ein. Verbindung ist gegenseitig.'],
-    ['📡 Codes & Gerätesync','Codes rotieren jede Minute (kryptografisch sicher). Nur zum einmaligen Verbinden.\n\nMehrere Geräte: Auf dem zweiten Gerät den aktuellen Code des ersten Geräts unter "Weiteres Gerät synchronisieren" eingeben → beide teilen dann dieselbe Identität.'],
-    ['👤 Anwesenheit','IM WERK und MOBILES ARBEITEN schließen sich gegenseitig aus. Erst "Werk verlassen" oder "Mobiles Arbeiten beenden" bevor der andere Status gewählt werden kann.\n\nIm Werk bis: Bleibt über alle Statuswechsel erhalten bis zum Verlassen.'],
-    ['💼 Arbeitsstatus','AM PLATZ: Verfügbar.\nEINFINDEN: Übergang in Fokus.\nFLOW: Bitte nicht stören!\nIM WERK UNTERWEGS: Im Gebäude, nicht am Platz.\nNICHT AM PLATZ: (nur bei Mobil) Nicht am Homeoffice-Platz.'],
-    ['⚠️ Unterstützung','HELFENDE HAND: Mit Beschreibung, Anzahl und Ort. Verschwindet automatisch wenn genug Helfer reagiert haben. Kann ausgeblendet werden.\n\nPERSÖNLICHE NOTLAGE: Sofortmeldung, Details können nachgereicht werden. "Weitere Hilfe nötig" sendet erneuten Alarm.\n\nHAUSALARM: Evakuierung! Sammelplatz aufsuchen. "In Sicherheit" melden in der Evakuierungsliste. Kein Eintreten in Gefahrenbereiche.\n\nWICHTIG: Niemals ersetzt Notruf (112)!'],
-    ['🔒 Datenschutz & Rechtliches','Nur Name + Status gespeichert. Firebase, Belgien. Kein öffentliches Angebot, kein kommerzieller Dienst, keine Impressumspflicht.\n\nJederzeit löschbar: Einstellungen → Nutzer vollständig löschen.\n\nInaktive Nutzer nach 90 Tagen automatisch gelöscht.'],
-    ['ℹ️ Haftung','Status-Informationen sind UNVERBINDLICH. Nie als gesichert annehmen. Direkte Kommunikation hat immer Vorrang. App ersetzt keine professionellen Notfallsysteme. Nutzung auf eigenes Risiko.'],
+    ['🚀 Erste Schritte','Name eingeben → Komfort-Setup → Startseite.\n\nIn allen Ansichten: Obere Leiste (WERKSICHT) klicken → Controller. Untere Leiste zum Wechseln zwischen Start, Controller, Anzeige, Verbindungen, Hilfe.\n\nVerbinden: Pairing-Code kopieren, an andere Person schicken. Diese gibt ihn bei "＋ Person" ein. Verbindung ist gegenseitig.'],
+    ['📱 Multi-Gerät Sync','Auf dem zweiten Gerät beim ersten Start: Code des ersten Geräts unter "Weiteres eigenes Gerät synchronisieren" eingeben. Beide Geräte teilen dann dieselbe Identität.\n\nBei Statusänderung auf einem Gerät wird der neue Status automatisch (alle 4 Sek.) auf allen Geräten übernommen. Das neuere Gerät gewinnt.'],
+    ['📡 Codes','Pairing-Codes rotieren jede Minute (kryptografisch sicher). Nach dem Verbinden wird intern die permanente UID genutzt. Jeder Code ist nur 60s gültig.'],
+    ['👤 Anwesenheit','IM WERK und MOBILES ARBEITEN schließen sich gegenseitig aus. Erst "Werk verlassen" oder "Beenden" dann den neuen Status wählen.\n\nNach Abmeldung: 10 Minuten Gnadenfrist – auf dem Heimweg noch prüfen ob jemand alleine geblieben ist.\n\nStatus-Anzeigen sind freiwillig und unverbindlich. Immer direkt nachfragen wenn es wichtig ist!'],
+    ['💼 Arbeitsstatus','AM PLATZ · EINFINDEN (Übergang in Fokus) · FLOW (Nicht stören!) · IM WERK UNTERWEGS · NICHT AM PLATZ (nur bei Mobil)\n\nAuto-Flow: Im Einfinden-Modus kann ein Timer gesetzt werden.'],
+    ['⚠️ Unterstützung','🤝 HELFENDE HAND: Stiller Hinweis. Mit Beschreibung, Anzahl und Ort. Verschwindet wenn genug Helfer reagiert haben.\n\n⚠️ PERSÖNLICHE NOTLAGE: Sofortmeldung, Details danach nachreichen. "Weitere Hilfe nötig" sendet erneuten Alarm.\n\n🚨 HAUSALARM: Evakuierung. Niemanden ins Gebäude schicken! In Sicherheit melden in der Evakuierungsliste.\n\n📣 PING: Kachel / Timeline anklicken → kurze Nachricht senden.\n\nWICHTIG: Niemals Ersatz für Notruf (112)!'],
+    ['🔒 Datenschutz & Recht','Nur selbst gewählter Name + Status. Firebase, Belgien. Kein öffentliches Angebot, kein kommerzieller Dienst, keine Impressumspflicht.\n\nInaktive Nutzer nach 90 Tagen automatisch gelöscht. Jederzeit vollständig löschbar: Einstellungen → Nutzer vollständig löschen.\n\nFür Transparenz: Status-Anzeigen sind immer als Orientierungshilfe zu verstehen, nie als zuverlässige Fakten.'],
+    ['ℹ️ Haftung','Alle Status-Informationen sind UNVERBINDLICH und ohne Gewähr. Da die App freiwillig genutzt wird, können Personen nicht erfasst sein.\n\nDie App ersetzt NICHT die direkte Kommunikation und NICHT professionelle Notfallsysteme.\n\nNutzung vollständig auf eigenes Risiko.'],
   ];
   const el=document.getElementById('help-content');
   el.innerHTML=sections.map(([title,body])=>`
@@ -1938,19 +1947,13 @@ function buildHelp(){
     </div>`).join('');
 }
 
-// ═══════════════════════════════════════════════════════════════
-// §18  ANALYTICS (Privacy-respektierende Nutzungszähler)
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
+// §19  ANALYTICS
+// ═════════════════════════════════════════════════════════════════
 async function trackEvent(event){
-  // Nur Zähler ohne Nutzerzuordnung
   const today=new Date().toISOString().split('T')[0];
   try{await fbInc(`/flowapp/stats/${today}/interactions`);}catch(e){}
-  // Session-Zähler (Unique sessions pro Tag, anonymisiert via UID-Hash)
-  try{
-    const hashBuf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(myUid+today));
-    const hashHex=Array.from(new Uint8Array(hashBuf)).map(b=>b.toString(16).padStart(2,'0')).join('').substring(0,16);
-    await fbPut(`/flowapp/stats/${today}/sessions/${hashHex}`,true);
-  }catch(e){}
+  try{const hb=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(myUid+today));const hx=Array.from(new Uint8Array(hb)).map(b=>b.toString(16).padStart(2,'0')).join('').substring(0,16);await fbPut(`/flowapp/stats/${today}/sessions/${hx}`,true);}catch(e){}
 }
 </script>
 </body>
