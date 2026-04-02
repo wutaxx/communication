@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Werksicht v11</title>
+<style>
+body{font-family:sans-serif;background:#070707;color:#eee;padding:20px}
+.btn{padding:10px;margin:5px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<h1>Werksicht v11</h1>
+<div id="status"></div>
+
+<button class="btn" onclick="setPresence('im_werk')">IM WERK</button>
+<button class="btn" onclick="setPresence('werk_verlassen')">VERLASSEN</button>
+
+<button class="btn" onclick="setOrtStatus('am_platz')">AM PLATZ</button>
+<button class="btn" onclick="setOrtStatus('unterwegs')">UNTERWEGS</button>
+
+<button class="btn" onclick="setWorkStatus('verfuegbar')">VERFÜGBAR</button>
+<button class="btn" onclick="setWorkStatus('nicht_stoeren')">NICHT STÖREN</button>
+<button class="btn" onclick="setWorkStatus('pause')">PAUSE</button>
+
+<script>
+const APP_VERSION = "11.0";
+
+let state = {
+  presence: "im_werk",
+  ortStatus: "am_platz",
+  workStatus: "verfuegbar",
+  lastPresChange: Date.now()
+};
+
+function updateUI(){
+  document.getElementById("status").innerText =
+    "Presence: " + state.presence +
+    " | Ort: " + state.ortStatus +
+    " | Arbeit: " + state.workStatus;
+}
+
+function setPresence(p){
+  state.presence = p;
+  state.lastPresChange = Date.now();
+
+  if(p !== "im_werk"){
+    state.workStatus = "verfuegbar";
+    state.ortStatus = "am_platz";
+  }
+  updateUI();
+}
+
+function setOrtStatus(o){
+  state.ortStatus = o;
+
+  if(o === "unterwegs"){
+    state.workStatus = "verfuegbar";
+  }
+  updateUI();
+}
+
+function setWorkStatus(w){
+  state.workStatus = w;
+  updateUI();
+}
+
+// Version check simulation
+async function checkVersion(){
+  try{
+    const r = await fetch("https://werksicht-default-rtdb.europe-west1.firebasedatabase.app/meta/version.json");
+    const remote = await r.json();
+    if(remote && remote !== APP_VERSION){
+      if(confirm("Neue Version verfügbar. Jetzt neu laden?")){
+        location.reload();
+      }
+    }
+  }catch(e){}
+}
+
+setInterval(checkVersion, 900000); // 15 min
+updateUI();
+</script>
+
+</body>
+</html>
