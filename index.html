@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <!--
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  WERKSICHT v10.0                                                              ║
+║  WERKSICHT v10.1                                                              ║
 ║  §1 Konstanten  §2 Zustand  §3 Firebase  §4 Codes  §5 Sound                ║
-║  §6 Notifications  §7 Crypto/Encryption  §8 Boot  §9 Shell/Nav             ║
+║  §6 Notifications  §7 Crypto  §8 Boot  §9 Shell/Nav                        ║
 ║  §10 Controller  §11 Display  §12 Sichtbarkeit  §13 Alarm                  ║
-║  §14 Nachrichten (E2E-verschlüsselt)  §15 Räume  §16 Cleanup               ║
-║  §17 PIN/Settings  §18 Komfort  §19 Hilfe/Utils  §20 Analytics             ║
+║  §14 Nachrichten  §15 Räume  §16 Cleanup  §17 PIN/Settings                 ║
+║  §18 Komfort  §19 Hilfe/Utils  §19b Support  §20 Analytics                 ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 -->
 <html lang="de">
@@ -35,8 +35,11 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;overfl
 #tbc{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:0 6px;min-width:0;transition:opacity .15s;overflow:hidden}
 #tbc:hover{opacity:.8}
 #tbc-brand{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:4px;color:var(--dim);white-space:nowrap}
+#tbc-ver{font-size:9px;color:#3a3a3a;letter-spacing:1px;vertical-align:middle;margin-left:3px}
 #tbc-status{font-size:10px;color:var(--mut);letter-spacing:.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
 #content{flex:1;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column}
+#update-banner{flex-shrink:0;background:#0a1a0a;border-bottom:1px solid #22c55e55;padding:7px 14px;display:none;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:#22c55e;z-index:15}
+#update-banner.vis{display:flex}
 #pbar{flex-shrink:0;height:var(--pbar-h);background:#0a0a0a;border-top:1px solid #1a1a1a;padding:0 11px;display:none;align-items:center;gap:11px;font-size:11px;color:var(--mut);overflow:hidden;flex-wrap:nowrap}
 #pbar.vis{display:flex}
 #bot-nav{height:var(--bot-h);flex-shrink:0;background:#0e0e0e;border-top:1px solid var(--brd);display:flex;align-items:stretch}
@@ -127,6 +130,8 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;overfl
 /* ── NACHRICHTEN TOAST ── */
 #msg-toasts{position:fixed;top:calc(var(--top-h)+8px);right:10px;z-index:60;display:flex;flex-direction:column;gap:8px;max-width:280px}
 .msg-toast{background:#0d1a1a;border:1px solid #60a5fa55;border-radius:11px;padding:11px 13px;animation:fadein .3s ease;font-size:13px}
+.msg-toast.receipt-toast{background:#0d1a0d;border-color:#22c55e33}
+.msg-toast.reply-toast{background:#0a0d1a;border-color:#a78bfa55}
 .msg-toast-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
 .msg-toast-from{font-size:11px;color:#60a5fa;font-weight:600}
 .msg-toast-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
@@ -157,6 +162,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;overfl
 @keyframes ablink{0%,100%{opacity:1}50%{opacity:.15}}
 .alarm-resp-btn{flex:1;padding:11px;border:1px solid;border-radius:8px;font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer;background:transparent}
 #privacy-box{display:none;background:#0d0d1a;border:1px solid #3a3a7a;border-radius:10px;padding:14px;font-size:12px;color:#aaaadd;line-height:1.7;margin-top:10px}
+.support-item{background:var(--c2);border:1px solid var(--brd);border-radius:8px;padding:10px 13px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%,75%{transform:translateX(-7px)}50%{transform:translateX(7px)}}
@@ -178,13 +184,19 @@ input[type=range]{accent-color:#f59e0b;width:100%}
       <button class="btn-g" id="tb-back" style="display:none;font-size:12px;padding:5px 9px" onclick="goMode()">←</button>
     </div>
     <div id="tbc" onclick="goCtrl()">
-      <div id="tbc-brand">WERKSICHT</div>
+      <div id="tbc-brand">WERKSICHT <span id="tbc-ver"></span></div>
       <div id="tbc-status">–</div>
     </div>
     <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
       <button class="btn-g" onclick="showAddRoom()" style="color:#60a5fa;border-color:#2a4a7a;font-size:12px;padding:6px 9px" title="Person hinzufügen">＋ Person</button>
       <button onclick="ov('ov-alarm-trigger')" style="background:#1e0a00;border:1px solid #f97316;color:#f97316;border-radius:7px;padding:6px 9px;font-size:13px;cursor:pointer;font-weight:700" title="Unterstützung anfordern">⚠️</button>
     </div>
+  </div>
+
+  <!-- UPDATE BANNER -->
+  <div id="update-banner">
+    <span id="update-banner-txt">🆕 Neue Version verfügbar</span>
+    <button onclick="reloadForUpdate()" style="background:#22c55e;border:none;border-radius:6px;padding:5px 11px;font-size:12px;font-weight:600;color:#000;cursor:pointer">Jetzt aktualisieren ↺</button>
   </div>
 
   <!-- CONTENT -->
@@ -213,7 +225,7 @@ input[type=range]{accent-color:#f59e0b;width:100%}
           <button class="btn-g" onclick="openCfg()">⚙ Einstellungen</button>
           <button class="btn-g" onclick="showContacts()" style="color:#60a5fa;border-color:#2a4a7a">👥 Verbindungen</button>
           <button class="btn-g" onclick="togglePrivacy()" style="color:#9999cc;border-color:#3a3a7a">🔒 Datenschutz</button>
-          <button class="btn-g" onclick="openHelp()" style="color:#f59e0b;border-color:#5a3a0a">❓ Hilfe</button>
+          <button class="btn-g" onclick="openHelp()" style="color:#f59e0b;border-color:#5a3a0a">❓ Hilfe &amp; Support</button>
         </div>
         <div id="privacy-box" style="max-width:480px;width:100%">
           <strong style="color:#ccccff">Datenschutz & Rechtliches</strong><br><br>
@@ -251,25 +263,12 @@ input[type=range]{accent-color:#f59e0b;width:100%}
           </div>
         </div>
 
-        <!-- ARBEITSSTATUS -->
-        <div class="card" id="card-work">
-          <div class="B" style="font-size:14px;letter-spacing:2px;color:var(--mut);margin-bottom:8px">ARBEITSSTATUS</div>
-          <div class="sg3">
-            <button class="sbtn" id="btn-am_platz" onclick="setWorkStatus('am_platz')">AM PLATZ</button>
-            <button class="sbtn" id="btn-einfinden" onclick="setWorkStatus('einfinden')">EIN-FINDEN</button>
-            <button class="sbtn" id="btn-flow" onclick="setWorkStatus('flow')">FLOW</button>
-          </div>
-          <div style="margin-top:6px">
-            <button class="sbtn" id="btn-ort-st" onclick="clickOrtStatus()" style="width:100%">IM WERK UNTERWEGS</button>
-          </div>
-          <div id="card-af" style="display:none;margin-top:9px;padding-top:9px;border-top:1px solid var(--brd)">
-            <div class="lbl">Auto-Flow nach</div>
-            <select class="inp" id="sel-af" onchange="setAF(this.value)" style="margin-top:4px">
-              <option value="0">Kein automatischer Wechsel</option>
-              <option value="10">10 Min</option><option value="15">15 Min</option>
-              <option value="20">20 Min</option><option value="25">25 Min</option>
-              <option value="30">30 Min</option><option value="45">45 Min</option>
-            </select>
+        <!-- AUFENTHALTSORT -->
+        <div class="card" id="card-ort">
+          <div class="B" style="font-size:14px;letter-spacing:2px;color:var(--mut);margin-bottom:8px">AUFENTHALTSORT</div>
+          <div class="sg2">
+            <button class="sbtn" id="btn-ort-a" onclick="clickOrtA()">AM PLATZ</button>
+            <button class="sbtn" id="btn-ort-b" onclick="clickOrtB()" style="font-size:11px">IM WERK UNTERWEGS</button>
           </div>
           <div id="card-uw" style="display:none;margin-top:9px;padding-top:9px;border-top:1px solid var(--brd)">
             <div class="lbl">Aufenthaltsort</div>
@@ -282,6 +281,16 @@ input[type=range]{accent-color:#f59e0b;width:100%}
           <div id="card-nap" style="display:none;margin-top:9px;padding-top:9px;border-top:1px solid var(--brd)">
             <div class="lbl">Voraussichtlich zurück</div>
             <input type="time" class="inp" id="inp-nap-bis" style="margin-top:4px;color-scheme:dark" oninput="onNapBisChange()" />
+          </div>
+        </div>
+
+        <!-- ARBEITSSTATUS -->
+        <div class="card" id="card-work">
+          <div class="B" style="font-size:14px;letter-spacing:2px;color:var(--mut);margin-bottom:8px">ARBEITSSTATUS</div>
+          <div class="sg3">
+            <button class="sbtn" id="btn-verfuegbar" onclick="setWorkStatus('verfuegbar')">VERFÜGBAR</button>
+            <button class="sbtn" id="btn-nicht_stoeren" onclick="setWorkStatus('nicht_stoeren')" style="font-size:11px">NICHT STÖREN</button>
+            <button class="sbtn" id="btn-pause" onclick="setWorkStatus('pause')">PAUSE</button>
           </div>
         </div>
 
@@ -320,7 +329,7 @@ input[type=range]{accent-color:#f59e0b;width:100%}
           <div id="watcher-list"><div style="color:var(--mut);font-size:13px">Niemand zeigt deinen Status an.</div></div>
         </div>
 
-        <div style="font-size:10px;color:#444;text-align:center">Werksicht · Sync alle 4 Sek.</div>
+        <div style="font-size:10px;color:#444;text-align:center">Werksicht v10.1 · Sync alle 4 Sek.</div>
       </div>
     </div>
 
@@ -677,10 +686,65 @@ input[type=range]{accent-color:#f59e0b;width:100%}
   </div>
 </div>
 
+<!-- SUPPORT -->
+<div class="ov" id="ov-support">
+  <div class="ov-box ov-lg">
+    <div class="brand" style="font-size:18px">WERKSICHT · SUPPORT</div>
+    <div class="B" style="font-size:20px;letter-spacing:3px" id="support-title">FEHLER MELDEN</div>
+    <div style="font-size:13px;color:var(--mut)" id="support-desc">Beschreibe den Fehler so genau wie möglich.</div>
+    <textarea class="inp" id="support-text" placeholder="Deine Nachricht (max. 1000 Zeichen)" maxlength="1000" style="resize:none;height:130px;font-size:13px" oninput="document.getElementById('support-cc').textContent=this.value.length+'/1000'"></textarea>
+    <div id="support-cc" style="font-size:10px;color:var(--dim);text-align:right">0/1000</div>
+    <div class="sg2">
+      <button class="btn-p" style="background:#22c55e" onclick="sendSupport(false)">Mit Namen absenden</button>
+      <button class="btn-g" onclick="sendSupport(true)">Anonym absenden</button>
+    </div>
+    <div class="err" id="support-err"></div>
+    <button class="btn-g" onclick="hov('ov-support')" style="width:100%;text-align:center">Abbrechen</button>
+  </div>
+</div>
+
+<!-- ADMIN-ANTWORT OVERLAY -->
+<div class="ov" id="ov-admin-reply">
+  <div class="ov-box ov-lg">
+    <div class="brand" style="font-size:18px">WERKSICHT · SUPPORT</div>
+    <div class="B" style="font-size:18px;letter-spacing:2px;color:#60a5fa">ANTWORT VOM ADMIN</div>
+    <div style="font-size:12px;color:var(--mut)">Bezüglich deiner Meldung:</div>
+    <div id="ar-orig" style="font-size:12px;color:#666;background:var(--c2);border-radius:7px;padding:9px;font-style:italic;line-height:1.6;border-left:3px solid #444"></div>
+    <div style="font-size:13px;color:var(--txt);line-height:1.7" id="ar-text"></div>
+    <div id="ar-reply-area" style="display:none">
+      <textarea class="inp" id="ar-reply-txt" placeholder="Antwort an Admin (max. 500 Zeichen)" maxlength="500" style="resize:none;height:70px;font-size:13px"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-g" id="ar-toggle-btn" onclick="toggleAdminReplyField()" style="flex:1">↩ Antworten</button>
+      <button class="btn-p" id="ar-send-btn" style="flex:1;background:#60a5fa;display:none" onclick="sendUserReplyToAdmin()">Absenden</button>
+      <button class="btn-p" style="flex:1;background:#22c55e" onclick="dismissAdminReply()">Schließen ✓</button>
+    </div>
+    <input type="hidden" id="ar-item-id">
+    <input type="hidden" id="ar-category">
+  </div>
+</div>
+
+<!-- WAS IST NEU -->
+<div class="ov" id="ov-whats-new">
+  <div class="ov-box ov-lg">
+    <div class="brand" style="font-size:18px">WERKSICHT</div>
+    <div class="B" style="font-size:20px;letter-spacing:3px;color:#22c55e">NEU IN VERSION 10.1</div>
+    <div id="whats-new-content" style="font-size:13px;color:var(--mut);line-height:1.9;overflow-y:auto;max-height:60vh"></div>
+    <button class="btn-p" style="background:#22c55e" onclick="dismissWhatsNew()">Verstanden – los geht's!</button>
+  </div>
+</div>
+
 <!-- HILFE -->
 <div class="ov" id="ov-help">
   <div class="ov-box ov-xl" style="max-height:88vh;max-width:520px">
-    <div class="brand" style="font-size:20px">WERKSICHT · HILFE</div>
+    <div class="brand" style="font-size:20px">WERKSICHT · SUPPORT</div>
+    <div style="display:flex;gap:8px;margin-bottom:4px">
+      <button class="btn-g" style="flex:1;color:#f87171;border-color:#f8717155;font-size:13px" onclick="openSupport('bug')">🐛 Fehler melden</button>
+      <button class="btn-g" style="flex:1;color:#60a5fa;border-color:#60a5fa55;font-size:13px" onclick="openSupport('suggestion')">💡 Anregung senden</button>
+    </div>
+    <div style="border-top:1px solid var(--brd);padding-top:10px">
+      <div class="brand" style="font-size:18px">WERKSICHT · HILFE</div>
+    </div>
     <div id="help-content" style="overflow-y:auto;flex:1;font-size:13px"></div>
     <button class="btn-g" onclick="hov('ov-help')" style="width:100%;margin-top:8px">Schließen</button>
   </div>
@@ -702,6 +766,7 @@ input[type=range]{accent-color:#f59e0b;width:100%}
 // ═══════════════════════════════════════════════════════════
 // §1  KONSTANTEN
 // ═══════════════════════════════════════════════════════════
+const APP_VERSION='10.1';
 const DB='https://werksicht-default-rtdb.europe-west1.firebasedatabase.app';
 const PRESENCE={
   im_werk:       {lbl:'IM WERK',         a:'#22c55e',present:true },
@@ -710,12 +775,15 @@ const PRESENCE={
   urlaub:        {lbl:'URLAUB',          a:'#60a5fa',present:false},
   abgemeldet:    {lbl:'ABGEMELDET',      a:'#555',   present:false},
 };
+const ORT={
+  am_platz:      {lbl:'AM PLATZ',          a:'#22c55e'},
+  unterwegs:     {lbl:'IM WERK UNTERWEGS', a:'#60a5fa'},
+  nicht_am_platz:{lbl:'NICHT AM PLATZ',    a:'#888'  },
+};
 const WORK={
-  am_platz:     {lbl:'AM PLATZ',         a:'#22c55e',glow:'rgba(34,197,94,.09)' },
-  einfinden:    {lbl:'EINFINDEN',        a:'#f59e0b',glow:'rgba(245,158,11,.09)'},
-  flow:         {lbl:'FLOW',             a:'#ef4444',glow:'rgba(239,68,68,.09)' },
-  unterwegs:    {lbl:'IM WERK UNTERWEGS',a:'#60a5fa',glow:'rgba(96,165,250,.09)'},
-  nicht_am_platz:{lbl:'NICHT AM PLATZ', a:'#888',   glow:'rgba(128,128,128,.06)'},
+  verfuegbar:   {lbl:'VERFÜGBAR',    a:'#22c55e',glow:'rgba(34,197,94,.09)' },
+  nicht_stoeren:{lbl:'NICHT STÖREN', a:'#ef4444',glow:'rgba(239,68,68,.09)' },
+  pause:        {lbl:'PAUSE',        a:'#f59e0b',glow:'rgba(245,158,11,.09)'},
 };
 const GRACE_MS=10*60*1000, STALE_MS=8*3600*1000, CLEANUP_MS=90*24*3600*1000;
 const SYNC_TOL=1500; // ms Toleranz für Multi-Device Sync
@@ -724,7 +792,8 @@ const SYNC_TOL=1500; // ms Toleranz für Multi-Device Sync
 // §2  ZUSTAND
 // ═══════════════════════════════════════════════════════════
 const LS={uid:'wk_uid',name:'wk_name',pin:'wk_pin',af:'wk_af',
-  locs:'wk_locs',disc:'wk_disc',nicks:'wk_nicks',comfort:'wk_comfort'};
+  locs:'wk_locs',disc:'wk_disc',nicks:'wk_nicks',comfort:'wk_comfort',
+  seenVer:'wk_seen_ver'};
 
 let myUid   = lg(LS.uid)  || genUid();
 let myName  = lg(LS.name) || '';
@@ -733,28 +802,44 @@ let afMin   = parseInt(lg(LS.af)||'0');
 let savedLocs=JSON.parse(lg(LS.locs)||'[]');
 let nicks   = JSON.parse(lg(LS.nicks)||'{}');
 let discOK  = !!lg(LS.disc);
-let myCode='', codeTime=0;
+let myCode='', codeTime=0, _rotLock=false;
 
 let myState={
-  presence:'abgemeldet',workStatus:'am_platz',
-  bisZeit:null,anlaufStart:null,anlaufDur:null,flowStart:null,
-  ort:'',ortBis:'',napBis:'',lastPresChange:null,name:myName,t:Date.now()
+  presence:'abgemeldet',ortStatus:'am_platz',workStatus:'verfuegbar',
+  bisZeit:null,ort:'',ortBis:'',napBis:'',lastPresChange:null,name:myName,t:Date.now()
 };
 let myLastPushT=0;
 
 let users={},watching=[],watchers={};
 let _ivD,_ivC,_ivT,_ivCode,_ivAlarm;
 let _pinCb,newContactCb=null;
-let dispView='list'; // 'list' | 'timeline'
+let dispView='list';
 let locPopIdx=-1,locPopCtx='ctrl';
 let prevOthers=-1;
 let activeAlarm=null,stopAlarmSfx=null,alarmDismissed=false;
 let hausReasonPending='';
 let evacSafe=new Set();
 let pingTarget=null,replyTarget=null,replyOrigMsg='';
-let lastMsgPollT=0; // timestamp of last processed message
+let lastMsgPollT=0;
 let currentView='v-mode';
-let deviceCount=1; // Anzahl synchronisierter Geräte
+let deviceCount=1;
+let _supportCategory='bug';
+
+// Legacy-Migration: alten workStatus auf neues ortStatus+workStatus mappen
+function migrateState(s){
+  if(!s)return s;
+  if(!s.ortStatus){
+    const old=s.workStatus||'am_platz';
+    if(old==='flow'||old==='nicht_stoeren'){s.ortStatus='am_platz';s.workStatus='nicht_stoeren';}
+    else if(old==='unterwegs'){s.ortStatus='unterwegs';s.workStatus='verfuegbar';}
+    else if(old==='nicht_am_platz'){s.ortStatus='nicht_am_platz';s.workStatus='verfuegbar';}
+    else if(old==='einfinden'){s.ortStatus='am_platz';s.workStatus='verfuegbar';}
+    else{s.ortStatus='am_platz';s.workStatus='verfuegbar';}
+  }
+  if(!WORK[s.workStatus])s.workStatus='verfuegbar';
+  if(!ORT[s.ortStatus])s.ortStatus='am_platz';
+  return s;
+}
 
 // ═══════════════════════════════════════════════════════════
 // §3  FIREBASE
@@ -771,16 +856,20 @@ function genUid(){const a=new Uint8Array(16);crypto.getRandomValues(a);const u='
 function genCode6(){const a=new Uint32Array(1);crypto.getRandomValues(a);return(a[0]%2176782336).toString(36).toUpperCase().padStart(6,'0').substring(0,6);}
 
 async function rotateCode(){
+  if(_rotLock)return;
   if(myCode&&(Date.now()-codeTime)<60000)return;
-  let nc,tries=0;
-  do{nc=genCode6();const ex=await fbGet(`/flowapp/codes/${nc}`);if(!ex||ex.uid===myUid)break;tries++;}while(tries<5);
-  const old=myCode;
-  // Schreibe Code mit vollständigem Nutzerprofil (Name immer aktuell)
-  await fbPut(`/flowapp/codes/${nc}`,{uid:myUid,name:myName,t:Date.now()});
-  if(old&&old!==nc)await fbDel(`/flowapp/codes/${old}`);
-  myCode=nc;codeTime=Date.now();
-  document.querySelectorAll('#my-code,#contacts-my-code').forEach(el=>{if(el)el.textContent=nc;});
-  const cfgCode=document.getElementById('cfg-my-code');if(cfgCode)cfgCode.textContent=nc;
+  _rotLock=true;
+  try{
+    let nc,tries=0;
+    do{nc=genCode6();const ex=await fbGet(`/flowapp/codes/${nc}`);if(!ex||ex.uid===myUid)break;tries++;}while(tries<5);
+    const old=myCode;
+    await fbPut(`/flowapp/codes/${nc}`,{uid:myUid,name:myName,t:Date.now()});
+    myCode=nc;codeTime=Date.now();
+    document.querySelectorAll('#my-code,#contacts-my-code').forEach(el=>{if(el)el.textContent=nc;});
+    const cfgCode=document.getElementById('cfg-my-code');if(cfgCode)cfgCode.textContent=nc;
+    // 15s Puffer vor dem Löschen des alten Codes – laufende Pairing-Vorgänge fertig stellen lassen
+    if(old&&old!==nc)setTimeout(()=>fbDel(`/flowapp/codes/${old}`),15000);
+  }finally{_rotLock=false;}
 }
 
 function updateCodeTimer(){
@@ -895,9 +984,54 @@ if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch((
 let _deferredInstall=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();_deferredInstall=e;});
 
+// Versionsnummer in UI
+document.querySelectorAll('#tbc-ver').forEach(el=>el.textContent=APP_VERSION);
+
 (()=>{if(!discOK){ov('ov-disclaimer');}else{boot2();}})();
 function acceptDisclaimer(){ls(LS.disc,'yes');discOK=true;hov('ov-disclaimer');boot2();}
-function boot2(){if(!myName){ov('ov-name');setTimeout(()=>document.getElementById('inp-name-s').focus(),200);}else{goMode();}}
+function boot2(){
+  if(!myName){ov('ov-name');setTimeout(()=>document.getElementById('inp-name-s').focus(),200);return;}
+  myState=migrateState(myState);
+  goMode();
+  // Versionsprüfung: 30s nach Start, dann alle 15 Min
+  setTimeout(checkVersion,30000);
+  setInterval(checkVersion,15*60*1000);
+  // "Was ist neu" wenn Version noch nicht gesehen
+  if(lg(LS.seenVer)!==APP_VERSION)setTimeout(showWhatsNew,1800);
+}
+
+async function checkVersion(){
+  try{
+    const v=await fbGet('/flowapp/meta/version');
+    if(v&&String(v).trim()!==APP_VERSION){
+      document.getElementById('update-banner-txt').textContent=`🆕 Version ${v} verfügbar (du nutzt ${APP_VERSION})`;
+      document.getElementById('update-banner').classList.add('vis');
+    }
+  }catch(e){}
+}
+async function reloadForUpdate(){
+  try{
+    if('serviceWorker'in navigator){const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs)await r.unregister();}
+    const ks=await caches.keys();for(const k of ks)await caches.delete(k);
+  }catch(e){}
+  location.reload(true);
+}
+
+function showWhatsNew(){
+  const items=[
+    '📍 Neues Statusmodell: <strong>Aufenthaltsort</strong> (Am Platz / Im Werk unterwegs) und <strong>Arbeitsstatus</strong> (Verfügbar / Nicht stören / Pause) sind jetzt zwei getrennte Bereiche.',
+    '🔄 Statusreset beim Verlassen: Aufenthaltsort und Arbeitsstatus werden beim Abmelden automatisch zurückgesetzt.',
+    '✓ Lesebestätigung: Wer eine Nachricht als "gelesen" markiert, gibt dem Absender eine kurze Rückmeldung.',
+    '🚨 Hausalarm-Schwelle: Nur tatsächlich im Werk anwesende Personen werden für die 50%-Berechnung herangezogen.',
+    '🐛 Support-Bereich: Fehler und Anregungen direkt aus der App melden – über Hilfe &amp; Support.',
+    '🔔 Automatische Versionserkennung mit Update-Button.',
+    '📅 Abwesenheitsdatum: Die Anzeige unterscheidet jetzt korrekt zwischen "heute" und früheren Abwesenheiten.',
+    '⚡ Pairing-Codes: Robuster beim gleichzeitigen Verbinden mehrerer Geräte.',
+  ];
+  document.getElementById('whats-new-content').innerHTML=items.map(i=>`<div style="padding:5px 0 5px 4px;border-bottom:1px solid #1e1e1e">${i}</div>`).join('');
+  ov('ov-whats-new');
+}
+function dismissWhatsNew(){ls(LS.seenVer,APP_VERSION);hov('ov-whats-new');}
 
 async function saveName(){
   const n=(document.getElementById('inp-name-s').value||'').trim();
@@ -943,6 +1077,7 @@ async function doDeviceSync(inputId,errId){
   const remoteState=await fbGet(`/flowapp/rooms/${myUid}`);
   if(remoteState){
     myState={...myState,...remoteState};
+    myState=migrateState(myState);
     if(remoteState.name){myName=remoteState.name;ls(LS.name,myName);myState.name=myName;}
     myLastPushT=remoteState.t||0;
   } else if(cd.name){
@@ -985,10 +1120,15 @@ function togglePrivacy(){const el=document.getElementById('privacy-box');el.styl
 function openHelp(){buildHelp();ov('ov-help');}
 
 function updateTopBarStatus(){
-  const pr=PRESENCE[myState.presence]?.lbl||'–';
-  const ws=WORK[myState.workStatus]?.lbl||'';
-  const workOk=myState.presence==='im_werk'||myState.presence==='mobil';
-  const statusText=workOk?`${pr} · ${ws}`:pr;
+  const pr=myState.presence;
+  const os=myState.ortStatus||'am_platz';
+  const ws=myState.workStatus||'verfuegbar';
+  const workOk=pr==='im_werk'||pr==='mobil';
+  let statusText=PRESENCE[pr]?.lbl||'–';
+  if(workOk){
+    const subLbl=os==='am_platz'?(WORK[ws]?.lbl||''):(ORT[os]?.lbl||'');
+    statusText=`${PRESENCE[pr]?.lbl} · ${subLbl}`;
+  }
   document.getElementById('tbc-status').textContent=deviceCount>1?`${statusText} · ${deviceCount} Geräte`:statusText;
   document.getElementById('tbc-status').style.color=effColor(myState);
 }
@@ -1010,7 +1150,6 @@ function showSyncIndicator(){
 function goCtrl(){if(pin){_pinCb=_openCtrl;openPinOv('CONTROLLER');}else{_openCtrl();}}
 async function _openCtrl(){
   showView('v-ctrl');
-  document.getElementById('sel-af').value=afMin;
   if(myState.bisZeit)document.getElementById('inp-bis').value=myState.bisZeit;
   if(myState.ort)document.getElementById('inp-ort').value=myState.ort;
   if(myState.ortBis)document.getElementById('inp-ort-bis').value=myState.ortBis;
@@ -1024,12 +1163,12 @@ async function _openCtrl(){
   _ivT=setInterval(()=>{renderCtrl();updateCodeTimer();},1000);
   _ivCode=setInterval(async()=>{await rotateCode();},5000);
   _ivC=setInterval(async()=>{
-    checkAF();
     await syncOwnStateFromRemote();
     await pushState();
     await refreshWatchers();
     await cleanInactive();
     await pollMessages();
+    await pollAdminReplies();
   },4000);
   _ivAlarm=setInterval(pollAlarms,3000);
   trackEvent('ctrl_opened');
@@ -1039,10 +1178,9 @@ async function syncOwnStateFromRemote(){
   const remote=await fbGet(`/flowapp/rooms/${myUid}`);
   if(!remote||!remote.t)return;
   if(remote.t>myLastPushT+SYNC_TOL){
-    // Remote ist neuer als unser letzter Push → übernehmen
     const oldName=myName;
     myState={...myState,...remote};
-    // Namen aus Remote übernehmen wenn er sich geändert hat
+    myState=migrateState(myState);
     if(remote.name&&remote.name!==myName){
       myName=remote.name;ls(LS.name,myName);
     }
@@ -1056,11 +1194,12 @@ async function syncOwnStateFromRemote(){
 }
 
 function renderCtrl(){
-  const pr=myState.presence,ws=myState.workStatus;
-  const pa=PRESENCE[pr]?.a||'#555',wa=WORK[ws]?.a||'#22c55e';
+  const pr=myState.presence;
+  const os=myState.ortStatus||'am_platz';
+  const ws=myState.workStatus||'verfuegbar';
   updateTopBarStatus();
 
-  const activeP=pr==='im_werk'?'im_werk':pr==='mobil'?'mobil':pr==='urlaub'?'urlaub':null;
+  const activeP=['im_werk','mobil','urlaub'].includes(pr)?pr:null;
   ['im_werk','mobil','urlaub'].forEach(k=>{
     const b=document.getElementById('btn-'+k);if(!b)return;
     const c=PRESENCE[k]?.a||'#555';
@@ -1077,56 +1216,115 @@ function renderCtrl(){
     const c=cols[activeP];
     eb.textContent=lbls[activeP]||'ABMELDEN';
     eb.style.cssText=`width:100%;margin-top:6px;background:var(--c2);color:${c};border:1px solid ${c}55;padding:11px 5px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;transition:all .18s`;
-  } else {
+  }else{
     eb.disabled=true;eb.style.opacity='0.4';eb.style.cursor='default';eb.textContent='ABMELDEN';
-    eb.style.cssText='width:100%;margin-top:6px;background:var(--c2);color:var(--dim);border:1px solid var(--brd);padding:11px 5px;border-radius:8px;font-family:\'Bebas Neue\',sans-serif;font-size:13px;letter-spacing:1px;cursor:default;opacity:.4;transition:all .18s';
+    eb.style.cssText=`width:100%;margin-top:6px;background:var(--c2);color:var(--dim);border:1px solid var(--brd);padding:11px 5px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;cursor:default;opacity:.4`;
   }
 
   const workOk=pr==='im_werk'||pr==='mobil';
-  document.getElementById('card-work').style.opacity=workOk?'1':'0.35';
-  document.querySelectorAll('#card-work .sbtn').forEach(b=>{b.disabled=!workOk;});
-  if(workOk){
-    ['am_platz','einfinden','flow'].forEach(k=>{
+  const ortCard=document.getElementById('card-ort');
+  if(ortCard)ortCard.style.opacity=workOk?'1':'0.35';
+
+  const btnA=document.getElementById('btn-ort-a');
+  const btnB=document.getElementById('btn-ort-b');
+  if(workOk&&btnA&&btnB){
+    document.querySelectorAll('#card-ort .sbtn').forEach(b=>b.disabled=false);
+    const aColor=pr==='mobil'?'#a78bfa':'#22c55e';
+    const aActive=os==='am_platz';
+    btnA.textContent='AM PLATZ';
+    btnA.style.cssText=aActive?`background:${aColor};color:#000;border-color:${aColor}`:`background:var(--c2);color:${aColor};border-color:${aColor}55`;
+    if(pr==='im_werk'){
+      btnB.textContent='IM WERK UNTERWEGS';
+      const bActive=os==='unterwegs';
+      btnB.style.cssText=bActive?`background:#60a5fa;color:#000;border-color:#60a5fa`:`background:var(--c2);color:#60a5fa;border-color:#60a5fa55`;
+    }else{
+      btnB.textContent='NICHT AM PLATZ';
+      const bActive=os==='nicht_am_platz';
+      btnB.style.cssText=bActive?`background:#888;color:#000;border-color:#888`:`background:var(--c2);color:#888;border-color:#88888855`;
+    }
+  }else if(btnA&&btnB){
+    document.querySelectorAll('#card-ort .sbtn').forEach(b=>b.disabled=true);
+    btnA.style.cssText='background:var(--c2);color:#444;border-color:#2a2a2a';
+    btnB.style.cssText='background:var(--c2);color:#444;border-color:#2a2a2a';
+  }
+
+  const showUW=os==='unterwegs'&&pr==='im_werk';
+  const showNAP=os==='nicht_am_platz'&&pr==='mobil';
+  const cardUw=document.getElementById('card-uw');
+  const cardNap=document.getElementById('card-nap');
+  if(cardUw)cardUw.style.display=showUW?'block':'none';
+  if(cardNap)cardNap.style.display=showNAP?'block':'none';
+
+  const workEnabled=workOk&&os==='am_platz';
+  document.getElementById('card-work').style.opacity=workEnabled?'1':'0.35';
+  document.querySelectorAll('#card-work .sbtn').forEach(b=>b.disabled=!workEnabled);
+  if(workEnabled){
+    ['verfuegbar','nicht_stoeren','pause'].forEach(k=>{
       const b=document.getElementById('btn-'+k);if(!b)return;
       const c=WORK[k]?.a||'#555';
       b.style.cssText=k===ws?`background:${c};color:#000;border-color:${c}`:`background:var(--c2);color:${c};border-color:${c}55`;
     });
   }
-  const ob=document.getElementById('btn-ort-st');
-  if(pr==='mobil'){ob.textContent='NICHT AM PLATZ';ob.style.color=WORK.nicht_am_platz.a;ob.style.borderColor=WORK.nicht_am_platz.a+'55';ob.style.background=ws==='nicht_am_platz'?WORK.nicht_am_platz.a:'var(--c2)';ob.style.color=ws==='nicht_am_platz'?'#000':WORK.nicht_am_platz.a;}
-  else{ob.textContent='IM WERK UNTERWEGS';ob.style.color=WORK.unterwegs.a;ob.style.borderColor=WORK.unterwegs.a+'55';ob.style.background=ws==='unterwegs'?WORK.unterwegs.a:'var(--c2)';ob.style.color=ws==='unterwegs'?'#000':WORK.unterwegs.a;}
 
-  document.getElementById('card-af').style.display=(ws==='einfinden'&&workOk)?'block':'none';
-  document.getElementById('card-uw').style.display=(ws==='unterwegs'&&pr==='im_werk')?'block':'none';
-  document.getElementById('card-nap').style.display=(ws==='nicht_am_platz'&&pr==='mobil')?'block':'none';
-  document.getElementById('bis-display').textContent=myState.bisZeit||'–';
+  const pa=PRESENCE[pr]?.a||'#555';
+  const ac=effColor(myState);
   document.getElementById('c-sdot').style.cssText=`width:9px;height:9px;border-radius:50%;flex-shrink:0;background:${pa};box-shadow:0 0 7px ${pa}`;
-  document.getElementById('c-pname').style.color=pa;document.getElementById('c-pname').textContent=PRESENCE[pr]?.lbl||'';
-  document.getElementById('c-wname').style.color=workOk?wa:'#555';document.getElementById('c-wname').textContent=workOk?WORK[ws]?.lbl||'':'–';
-  let h='';
-  if(myState.anlaufStart&&ws==='einfinden')h+=`<div class="tbox"><div class="tl">Einfinden seit</div><div class="tv" style="color:var(--mut)">${fmtSince(myState.anlaufStart)}</div></div>`;
-  if(myState.anlaufDur!=null&&ws==='flow')h+=`<div class="tbox"><div class="tl">Einfindezeit</div><div class="tv" style="color:var(--dim)">${fmtMs(myState.anlaufDur)}</div></div>`;
-  if(myState.flowStart&&ws==='flow')h+=`<div class="tbox"><div class="tl" style="color:${wa}">Flow seit</div><div class="tv" style="color:${wa}">${fmtSince(myState.flowStart)}</div></div>`;
-  document.getElementById('c-timers').innerHTML=h;
+  document.getElementById('c-pname').style.color=pa;
+  document.getElementById('c-pname').textContent=PRESENCE[pr]?.lbl||'';
+  let wlbl='';
+  if(workOk){
+    if(os==='unterwegs')wlbl=`IM WERK UNTERWEGS${myState.ort?' · '+myState.ort:''}`;
+    else if(os==='nicht_am_platz')wlbl='NICHT AM PLATZ';
+    else wlbl=WORK[ws]?.lbl||'';
+  }
+  document.getElementById('c-wname').style.color=workOk?ac:'#555';
+  document.getElementById('c-wname').textContent=wlbl;
+  document.getElementById('bis-display').textContent=myState.bisZeit||'–';
+  document.getElementById('c-timers').innerHTML='';
 }
 
 function clickImWerk(){if(myState.presence==='mobil'){alert('Bitte zuerst "Mobiles Arbeiten beenden".');return;}const t=new Date();t.setMinutes(Math.ceil(t.getMinutes()/15)*15,0,0);document.getElementById('inp-bis-pop').value=`${p(t.getHours())}:${p(t.getMinutes())}`;ov('ov-im-werk');}
-async function confirmImWerk(noCommit){const v=noCommit?null:(document.getElementById('inp-bis-pop').value||null);hov('ov-im-werk');const ns={...myState,presence:'im_werk',lastPresChange:Date.now()};if(v!==undefined)ns.bisZeit=v;myState=ns;await pushState();renderCtrl();}
+async function confirmImWerk(noCommit){const v=noCommit?null:(document.getElementById('inp-bis-pop').value||null);hov('ov-im-werk');const ns={...myState,presence:'im_werk',lastPresChange:Date.now()};if(!noCommit&&v!==null)ns.bisZeit=v;myState=ns;await pushState();renderCtrl();}
 function clickMobil(){if(myState.presence==='im_werk'){alert('Bitte zuerst "Werk verlassen".');return;}setPresence('mobil');}
 function clickUrlaub(){if(myState.presence==='im_werk'){alert('Bitte zuerst "Werk verlassen".');return;}if(myState.presence==='mobil'){alert('Bitte zuerst "Mobiles Arbeiten beenden".');return;}setPresence('urlaub');}
-async function exitPresence(){const exitMap={im_werk:'werk_verlassen',mobil:'abgemeldet',urlaub:'abgemeldet'};const ns={...myState,presence:exitMap[myState.presence]||'abgemeldet',lastPresChange:Date.now(),bisZeit:null};myState=ns;await pushState();renderCtrl();}
+// exitPresence: vollständiger Reset von Ort- und Arbeitsstatus
+async function exitPresence(){
+  const exitMap={im_werk:'werk_verlassen',mobil:'abgemeldet',urlaub:'abgemeldet'};
+  const ns={...myState,
+    presence:exitMap[myState.presence]||'abgemeldet',
+    lastPresChange:Date.now(),
+    bisZeit:null,
+    ortStatus:'am_platz',
+    workStatus:'verfuegbar',
+    ort:'',ortBis:'',napBis:''
+  };
+  myState=ns;await pushState();renderCtrl();
+}
 async function setPresence(pr){const ns={...myState,presence:pr,lastPresChange:Date.now()};if(['werk_verlassen','abgemeldet','urlaub'].includes(pr))ns.bisZeit=null;myState=ns;await pushState();renderCtrl();}
-async function setWorkStatus(ws){if(myState.presence!=='im_werk'&&myState.presence!=='mobil')return;const now=Date.now(),ns={...myState,workStatus:ws};if(ws==='einfinden'){ns.anlaufStart=now;ns.anlaufDur=null;ns.flowStart=null;}else if(ws==='flow'){if(myState.anlaufStart)ns.anlaufDur=now-myState.anlaufStart;ns.flowStart=now;ns.anlaufStart=null;}else{ns.anlaufStart=null;ns.anlaufDur=null;ns.flowStart=null;}ns.t=Date.now();myState=ns;await pushState();renderCtrl();trackEvent('status_changed');}
-function clickOrtStatus(){if(myState.presence==='mobil'){setWorkStatus('nicht_am_platz');}else{clickUnterwegs();}}
+
+// Ort-Buttons
+function clickOrtA(){setOrtStatus('am_platz');}
+function clickOrtB(){if(myState.presence==='im_werk')clickUnterwegs();else setOrtStatus('nicht_am_platz');}
+async function setOrtStatus(os){
+  if(myState.presence!=='im_werk'&&myState.presence!=='mobil')return;
+  const ns={...myState,ortStatus:os,t:Date.now()};
+  if(os!=='am_platz'){ns.workStatus='verfuegbar';}
+  myState=ns;await pushState();renderCtrl();
+}
+async function setWorkStatus(ws){
+  if(myState.presence!=='im_werk'&&myState.presence!=='mobil')return;
+  if((myState.ortStatus||'am_platz')!=='am_platz')return;
+  const ns={...myState,workStatus:ws,t:Date.now()};
+  myState=ns;await pushState();renderCtrl();trackEvent('status_changed');
+}
+
 function onBisChange(){myState.bisZeit=document.getElementById('inp-bis').value||null;pushState();}
 function clearBis(){document.getElementById('inp-bis').value='';myState.bisZeit=null;pushState();}
 function onNapBisChange(){myState.napBis=document.getElementById('inp-nap-bis').value||'';pushState();}
-function setAF(v){afMin=parseInt(v);ls(LS.af,afMin);}
-function checkAF(){if(myState.workStatus==='einfinden'&&(myState.presence==='im_werk'||myState.presence==='mobil')&&afMin>0&&myState.anlaufStart&&Date.now()-myState.anlaufStart>=afMin*60000){myState.anlaufDur=Date.now()-myState.anlaufStart;myState.workStatus='flow';myState.flowStart=Date.now();myState.anlaufStart=null;pushState();}}
 
 function clickUnterwegs(){if(myState.presence!=='im_werk')return;document.getElementById('inp-ort-pop').value=myState.ort||'';document.getElementById('inp-ort-bis-pop').value=myState.ortBis||'';renderLocTiles('pop');ov('ov-unterwegs');}
-async function confirmUnterwegs(){const ort=(document.getElementById('inp-ort-pop').value||'').trim();const ortBis=document.getElementById('inp-ort-bis-pop').value||'';if(ort&&!savedLocs.includes(ort)){savedLocs.unshift(ort);if(savedLocs.length>8)savedLocs=savedLocs.slice(0,8);ls(LS.locs,JSON.stringify(savedLocs));}hov('ov-unterwegs');const ns={...myState,workStatus:'unterwegs',ort,ortBis,anlaufStart:null,anlaufDur:null,flowStart:null,t:Date.now()};myState=ns;await pushState();renderCtrl();renderLocTiles('ctrl');}
-async function confirmUnterwegsFree(){hov('ov-unterwegs');const ns={...myState,workStatus:'unterwegs',ort:'',ortBis:'',anlaufStart:null,anlaufDur:null,flowStart:null,t:Date.now()};myState=ns;await pushState();renderCtrl();}
+async function confirmUnterwegs(){const ort=(document.getElementById('inp-ort-pop').value||'').trim();const ortBis=document.getElementById('inp-ort-bis-pop').value||'';if(ort&&!savedLocs.includes(ort)){savedLocs.unshift(ort);if(savedLocs.length>8)savedLocs=savedLocs.slice(0,8);ls(LS.locs,JSON.stringify(savedLocs));}hov('ov-unterwegs');const ns={...myState,ortStatus:'unterwegs',workStatus:'verfuegbar',ort,ortBis,t:Date.now()};myState=ns;await pushState();renderCtrl();renderLocTiles('ctrl');}
+async function confirmUnterwegsFree(){hov('ov-unterwegs');const ns={...myState,ortStatus:'unterwegs',workStatus:'verfuegbar',ort:'',ortBis:'',t:Date.now()};myState=ns;await pushState();renderCtrl();}
 
 async function pushState(){
   myState.name=myName;myState.t=Date.now();myLastPushT=myState.t;
@@ -1157,7 +1355,7 @@ async function goDisp(){
   _ivT=setInterval(()=>renderDisp(),1000);
   _ivD=setInterval(async()=>{await syncDisp();renderDisp();},4000);
   _ivAlarm=setInterval(pollAlarms,3000);
-  _ivC=setInterval(async()=>{await pollMessages();await syncOwnStateFromRemote();if(myLastPushT>0)await pushState();},4000);
+  _ivC=setInterval(async()=>{await pollMessages();await pollAdminReplies();await syncOwnStateFromRemote();if(myLastPushT>0)await pushState();},4000);
   trackEvent('disp_opened');
 }
 
@@ -1178,7 +1376,7 @@ async function syncDisp(){
   if(!canSeeOthers()){users={};return;}
   await loadWatchingData();
   const rooms=await fbGet('/flowapp/rooms')||{};
-  users={};watching.forEach(({uid})=>{if(rooms[uid])users[uid]=rooms[uid];});
+  users={};watching.forEach(({uid})=>{if(rooms[uid])users[uid]=migrateState({...rooms[uid]});});
 }
 
 function renderDisp(){
@@ -1197,9 +1395,32 @@ function renderDisp(){
 
   renderOwnStrip();
 
-  // Sidebar für Abwesende
   const sb=document.getElementById('d-sidebar');
-  if(absent.length){sb.style.display='flex';sb.innerHTML=`<div class="sidebar-lbl">NICHT IM WERK</div>`+absent.map(({uid})=>{const d=users[uid];if(!d)return'';const ac2=PRESENCE[d.presence]?.a||'#555';const elapsed=Date.now()-d.t;const tt=elapsed<10*60*1000?`vor ${fmtMs(elapsed)}`:elapsed<24*3600*1000?'heute abgemeldet':'heute noch nicht eingeloggt';const fresh=elapsed<STALE_MS;return`<div class="absent-card"><div class="absent-name" style="color:${ac2}">${nickFor(uid,d.name||uid)}</div><div style="font-size:9px;color:${ac2};margin-top:1px">${PRESENCE[d.presence]?.lbl||''}</div><div style="font-size:10px;color:${fresh?'#999':'#555'};margin-top:3px">${tt}</div>${!fresh?'<div style="font-size:9px;color:#555;margin-top:2px">⚠ Ggf. nicht aktuell</div>':''}</div>`;}).join('');}else{sb.style.display='none';}
+  if(absent.length){
+    sb.style.display='flex';
+    sb.innerHTML=`<div class="sidebar-lbl">NICHT IM WERK</div>`+absent.map(({uid})=>{
+      const d=users[uid];if(!d)return'';
+      const ac2=PRESENCE[d.presence]?.a||'#555';
+      const elapsed=d.t?Date.now()-d.t:null;
+      const fresh=elapsed!==null&&elapsed<STALE_MS;
+      // Datum-korrekte Anzeige
+      let tt='';
+      if(!elapsed){tt='–';}
+      else if(elapsed<10*60*1000){tt=`vor ${fmtMs(elapsed)}`;}
+      else{
+        const absDate=new Date(d.t);
+        const today=new Date();
+        const isToday=absDate.toDateString()===today.toDateString();
+        if(isToday){tt='heute abgemeldet';}
+        else{
+          const dd=String(absDate.getDate()).padStart(2,'0');
+          const mm=String(absDate.getMonth()+1).padStart(2,'0');
+          tt=`abgemeldet am ${dd}.${mm}.`;
+        }
+      }
+      return`<div class="absent-card"><div style="font-size:11px;color:${ac2};font-weight:600">${nickFor(uid,d.name||uid)}</div><div style="font-size:9px;color:${ac2};margin-top:1px">${PRESENCE[d.presence]?.lbl||''}</div><div style="font-size:10px;color:${fresh?'#999':'#555'};margin-top:3px">${tt}</div>${!fresh?'<div style="font-size:9px;color:#555;margin-top:2px">⚠ Ggf. nicht aktuell</div>':''}</div>`;
+    }).join('');
+  }else{sb.style.display='none';}
 
   const center=document.getElementById('d-center');
   if(!canSeeOthers()){center.innerHTML=`<div style="flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;color:var(--mut);font-size:14px;flex-direction:column;gap:12px"><div style="font-size:36px">🔒</div><div>Status anderer sichtbar wenn du <strong style="color:var(--txt)">Im Werk</strong> oder <strong style="color:var(--txt)">Mobil</strong> bist.</div></div>`;document.getElementById('pbar').innerHTML='';return;}
@@ -1236,32 +1457,40 @@ function renderDisp(){
 
 function renderOwnStrip(){
   const el=document.getElementById('d-own-content');
-  const pa=PRESENCE[myState.presence]?.a||'#555',ac=effColor(myState);
-  const pw=['werk_verlassen','abgemeldet','urlaub'].includes(myState.presence);
-  const ws=myState.workStatus;
+  const pr=myState.presence;
+  const os=myState.ortStatus||'am_platz';
+  const ws=myState.workStatus||'verfuegbar';
+  const pa=PRESENCE[pr]?.a||'#555';
+  const ac=effColor(myState);
+  const pw=['werk_verlassen','abgemeldet','urlaub'].includes(pr);
   let det='';
   if(!pw){
-    if(ws==='flow'&&myState.flowStart)det=`· Flow: ${fmtSince(myState.flowStart)}`;
-    else if(ws==='einfinden'&&myState.anlaufStart)det=`· Einfinden: ${fmtSince(myState.anlaufStart)}`;
-    else if(ws==='unterwegs'&&myState.ort)det=`· ${myState.ort}${myState.ortBis?' bis '+myState.ortBis:''}`;
+    if(os==='unterwegs'&&myState.ort)det=`· ${myState.ort}${myState.ortBis?' bis '+myState.ortBis:''}`;
+    else if(os==='nicht_am_platz'&&myState.napBis)det=`· zurück: ${myState.napBis}`;
   }
   const bis=(!pw&&myState.bisZeit)?`· <span style="color:#a78bfa">bis ${myState.bisZeit}</span>`:'';
+  const subLbl=!pw?(os==='am_platz'?(WORK[ws]?.lbl||''):(ORT[os]?.lbl||'')):'';
   el.innerHTML=`<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;overflow:hidden">
     <div style="width:8px;height:8px;border-radius:50%;background:${pa};box-shadow:0 0 5px ${pa};flex-shrink:0"></div>
-    <span class="B" style="font-size:15px;letter-spacing:2px;color:${pa}">${PRESENCE[myState.presence]?.lbl||''}</span>
+    <span class="B" style="font-size:15px;letter-spacing:2px;color:${pa}">${PRESENCE[pr]?.lbl||''}</span>
     <span style="font-size:11px;color:var(--mut)">${myName} (ich)</span>
-    ${!pw?`<span style="color:#444">·</span><span class="B" style="font-size:15px;letter-spacing:2px;color:${ac}">${WORK[myState.workStatus]?.lbl||''}</span>`:''}
+    ${!pw&&subLbl?`<span style="color:#444">·</span><span class="B" style="font-size:15px;letter-spacing:2px;color:${ac}">${subLbl}</span>`:''}
     <span style="font-size:11px;color:var(--mut)">${det} ${bis}</span>
   </div>`;
 }
 
-// ── LISTENANSICHT (ersetzt Kacheln) ───────────────────────
+// ── LISTENANSICHT ──────────────────────────────────────────
 function renderList(active,wrap){
   const list=document.createElement('div');list.className='user-list';
   active.forEach(({uid})=>{
     const d=users[uid];if(!d)return;
-    const stale=Date.now()-d.t>STALE_MS,ac=effColor(d),isMobil=d.presence==='mobil';
+    const stale=d.t&&Date.now()-d.t>STALE_MS;
+    const ac=effColor(d),isMobil=d.presence==='mobil';
     const hasHelp=activeAlarm?.type==='help'&&activeAlarm?.triggeredBy===uid&&!alarmDismissed;
+    const os=d.ortStatus||'am_platz';
+    const ws=d.workStatus||'verfuegbar';
+    const presLbl=PRESENCE[d.presence]?.lbl||'';
+    const subLbl=os==='am_platz'?(WORK[ws]?.lbl||''):(ORT[os]?.lbl||'');
     const row=document.createElement('div');row.className='user-row';
     if(hasHelp){row.style.borderColor='#22c55e55';row.style.boxShadow='0 0 10px #22c55e22';}
     row.onclick=()=>openUserAction(uid);
@@ -1273,8 +1502,7 @@ function renderList(active,wrap){
           ${nickFor(uid,d.name||uid)}${isMobil?' 🏠':''}${hasHelp?' 🤝':''}${stale?' <span style="color:#555;font-size:9px">(nicht aktuell)</span>':''}
         </div>
         <div class="user-row-status" style="color:${ac}">
-          ${PRESENCE[d.presence]?.lbl||''}
-          <span style="font-size:${active.length>1?'0.6em':'0.75em'};color:${ac}88">· ${WORK[d.workStatus]?.lbl||''}</span>
+          ${presLbl}<span style="font-size:0.6em;color:${ac}88"> · ${subLbl}</span>
         </div>
         ${detLine?`<div class="user-row-detail">${detLine}</div>`:''}
         ${(!['werk_verlassen','abgemeldet','urlaub'].includes(d.presence)&&d.bisZeit)?`<div class="user-row-badge">📍 Im Werk bis ${d.bisZeit}</div>`:''}
@@ -1286,32 +1514,35 @@ function renderList(active,wrap){
 
 function buildDetailLine(d,ac){
   const pw=['werk_verlassen','abgemeldet','urlaub'].includes(d.presence);if(pw)return'';
-  const w=d.workStatus;
-  if(w==='am_platz')return'<span style="color:#aaa">Verfügbar – sprich mich an</span>';
-  if(w==='einfinden')return`<span style="color:#aaa">Einfinden seit </span><strong style="color:${ac}">${fmtSince(d.anlaufStart)}</strong>`;
-  if(w==='flow')return`<span style="color:#aaa">Flow seit </span><strong style="color:${ac}">${fmtSince(d.flowStart)}</strong><span style="color:#555"> · Einfindezeit: ${fmtMs(d.anlaufDur)}</span>`;
-  if(w==='unterwegs')return`<span style="color:#aaa">Unterwegs${d.ort?` · <strong style="color:#eee">${d.ort}</strong>`:''}</span>${d.ortBis?` <span style="color:var(--mut)">bis <strong>${d.ortBis}</strong></span>`:''}`;
-  if(w==='nicht_am_platz')return`<span style="color:#aaa">Nicht am Platz${d.napBis?` · zurück: <strong>${d.napBis}</strong>`:''}</span>`;
+  const os=d.ortStatus||'am_platz';
+  const ws=d.workStatus||'verfuegbar';
+  if(os==='unterwegs')return`<span style="color:#aaa">Unterwegs${d.ort?` · <strong style="color:#eee">${d.ort}</strong>`:''}</span>${d.ortBis?` <span style="color:var(--mut)">bis <strong>${d.ortBis}</strong></span>`:''}`;
+  if(os==='nicht_am_platz')return`<span style="color:#aaa">Nicht am Platz${d.napBis?` · zurück: <strong>${d.napBis}</strong>`:''}</span>`;
+  if(ws==='verfuegbar')return`<span style="color:#aaa">Verfügbar – sprich mich ruhig an</span>`;
+  if(ws==='nicht_stoeren')return`<span style="color:#aaa">Bitte nicht stören</span>`;
+  if(ws==='pause')return`<span style="color:#aaa">Pause</span>`;
   return'';
 }
 
 function renderTimeline(active,wrap){
-  const prio={am_platz:2,einfinden:3,flow:4,unterwegs:5,nicht_am_platz:6};
-  const sorted=[...active].sort((a,b)=>{const da=users[a.uid],db=users[b.uid];if(!da||!db)return 0;if(da.bisZeit&&db.bisZeit)return da.bisZeit.localeCompare(db.bisZeit);if(da.bisZeit)return -1;if(db.bisZeit)return 1;return(prio[da.workStatus]||9)-(prio[db.workStatus]||9);});
+  const prio={verfuegbar:1,pause:2,nicht_stoeren:3,am_platz:1,unterwegs:4,nicht_am_platz:5};
+  const sorted=[...active].sort((a,b)=>{const da=users[a.uid],db=users[b.uid];if(!da||!db)return 0;if(da.bisZeit&&db.bisZeit)return da.bisZeit.localeCompare(db.bisZeit);if(da.bisZeit)return -1;if(db.bisZeit)return 1;const pa=prio[da.ortStatus!=='am_platz'?da.ortStatus:(da.workStatus||'verfuegbar')]||9;const pb=prio[db.ortStatus!=='am_platz'?db.ortStatus:(db.workStatus||'verfuegbar')]||9;return pa-pb;});
   const tl=document.createElement('div');tl.className='d-tl';
   const now=new Date();
   tl.innerHTML=`<div style="font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;padding-bottom:7px;border-bottom:1px solid var(--brd);margin-bottom:7px">WERKSICHT · ZEITPLAN · ${p(now.getHours())}:${p(now.getMinutes())} Uhr</div>`;
   sorted.forEach(({uid},i)=>{
     const d=users[uid];if(!d)return;
-    const ac=effColor(d),stale=Date.now()-d.t>STALE_MS,isLast=i===sorted.length-1,isMobil=d.presence==='mobil';
+    const ac=effColor(d),stale=d.t&&Date.now()-d.t>STALE_MS,isLast=i===sorted.length-1,isMobil=d.presence==='mobil';
+    const os=d.ortStatus||'am_platz';const ws=d.workStatus||'verfuegbar';
+    const subLbl=os==='am_platz'?(WORK[ws]?.lbl||''):(ORT[os]?.lbl||'');
     const row=document.createElement('div');row.className='tl-row';row.onclick=()=>openUserAction(uid);
     row.innerHTML=`
       <div class="tl-tc"><div class="tl-tl" style="color:${d.bisZeit?'#a78bfa':'#555'}">${d.bisZeit||'–'}</div>${!isLast?`<div class="tl-vl" style="background:${d.bisZeit?'#a78bfa33':'#222'}"></div>`:''}</div>
       <div class="tl-dc"><div class="tl-dot" style="background:${stale?'#444':ac};box-shadow:0 0 6px ${stale?'#444':ac}44"></div>${!isLast?'<div class="tl-vl2"></div>':''}</div>
       <div class="tl-cc" style="opacity:${stale?'0.5':'1'}">
         <div class="tl-nm" style="color:${ac}">${nickFor(uid,d.name||uid)}${isMobil?' 🏠':''}${stale?' (nicht aktuell)':''}</div>
-        <div class="tl-st B" style="font-size:clamp(14px,2.6vw,24px);color:${ac}">${PRESENCE[d.presence]?.lbl||''} · ${WORK[d.workStatus]?.lbl||''}</div>
-        <div class="tl-sb">${buildDetailLine(d,ac)}${d.bisZeit?`${buildDetailLine(d,ac)?' · ':''}<span style="color:#a78bfa">Im Werk bis ${d.bisZeit}</span>`:''}</div>
+        <div class="tl-st B" style="font-size:clamp(14px,2.6vw,24px);color:${ac}">${PRESENCE[d.presence]?.lbl||''} · ${subLbl}</div>
+        <div class="tl-sb">${buildDetailLine(d,ac)}${d.bisZeit?`<span style="color:#a78bfa">Im Werk bis ${d.bisZeit}</span>`:''}</div>
       </div>`;
     tl.appendChild(row);
   });
@@ -1379,10 +1610,11 @@ function renderEvacScreen(active){
 function updateEvacEndStatus(){
   const el=document.getElementById('evac-end-status');if(!el)return;
   const alarm=activeAlarm;if(!alarm)return;
-  const total=watching.length+Object.keys(watchers).length+1;
+  const imWerkUids=[...new Set([...watching.map(w=>w.uid),...Object.keys(watchers)])].filter(uid=>{const u=users[uid];return u&&u.presence==='im_werk';});
+  const total=Math.max(imWerkUids.length+(myState.presence==='im_werk'?1:0),1);
   const conf=Object.keys(alarm.endConfs||{}).length;
-  const pct=total>0?Math.round(conf/total*100):0;
-  el.textContent=`${conf}/${total} (${pct}%) haben Alarm-Ende bestätigt`;
+  const pct=Math.round(conf/total*100);
+  el.textContent=`${conf}/${total} Anwesende (${pct}%) haben Alarm-Ende bestätigt`;
 }
 
 async function updateHausReasonEvac(){const inp=document.getElementById('alm-reason-inp-evac');if(!inp||!inp.value)return;await fbPut('/flowapp/alarms/active/reason',inp.value);}
@@ -1397,8 +1629,28 @@ function toggleView(){
 // §12  SICHTBARKEIT
 // ═══════════════════════════════════════════════════════════
 function canSeeOthers(){const pr=myState.presence;if(pr==='im_werk'||pr==='mobil')return true;if(myState.lastPresChange&&Date.now()-myState.lastPresChange<GRACE_MS)return true;return false;}
-function effColor(state){if(!state)return'#22c55e';if(state.presence==='werk_verlassen')return PRESENCE.werk_verlassen.a;if(state.presence==='mobil')return PRESENCE.mobil.a;if(state.presence==='urlaub')return PRESENCE.urlaub.a;if(state.presence==='abgemeldet')return PRESENCE.abgemeldet.a;return WORK[state.workStatus]?.a||'#22c55e';}
-function effGlow(state){if(!state||['werk_verlassen','abgemeldet','urlaub'].includes(state.presence))return'rgba(249,115,22,.09)';if(state.presence==='mobil')return'rgba(167,139,250,.09)';return WORK[state.workStatus]?.glow||'rgba(34,197,94,.09)';}
+function effColor(state){
+  if(!state)return'#22c55e';
+  const pr=state.presence;
+  if(pr==='werk_verlassen')return PRESENCE.werk_verlassen.a;
+  if(pr==='mobil')return PRESENCE.mobil.a;
+  if(pr==='urlaub')return PRESENCE.urlaub.a;
+  if(pr==='abgemeldet')return PRESENCE.abgemeldet.a;
+  const os=state.ortStatus||'am_platz';
+  const ws=state.workStatus||'verfuegbar';
+  if(os==='unterwegs')return ORT.unterwegs.a;
+  if(os==='nicht_am_platz')return ORT.nicht_am_platz.a;
+  return WORK[ws]?.a||'#22c55e';
+}
+function effGlow(state){
+  if(!state||['werk_verlassen','abgemeldet','urlaub'].includes(state.presence))return'rgba(249,115,22,.09)';
+  if(state.presence==='mobil')return'rgba(167,139,250,.09)';
+  const os=state.ortStatus||'am_platz';
+  const ws=state.workStatus||'verfuegbar';
+  if(os==='unterwegs')return'rgba(96,165,250,.09)';
+  if(os==='nicht_am_platz')return'rgba(128,128,128,.06)';
+  return WORK[ws]?.glow||'rgba(34,197,94,.09)';
+}
 
 // ═══════════════════════════════════════════════════════════
 // §13  ALARM-SYSTEM
@@ -1464,7 +1716,14 @@ function renderAlarmResponses(alarm){
   const lines=Object.values(r).map(v=>`${icons[v.type]||'?'}: <strong>${v.name}</strong>`);
   document.getElementById('alm-resp-display').innerHTML=lines.length?lines.join('<br>'):'(Noch keine Reaktionen)';
   if(alarm.type==='help'&&alarm.count>0){const coming=Object.values(r).filter(v=>v.type==='coming'||v.type==='onsite').length;if(coming>=alarm.count)dismissAlarm();}
-  if(alarm.type==='haus'){const total=watching.length+Object.keys(watchers).length+1;const conf=Object.keys(alarm.endConfs||{}).length;const pct=total>0?Math.round(conf/total*100):0;document.getElementById('alm-conf-count').textContent=`${conf}/${total} (${pct}%) haben Alarm-Ende bestätigt`;updateEvacEndStatus();}
+  if(alarm.type==='haus'){
+    const imWerkUids=[...new Set([...watching.map(w=>w.uid),...Object.keys(watchers)])].filter(uid=>{const u=users[uid];return u&&u.presence==='im_werk';});
+    const total=Math.max(imWerkUids.length+(myState.presence==='im_werk'?1:0),1);
+    const conf=Object.keys(alarm.endConfs||{}).length;
+    const pct=Math.round(conf/total*100);
+    document.getElementById('alm-conf-count').textContent=`${conf}/${total} Anwesende (${pct}%) haben Alarm-Ende bestätigt`;
+    updateEvacEndStatus();
+  }
 }
 
 let _detailDebounce=null;
@@ -1501,7 +1760,13 @@ async function pollAlarms(){
     }
     if(activeAlarm.type==='haus'&&alarmDismissed)renderDisp(); // Evak-Liste aktualisieren
   }
-  if(alarm.type==='haus'){const total=watching.length+Object.keys(watchers).length+1;const conf=Object.keys(alarm.endConfs||{}).length;if(conf>=Math.ceil(total*0.5)&&Date.now()-alarm.t>=2*60*1000){await fbDel('/flowapp/alarms/active');endAlarmLocal();}}
+  if(alarm.type==='haus'){
+    // Nur IM-WERK-Nutzer für die Schwelle heranziehen
+    const imWerkUids=[...new Set([...watching.map(w=>w.uid),...Object.keys(watchers)])].filter(uid=>{const u=users[uid];return u&&u.presence==='im_werk';});
+    const total=Math.max(imWerkUids.length+(myState.presence==='im_werk'?1:0),1);
+    const conf=Object.keys(alarm.endConfs||{}).length;
+    if(conf>=Math.ceil(total*0.5)&&Date.now()-alarm.t>=2*60*1000){await fbDel('/flowapp/alarms/active');endAlarmLocal();}
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1547,11 +1812,17 @@ async function sendReply(){
   playMsgSound(0.2);
 }
 
-// Nachricht als gelesen markieren (auf allen Geräten sichtbar)
-async function markRead(msgId){
+// Nachricht als gelesen markieren + Lesebestätigung an Absender senden
+async function markRead(msgId,senderUid,senderName,origText){
   await fbPut(`/flowapp/msgs/${myUid}/${msgId}/readBy/${myUid}`,Date.now());
-  // Toast entfernen
   document.getElementById(`toast-${msgId}`)?.remove();
+  // Lesebestätigung an Absender (falls bekannt)
+  if(senderUid&&senderUid!==myUid){
+    const receipt=`${myName} hat deine Nachricht gelesen: „${(origText||'').substring(0,60)}${origText&&origText.length>60?'…':''}"`;
+    const payload=await encryptMsg(receipt,myUid,senderUid);
+    const rcptId=`rcpt_${Date.now()}_${myUid.substring(3,7)}`;
+    await fbPut(`/flowapp/msgs/${senderUid}/${rcptId}`,{...payload,senderUid:myUid,senderName:myName,t:Date.now(),dismissed:false,readBy:{},isReceipt:true});
+  }
 }
 
 // Nachricht schließen → dismissed:true → alle Geräte entfernen Toast
@@ -1564,43 +1835,53 @@ async function dismissMsg(msgId){
 async function pollMessages(){
   const msgs=await fbGet(`/flowapp/msgs/${myUid}`)||{};
   for(const [msgId,data] of Object.entries(msgs)){
-    // Überspringe wenn already dismissed
     if(data.dismissed){document.getElementById(`toast-${msgId}`)?.remove();await fbDel(`/flowapp/msgs/${myUid}/${msgId}`);continue;}
-    // Nur neue Nachrichten anzeigen (nach unserem letzten Poll)
     if(data.t<=lastMsgPollT)continue;
-    if(data.senderUid===myUid)continue; // Eigene gesendete nicht nochmal zeigen
-    // Entschlüsseln
+    if(data.senderUid===myUid)continue;
     const text=await decryptMsg({iv:data.iv,cipher:data.cipher},data.senderUid,myUid);
-    showMsgToast(msgId,data.senderUid,data.senderName||'Unbekannt',text,data.t);
-    playMsgSound();
-    notify(`Werksicht: Nachricht von ${data.senderName||'?'}`,text);
+    showMsgToast(msgId,data.senderUid,data.senderName||'Unbekannt',text,data.t,!!data.isReceipt);
+    if(!data.isReceipt){playMsgSound();notify(`Werksicht: Nachricht von ${data.senderName||'?'}`,text);}
+    else{playSoftPing();}
   }
   if(Object.keys(msgs).length>0||lastMsgPollT===0)lastMsgPollT=Date.now();
 }
 
-function showMsgToast(msgId,senderUid,senderName,text,t){
-  if(document.getElementById(`toast-${msgId}`))return; // bereits angezeigt
+function showMsgToast(msgId,senderUid,senderName,text,t,isReceipt=false){
+  if(document.getElementById(`toast-${msgId}`))return;
   const container=document.getElementById('msg-toasts');
   const toast=document.createElement('div');
-  toast.id=`toast-${msgId}`;toast.className='msg-toast';
-  toast.innerHTML=`
-    <div class="msg-toast-header">
-      <span class="msg-toast-from">📣 ${senderName}</span>
-      <span style="font-size:10px;color:var(--dim)">${new Date(t).toLocaleTimeString('de',{hour:'2-digit',minute:'2-digit'})}</span>
-    </div>
-    <div style="font-size:13px;color:var(--txt);word-break:break-word">${text}</div>
-    <div class="msg-toast-actions">
-      <button class="msg-toast-btn" style="color:#22c55e;border-color:#22c55e55" onclick="markReadAndReply('${msgId}','${senderUid}','${senderName.replace(/'/g,"\\'")}','${text.replace(/'/g,"\\'")}')">Antworten</button>
-      <button class="msg-toast-btn" style="color:#60a5fa;border-color:#60a5fa55" onclick="markRead('${msgId}')">✓ Gelesen</button>
-      <button class="msg-toast-btn" style="color:var(--dim);border-color:var(--brd)" onclick="dismissMsg('${msgId}')">✕ Schließen</button>
-    </div>`;
+  toast.id=`toast-${msgId}`;
+  toast.className='msg-toast'+(isReceipt?' receipt-toast':'');
+  if(isReceipt){
+    // Lesebestätigung – nur Schließen-Button
+    toast.innerHTML=`
+      <div class="msg-toast-header">
+        <span class="msg-toast-from" style="color:#22c55e">✓ Gelesen</span>
+        <span style="font-size:10px;color:var(--dim)">${new Date(t).toLocaleTimeString('de',{hour:'2-digit',minute:'2-digit'})}</span>
+      </div>
+      <div style="font-size:12px;color:var(--mut);word-break:break-word">${text}</div>
+      <div class="msg-toast-actions">
+        <button class="msg-toast-btn" style="color:var(--dim);border-color:var(--brd)" onclick="dismissMsg('${msgId}')">✕ Schließen</button>
+      </div>`;
+  }else{
+    toast.innerHTML=`
+      <div class="msg-toast-header">
+        <span class="msg-toast-from">📣 ${senderName}</span>
+        <span style="font-size:10px;color:var(--dim)">${new Date(t).toLocaleTimeString('de',{hour:'2-digit',minute:'2-digit'})}</span>
+      </div>
+      <div style="font-size:13px;color:var(--txt);word-break:break-word">${text}</div>
+      <div class="msg-toast-actions">
+        <button class="msg-toast-btn" style="color:#22c55e;border-color:#22c55e55" onclick="markReadAndReply('${msgId}','${senderUid}','${senderName.replace(/'/g,"\\'")}','${text.replace(/'/g,"\\'").replace(/\n/g,' ')}')">Antworten</button>
+        <button class="msg-toast-btn" style="color:#60a5fa;border-color:#60a5fa55" onclick="markRead('${msgId}','${senderUid}','${senderName.replace(/'/g,"\\'")}','${text.replace(/'/g,"\\'").replace(/\n/g,' ')}')">✓ Gelesen</button>
+        <button class="msg-toast-btn" style="color:var(--dim);border-color:var(--brd)" onclick="dismissMsg('${msgId}')">✕ Schließen</button>
+      </div>`;
+  }
   container.prepend(toast);
-  // Auto-dismiss nach 60s
   setTimeout(()=>{if(document.getElementById(`toast-${msgId}`))dismissMsg(msgId);},60000);
 }
 
 function markReadAndReply(msgId,senderUid,senderName,origText){
-  markRead(msgId);
+  markRead(msgId,senderUid,senderName,origText);
   replyTarget=senderUid;replyOrigMsg=origText;
   document.getElementById('reply-title').textContent=`ANTWORT AN: ${senderName}`;
   document.getElementById('reply-orig').textContent=`"${origText}"`;
@@ -1717,11 +1998,12 @@ function buildHelp(){
     ['🚀 Erste Schritte','Name eingeben → Komfort-Setup → Startseite.\n\nIn allen Ansichten: WERKSICHT oben klicken → Controller. Untere Navigationsleiste: Start · Controller · Anzeige · Verbindungen · Hilfe.\n\nVerbinden: Pairing-Code kopieren und der anderen Person schicken. Diese gibt ihn bei "＋ Person" (oben rechts) ein. Verbindung ist immer gegenseitig.'],
     ['📱 Multi-Gerät Sync','Auf dem neuen Gerät beim Erststart: Code des bereits angemeldeten Geräts eingeben. Das neue Gerät übernimmt vollständig Name, Status und alle Verbindungen.\n\nStatusänderungen werden alle 4 Sekunden synchronisiert. Das Gerät mit dem neueren Zeitstempel "gewinnt".\n\nAnzahl aktiver Geräte wird in der Top-Leiste angezeigt.'],
     ['📡 Codes & Sicherheit','Pairing-Codes rotieren jede Minute. Nur zum einmaligen Verbinden. Intern wird eine permanente UID genutzt.\n\nNachrichten sind Ende-zu-Ende verschlüsselt (AES-256-GCM). Firebase sieht nur verschlüsselte Daten. Der Schlüssel wird aus beiden UIDs abgeleitet – kein Schlüssel wird übertragen.'],
-    ['👤 Anwesenheit','IM WERK und MOBILES ARBEITEN schließen sich gegenseitig aus. Erst "Werk verlassen" oder "Beenden" dann den neuen Status.\n\n"Im Werk bis": Bleibt über alle Statuswechsel erhalten.\n\n10 Minuten Gnadenfrist nach Abmeldung – auf dem Heimweg noch prüfen ob jemand allein blieb.\n\nAlle Status-Anzeigen sind freiwillig und unverbindlich! Immer direkt nachfragen wenn es wichtig ist.'],
-    ['💼 Arbeitsstatus','AM PLATZ · EINFINDEN (Übergang in Fokus) · FLOW (Nicht stören!) · IM WERK UNTERWEGS · NICHT AM PLATZ (nur bei Mobil)\n\nAuto-Flow: Timer setzt Status automatisch auf FLOW.\n\nAnsicht wechseln: In der Anzeige den ⏱-Button klicken (Liste ↔ Zeitplan).\n\nKlick auf eine Person: Kurze Nachricht senden.'],
-    ['📣 Nachrichten','In der Anzeige auf eine Kachel/Zeile klicken → Nachrichtendialog öffnet sich.\n\nEmpfangene Nachrichten erscheinen als Toast (Einblendung) oben rechts mit Ton.\n\nOptionen: Antworten · Als gelesen markieren · Schließen.\n\n"Als gelesen" erscheint auf allen synchronisierten Geräten.\n\nNachrichten sind Ende-zu-Ende verschlüsselt (AES-256-GCM).'],
-    ['⚠️ Unterstützung anfordern','🤝 HELFENDE HAND: Stiller Hinweis mit Beschreibung und Ort. Sehr kurzer Soft-Ton. Verschwindet wenn genug Helfer reagiert haben.\n\n⚠️ PERSÖNLICHE NOTLAGE: Sofortmeldung, Details danach nachreichen. "Weitere Hilfe nötig" sendet erneuten Alarm.\n\n🚨 HAUSALARM: Evakuierung! Sammelplatz aufsuchen. In Sicherheit melden über Evakuierungsliste. Alarm kann ausgeblendet werden um die Liste zu sehen – endet nach 2 Min. wenn 50% bestätigen.\n\nWICHTIG: App-Alarm ersetzt NIEMALS den Notruf (112)!'],
-    ['🔒 Datenschutz & Recht','Nur selbst gewählter Name + Status. Firebase, Belgien. Kein öffentliches Angebot, kein kommerzieller Dienst, keine Impressumspflicht.\n\nNachrichten: Ende-zu-Ende verschlüsselt. Firebase sieht nur Cipher-Text.\n\nInaktive Nutzer nach 90 Tagen automatisch gelöscht.\n\nVollständig löschbar: Einstellungen → Nutzer vollständig löschen.'],
+    ['👤 Anwesenheit','IM WERK und MOBILES ARBEITEN schließen sich gegenseitig aus.\n\n"Im Werk bis": Bleibt über alle Statuswechsel erhalten.\n\n10 Minuten Gnadenfrist nach Abmeldung – auf dem Heimweg noch prüfen ob jemand allein blieb.\n\nAlle Status-Anzeigen sind freiwillig und unverbindlich!'],
+    ['📍 Aufenthaltsort','AM PLATZ: Du bist an deinem üblichen Platz erreichbar.\n\nIM WERK UNTERWEGS (nur bei "Im Werk"): Du bist gerade woanders – Ort und Rückkehrzeit können angegeben werden.\n\nNICHT AM PLATZ (nur bei "Mobiles Arbeiten"): Du bist nicht an deinem gewohnten Platz.'],
+    ['💼 Arbeitsstatus','Nur aktiv wenn du AM PLATZ bist.\n\nVERFÜGBAR: Sprich mich ruhig an.\n\nNICHT STÖREN: Bitte nur bei Dringendem.\n\nPAUSE: Kurze Auszeit.\n\nBeim Wechsel zu "Im Werk unterwegs" oder beim Abmelden wird der Arbeitsstatus automatisch zurückgesetzt.'],
+    ['📣 Nachrichten','In der Anzeige auf eine Zeile klicken → Nachrichtendialog öffnet sich.\n\nEmpfangene Nachrichten erscheinen als Toast (Einblendung) oben rechts mit Ton.\n\nOptionen: Antworten · Als gelesen markieren · Schließen.\n\n"Als gelesen" markieren sendet dem Absender eine kurze Rückmeldung.\n\nNachrichten sind Ende-zu-Ende verschlüsselt (AES-256-GCM).'],
+    ['⚠️ Unterstützung anfordern','🤝 HELFENDE HAND: Stiller Hinweis mit Beschreibung und Ort. Sehr kurzer Soft-Ton.\n\n⚠️ PERSÖNLICHE NOTLAGE: Sofortmeldung, Details danach nachreichen.\n\n🚨 HAUSALARM: Evakuierung! Sammelplatz aufsuchen. In Sicherheit melden über Evakuierungsliste.\n\nWICHTIG: App-Alarm ersetzt NIEMALS den Notruf (112)!'],
+    ['🔒 Datenschutz & Recht','Nur selbst gewählter Name + Status. Firebase, Belgien. Kein öffentliches Angebot, kein kommerzieller Dienst.\n\nNachrichten: Ende-zu-Ende verschlüsselt.\n\nInaktive Nutzer nach 90 Tagen automatisch gelöscht.\n\nVollständig löschbar: Einstellungen → Nutzer vollständig löschen.'],
     ['ℹ️ Haftung','Alle angezeigten Status sind UNVERBINDLICH und ohne Gewähr. Da die Nutzung freiwillig ist, können nicht alle Personen erfasst sein.\n\nDie App ersetzt NICHT die direkte Kommunikation und NICHT professionelle Notfallsysteme.\n\nNutzung vollständig auf eigenes Risiko.'],
   ];
   const el=document.getElementById('help-content');
@@ -1741,6 +2023,86 @@ async function trackEvent(event){
   const today=new Date().toISOString().split('T')[0];
   try{await fbInc(`/flowapp/stats/${today}/interactions`);}catch(e){}
   try{const hb=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(myUid+today));const hx=Array.from(new Uint8Array(hb)).map(b=>b.toString(16).padStart(2,'0')).join('').substring(0,16);await fbPut(`/flowapp/stats/${today}/sessions/${hx}`,true);}catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════════
+// §19b  SUPPORT
+// ═══════════════════════════════════════════════════════════
+function openSupport(cat){
+  _supportCategory=cat;
+  hov('ov-help');
+  document.getElementById('support-title').textContent=cat==='bug'?'FEHLER MELDEN':'ANREGUNG SENDEN';
+  document.getElementById('support-desc').textContent=cat==='bug'?'Beschreibe den Fehler so genau wie möglich.':'Was könnte besser sein? Was vermisst du?';
+  document.getElementById('support-text').value='';
+  document.getElementById('support-cc').textContent='0/1000';
+  document.getElementById('support-err').textContent='';
+  ov('ov-support');
+}
+
+async function sendSupport(anon){
+  const text=(document.getElementById('support-text').value||'').trim();
+  if(!text){document.getElementById('support-err').textContent='Bitte einen Text eingeben.';return;}
+  const author=anon?'Anonyme Meldung':myName;
+  const id=`${Date.now()}_${myUid.substring(3,9)}`;
+  const cat=_supportCategory==='bug'?'errors':'suggestions';
+  await fbPut(`/flowapp/support/${cat}/${id}`,{
+    text,author,uid:anon?null:myUid,t:Date.now(),
+    category:_supportCategory,handled:false,reply:null,replyRead:false
+  });
+  hov('ov-support');
+  document.getElementById('support-text').value='';
+  alert('✓ Vielen Dank! Deine Meldung wurde gespeichert.');
+}
+
+// Polling: Admin-Antworten anzeigen
+async function pollAdminReplies(){
+  if(!myUid)return;
+  for(const cat of['errors','suggestions']){
+    const items=await fbGet(`/flowapp/support/${cat}`)||{};
+    for(const [id,item] of Object.entries(items)){
+      if(item.uid!==myUid)continue;
+      if(!item.reply||item.replyRead)continue;
+      showAdminReplyToast(id,cat,item);
+    }
+  }
+}
+
+function showAdminReplyToast(itemId,cat,item){
+  const toastId=`ar-${itemId}`;
+  if(document.getElementById(toastId))return;
+  document.getElementById('ar-orig').textContent=item.text||'';
+  document.getElementById('ar-text').textContent=item.reply||'';
+  document.getElementById('ar-item-id').value=itemId;
+  document.getElementById('ar-category').value=cat;
+  document.getElementById('ar-reply-area').style.display='none';
+  document.getElementById('ar-send-btn').style.display='none';
+  ov('ov-admin-reply');
+}
+
+function toggleAdminReplyField(){
+  const area=document.getElementById('ar-reply-area');
+  const sendBtn=document.getElementById('ar-send-btn');
+  const show=area.style.display==='none';
+  area.style.display=show?'block':'none';
+  sendBtn.style.display=show?'block':'none';
+}
+
+async function sendUserReplyToAdmin(){
+  const txt=(document.getElementById('ar-reply-txt').value||'').trim();
+  if(!txt)return;
+  const itemId=document.getElementById('ar-item-id').value;
+  const cat=document.getElementById('ar-category').value;
+  await fbPut(`/flowapp/support/${cat}/${itemId}/userReply`,{text:txt,t:Date.now(),name:myName});
+  document.getElementById('ar-reply-txt').value='';
+  await dismissAdminReply();
+  alert('✓ Antwort gesendet.');
+}
+
+async function dismissAdminReply(){
+  const itemId=document.getElementById('ar-item-id').value;
+  const cat=document.getElementById('ar-category').value;
+  if(itemId&&cat)await fbPut(`/flowapp/support/${cat}/${itemId}/replyRead`,true);
+  hov('ov-admin-reply');
 }
 </script>
 </body>
