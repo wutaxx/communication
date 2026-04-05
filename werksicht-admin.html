@@ -4,167 +4,350 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Werksicht Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#070707;color:#f0f0f0;font-family:'Inter',system-ui,sans-serif;min-height:100vh;padding:24px 20px}
-.brand{font-family:system-ui,sans-serif;letter-spacing:4px;color:#22c55e;font-size:clamp(28px,6vw,48px);font-weight:900}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:24px 0}
-.stat-card{background:#141414;border:1px solid #363636;border-radius:12px;padding:20px;text-align:center}
-.stat-val{font-size:clamp(32px,6vw,56px);font-weight:700;color:#22c55e;line-height:1}
-.stat-lbl{font-size:12px;color:#888;letter-spacing:2px;text-transform:uppercase;margin-top:8px}
-.chart-card{background:#141414;border:1px solid #363636;border-radius:12px;padding:20px;margin-bottom:16px}
-.chart-title{font-size:14px;font-weight:600;color:#ccc;margin-bottom:14px;letter-spacing:1px;text-transform:uppercase}
-.btn{background:#1e1e1e;border:1px solid #363636;color:#888;border-radius:7px;padding:8px 16px;font-size:13px;cursor:pointer;transition:all .15s}
-.btn:hover{color:#f0f0f0;border-color:#666}
-.notice{background:#0d0d1a;border:1px solid #3a3a7a;border-radius:8px;padding:12px 14px;font-size:12px;color:#aaaadd;line-height:1.7;margin-bottom:16px}
-.loading{color:#555;font-size:13px;text-align:center;padding:20px}
-input{background:#1e1e1e;border:1px solid #363636;color:#f0f0f0;border-radius:7px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit}
-input:focus{border-color:#555}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#070707;--card:#141414;--c2:#1e1e1e;--brd:#363636;--txt:#f0f0f0;--mut:#c0c0c0;--dim:#909090;--accent:#22c55e}
+body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;min-height:100vh}
+.B{font-family:'Bebas Neue',sans-serif}
+#top{background:rgba(7,7,7,.97);border-bottom:1px solid var(--brd);padding:0 18px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
+#top-brand{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:5px;color:var(--accent)}
+.wrap{max-width:1100px;margin:0 auto;padding:18px 14px 40px}
+.tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.tab{padding:8px 16px;border-radius:7px;cursor:pointer;font-size:13px;font-family:'Inter',sans-serif;border:1px solid var(--brd);background:var(--c2);color:var(--mut);transition:all .15s}
+.tab.act{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
+.section{display:none}.section.act{display:block}
+.card{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.card-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+.card-meta{font-size:11px;color:var(--dim);margin-bottom:6px}
+.card-text{font-size:13px;color:var(--txt);line-height:1.7;background:var(--c2);border-radius:7px;padding:10px 12px}
+.card-reply{font-size:12px;color:#60a5fa;background:#0a0d1a;border:1px solid #60a5fa33;border-radius:7px;padding:9px 12px;margin-top:8px;line-height:1.6}
+.card-user-reply{font-size:12px;color:#a78bfa;background:#0a091a;border:1px solid #a78bfa33;border-radius:7px;padding:9px 12px;margin-top:6px;line-height:1.6}
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;letter-spacing:1px;text-transform:uppercase;font-weight:600}
+.badge-open{background:#1a0800;color:#f97316;border:1px solid #f9731655}
+.badge-handled{background:#0a1a0a;color:#22c55e;border:1px solid #22c55e55}
+.badge-bug{background:#1a0808;color:#f87171;border:1px solid #f8717155}
+.badge-suggestion{background:#0a0d1a;color:#60a5fa;border:1px solid #60a5fa55}
+.btn{border:none;border-radius:7px;padding:7px 13px;font-family:'Inter',sans-serif;font-size:12px;cursor:pointer;transition:opacity .15s}
+.btn:active{opacity:.8}
+.btn-g{background:var(--c2);border:1px solid var(--brd);color:var(--mut)}
+.btn-g:hover{color:var(--txt)}
+.btn-ok{background:#0a1a0a;border:1px solid #22c55e55;color:#22c55e}
+.btn-del{background:#1e0808;border:1px solid #6a2020;color:#f87171}
+.btn-blue{background:#0a0d1a;border:1px solid #60a5fa55;color:#60a5fa}
+.inp{width:100%;background:var(--c2);border:1px solid var(--brd);border-radius:7px;padding:8px 11px;color:var(--txt);font-size:13px;outline:none;font-family:'Inter',sans-serif}
+.inp:focus{border-color:#666}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px}
+.stat-card{background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:14px 16px;text-align:center}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;color:var(--accent)}
+.stat-lbl{font-size:10px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.empty{color:var(--dim);font-size:13px;padding:20px 0;text-align:center}
+#ver-input{background:var(--c2);border:1px solid var(--brd);border-radius:7px;padding:8px 12px;color:var(--txt);font-size:14px;outline:none;width:140px;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;text-align:center}
+.filter-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.filter-btn{padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-family:'Inter',sans-serif;border:1px solid var(--brd);background:var(--c2);color:var(--mut)}
+.filter-btn.act{border-color:var(--accent);color:var(--accent)}
+canvas{max-height:260px}
 </style>
 </head>
 <body>
 
-<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
-  <div>
-    <div class="brand">WERKSICHT ADMIN</div>
-    <div style="font-size:11px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-top:2px">Nutzungsstatistiken</div>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-    <div style="font-size:12px;color:#555">Zeitraum:</div>
-    <select id="sel-days" onchange="loadData()" style="background:#1e1e1e;border:1px solid #363636;color:#f0f0f0;border-radius:7px;padding:7px 10px;font-size:12px;cursor:pointer">
-      <option value="7">Letzte 7 Tage</option>
-      <option value="14">Letzte 14 Tage</option>
-      <option value="30" selected>Letzte 30 Tage</option>
-      <option value="90">Letzte 90 Tage</option>
-    </select>
-    <button class="btn" onclick="loadData()">↻ Aktualisieren</button>
+<div id="top">
+  <div id="top-brand">WERKSICHT ADMIN</div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span id="top-status" style="font-size:11px;color:var(--dim)">Lade…</span>
+    <button class="btn btn-g" onclick="loadAll()">↺ Aktualisieren</button>
   </div>
 </div>
 
-<div class="notice">
-  ℹ️ <strong style="color:#ccccff">Datenschutzhinweis:</strong>
-  Diese Admin-Ansicht zeigt ausschließlich aggregierte Zähler ohne Nutzerzuordnung.
-  Interaktionen werden als anonyme Tageszähler gespeichert. Sessions werden via einseitigem
-  SHA-256-Hash (nicht umkehrbar) gezählt. Es ist nicht möglich, das Verhalten einzelner
-  Nutzer nachzuvollziehen.
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab act" onclick="switchTab('support')">🐛 Support</button>
+    <button class="tab" onclick="switchTab('users')">👥 Nutzer</button>
+    <button class="tab" onclick="switchTab('stats')">📊 Statistik</button>
+    <button class="tab" onclick="switchTab('version')">🔔 Version</button>
+  </div>
+
+  <!-- SUPPORT -->
+  <div class="section act" id="sec-support">
+    <div class="filter-bar">
+      <span style="font-size:11px;color:var(--dim)">Filter:</span>
+      <button class="filter-btn act" onclick="setFilter('all',this)">Alle</button>
+      <button class="filter-btn" onclick="setFilter('bug',this)">🐛 Fehler</button>
+      <button class="filter-btn" onclick="setFilter('suggestion',this)">💡 Anregungen</button>
+      <button class="filter-btn" onclick="setFilter('open',this)">Offen</button>
+      <button class="filter-btn" onclick="setFilter('handled',this)">Bearbeitet</button>
+    </div>
+    <div id="support-list"><div class="empty">Lade…</div></div>
+  </div>
+
+  <!-- NUTZER -->
+  <div class="section" id="sec-users">
+    <div class="stat-grid" id="user-stats"></div>
+    <div id="user-list"><div class="empty">Lade…</div></div>
+  </div>
+
+  <!-- STATISTIK -->
+  <div class="section" id="sec-stats">
+    <div class="stat-grid" id="global-stats"></div>
+    <div class="card">
+      <div class="B" style="font-size:14px;letter-spacing:2px;color:var(--mut);margin-bottom:12px">INTERAKTIONEN (letzte 14 Tage)</div>
+      <canvas id="chart-interactions"></canvas>
+    </div>
+  </div>
+
+  <!-- VERSION -->
+  <div class="section" id="sec-version">
+    <div class="card">
+      <div class="B" style="font-size:16px;letter-spacing:3px;color:var(--mut);margin-bottom:12px">APP-VERSION VERWALTEN</div>
+      <p style="font-size:13px;color:var(--mut);margin-bottom:14px;line-height:1.7">Die hier gesetzte Versionsnummer wird mit der im App-Code hinterlegten Version verglichen. Weicht sie ab, sehen Nutzer einen Update-Banner mit Reload-Button.</p>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div>
+          <div style="font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:5px">AKTUELLE VERSION IN FIREBASE</div>
+          <div id="cur-ver" class="B" style="font-size:28px;letter-spacing:4px;color:var(--accent)">–</div>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:5px">NEUE VERSION SETZEN</div>
+          <div style="display:flex;gap:8px">
+            <input id="ver-input" placeholder="10.2" />
+            <button class="btn btn-ok" onclick="setVersion()">Setzen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- Statistik-Kacheln -->
-<div class="grid" id="stat-grid">
-  <div class="stat-card"><div class="stat-val" id="st-total-users">–</div><div class="stat-lbl">Nutzer gesamt</div></div>
-  <div class="stat-card"><div class="stat-val" id="st-active-today">–</div><div class="stat-lbl">Aktive Sessions heute</div></div>
-  <div class="stat-card"><div class="stat-val" id="st-interactions-today">–</div><div class="stat-lbl">Interaktionen heute</div></div>
-  <div class="stat-card"><div class="stat-val" id="st-avg-daily">–</div><div class="stat-lbl">Ø Interaktionen/Tag</div></div>
-  <div class="stat-card"><div class="stat-val" id="st-connections">–</div><div class="stat-lbl">Verbindungen gesamt</div></div>
-  <div class="stat-card"><div class="stat-val" id="st-peak-day">–</div><div class="stat-lbl">Bisher meiste Interaktionen/Tag</div></div>
-</div>
-
-<!-- Charts -->
-<div class="chart-card">
-  <div class="chart-title">Interaktionen pro Tag</div>
-  <canvas id="chart-interactions" height="80"></canvas>
-</div>
-
-<div class="chart-card">
-  <div class="chart-title">Aktive Sessions pro Tag (anonymisiert)</div>
-  <canvas id="chart-sessions" height="80"></canvas>
-</div>
-
-<!-- Rohdaten -->
-<div class="chart-card">
-  <div class="chart-title">Rohdaten (letzte 7 Einträge)</div>
-  <div id="raw-data" class="loading">Lade…</div>
-</div>
-
-<div style="font-size:11px;color:#333;text-align:center;margin-top:16px">
-  Werksicht Admin · Firebase europe-west1 (Belgien) · Keine personenbezogenen Daten
+<!-- REPLY OVERLAY -->
+<div id="ov-reply" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(6px)">
+  <div style="background:var(--card);border:1px solid var(--brd);border-radius:13px;padding:22px;width:100%;max-width:440px;display:flex;flex-direction:column;gap:11px">
+    <div class="B" style="font-size:18px;letter-spacing:3px;color:#60a5fa">ANTWORT SENDEN</div>
+    <div style="font-size:12px;color:var(--dim)">Meldung:</div>
+    <div id="ov-orig" style="font-size:12px;color:#666;background:var(--c2);border-radius:7px;padding:9px;font-style:italic;line-height:1.6;border-left:3px solid #444;max-height:100px;overflow-y:auto"></div>
+    <textarea class="inp" id="ov-reply-txt" placeholder="Deine Antwort an den Nutzer…" style="resize:none;height:90px"></textarea>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-g" style="flex:1" onclick="closeReply()">Abbrechen</button>
+      <button class="btn btn-blue" style="flex:1" onclick="sendReply()">Antwort senden</button>
+    </div>
+    <input type="hidden" id="ov-item-id">
+    <input type="hidden" id="ov-cat">
+  </div>
 </div>
 
 <script>
 const DB='https://werksicht-default-rtdb.europe-west1.firebasedatabase.app';
-let charts={};
+let _filter='all';
+let _supportData={};
 
-async function fbGet(path){
-  try{const r=await fetch(`${DB}${path}.json`);return r.ok?await r.json():null;}catch{return null;}
+async function fbGet(p){try{const r=await fetch(`${DB}${p}.json`);return r.ok?r.json():null;}catch{return null;}}
+async function fbPut(p,d){try{await fetch(`${DB}${p}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});return true;}catch{return false;}}
+async function fbDel(p){try{await fetch(`${DB}${p}.json`,{method:'DELETE'});return true;}catch{return false;}}
+
+function fmtDate(ts){
+  if(!ts)return'–';
+  const d=new Date(ts);
+  return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
 }
 
-function getDates(n){
-  const dates=[];const now=new Date();
-  for(let i=n-1;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);dates.push(d.toISOString().split('T')[0]);}
-  return dates;
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.remove('act'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('act'));
+  const tabs=['support','users','stats','version'];
+  const idx=tabs.indexOf(name);
+  document.querySelectorAll('.tab')[idx].classList.add('act');
+  document.getElementById('sec-'+name).classList.add('act');
 }
 
-async function loadData(){
-  const days=parseInt(document.getElementById('sel-days').value);
-  const dates=getDates(days);
-  const statsAll=await fbGet('/flowapp/stats')||{};
+function setFilter(f,btn){
+  _filter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('act'));
+  btn.classList.add('act');
+  renderSupport();
+}
+
+async function loadAll(){
+  document.getElementById('top-status').textContent='Lade…';
+  await Promise.all([loadSupport(),loadUsers(),loadStats(),loadVersion()]);
+  document.getElementById('top-status').textContent='Stand: '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ── SUPPORT ──────────────────────────────────────────────
+async function loadSupport(){
+  const errors=await fbGet('/flowapp/support/errors')||{};
+  const suggestions=await fbGet('/flowapp/support/suggestions')||{};
+  _supportData={};
+  Object.entries(errors).forEach(([id,v])=>_supportData[id]={...v,id,cat:'errors',catLabel:'bug'});
+  Object.entries(suggestions).forEach(([id,v])=>_supportData[id]={...v,id,cat:'suggestions',catLabel:'suggestion'});
+  renderSupport();
+}
+
+function renderSupport(){
+  const el=document.getElementById('support-list');
+  let items=Object.values(_supportData).sort((a,b)=>b.t-a.t);
+  if(_filter==='bug')items=items.filter(i=>i.catLabel==='bug');
+  else if(_filter==='suggestion')items=items.filter(i=>i.catLabel==='suggestion');
+  else if(_filter==='open')items=items.filter(i=>!i.handled);
+  else if(_filter==='handled')items=items.filter(i=>i.handled);
+  if(!items.length){el.innerHTML='<div class="empty">Keine Einträge gefunden.</div>';return;}
+  el.innerHTML=items.map(item=>`
+    <div class="card" id="card-${item.id}">
+      <div class="card-hdr">
+        <div>
+          <span class="badge badge-${item.catLabel}">${item.catLabel==='bug'?'🐛 Fehler':'💡 Anregung'}</span>
+          ${item.handled?'<span class="badge badge-handled" style="margin-left:5px">✓ Bearbeitet</span>':'<span class="badge badge-open" style="margin-left:5px">Offen</span>'}
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-blue" onclick="openReply('${item.id}','${item.cat}')">↩ Antworten</button>
+          <button class="btn ${item.handled?'btn-g':'btn-ok'}" onclick="toggleHandled('${item.id}','${item.cat}',${!item.handled})">${item.handled?'↺ Wieder öffnen':'✓ Als bearbeitet'}</button>
+          <button class="btn btn-del" onclick="deleteItem('${item.id}','${item.cat}')">✕ Löschen</button>
+        </div>
+      </div>
+      <div class="card-meta">
+        <strong style="color:var(--txt)">${item.author||'Anonym'}</strong> · ${fmtDate(item.t)}
+        ${item.uid?`<span style="color:#444"> · uid: ${item.uid.substring(0,12)}…</span>`:''}
+      </div>
+      <div class="card-text">${(item.text||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
+      ${item.reply?`<div class="card-reply"><strong style="color:#60a5fa">Admin-Antwort</strong> · ${fmtDate(item.replyAt||0)}<br>${item.reply.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>`:''}
+      ${item.userReply?`<div class="card-user-reply"><strong style="color:#a78bfa">${item.author||'Nutzer'}</strong> antwortet · ${fmtDate(item.userReply.t||0)}<br>${(item.userReply.text||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>`:''}
+    </div>`).join('');
+}
+
+function openReply(id,cat){
+  const item=_supportData[id];
+  if(!item)return;
+  document.getElementById('ov-orig').textContent=item.text||'';
+  document.getElementById('ov-reply-txt').value=item.reply||'';
+  document.getElementById('ov-item-id').value=id;
+  document.getElementById('ov-cat').value=cat;
+  document.getElementById('ov-reply').style.display='flex';
+}
+function closeReply(){document.getElementById('ov-reply').style.display='none';}
+
+async function sendReply(){
+  const id=document.getElementById('ov-item-id').value;
+  const cat=document.getElementById('ov-cat').value;
+  const txt=document.getElementById('ov-reply-txt').value.trim();
+  if(!txt){alert('Bitte eine Antwort eingeben.');return;}
+  await fbPut(`/flowapp/support/${cat}/${id}/reply`,txt);
+  await fbPut(`/flowapp/support/${cat}/${id}/replyAt`,Date.now());
+  await fbPut(`/flowapp/support/${cat}/${id}/replyRead`,false);
+  await fbPut(`/flowapp/support/${cat}/${id}/handled`,true);
+  closeReply();
+  await loadSupport();
+}
+
+async function toggleHandled(id,cat,val){
+  await fbPut(`/flowapp/support/${cat}/${id}/handled`,val);
+  if(_supportData[id])_supportData[id].handled=val;
+  renderSupport();
+}
+
+async function deleteItem(id,cat){
+  if(!confirm('Eintrag dauerhaft löschen?'))return;
+  await fbDel(`/flowapp/support/${cat}/${id}`);
+  delete _supportData[id];
+  renderSupport();
+}
+
+// ── NUTZER ───────────────────────────────────────────────
+async function loadUsers(){
   const rooms=await fbGet('/flowapp/rooms')||{};
   const watching=await fbGet('/flowapp/watching')||{};
+  const devices=await fbGet('/flowapp/devices')||{};
+  const entries=Object.entries(rooms);
+  const now=Date.now();
+  const active=entries.filter(([,d])=>['im_werk','mobil'].includes(d.presence));
+  const stale=entries.filter(([,d])=>d.t&&now-d.t>8*3600*1000);
 
-  // Nutzer gesamt
-  document.getElementById('st-total-users').textContent=Object.keys(rooms).length;
+  document.getElementById('user-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-val">${entries.length}</div><div class="stat-lbl">Nutzer gesamt</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#22c55e">${active.filter(([,d])=>d.presence==='im_werk').length}</div><div class="stat-lbl">Im Werk</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#a78bfa">${active.filter(([,d])=>d.presence==='mobil').length}</div><div class="stat-lbl">Mobil</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#555">${stale.length}</div><div class="stat-lbl">Ggf. nicht aktuell</div></div>`;
 
-  // Verbindungen
-  let conns=0;
-  Object.values(watching).forEach(v=>{if(v)conns+=Object.keys(v).length;});
-  document.getElementById('st-connections').textContent=Math.round(conns/2); // jede Verbindung ist bidirektional
+  const presColors={im_werk:'#22c55e',mobil:'#a78bfa',werk_verlassen:'#f97316',urlaub:'#60a5fa',abgemeldet:'#555'};
+  const presLabels={im_werk:'IM WERK',mobil:'MOBILES ARBEITEN',werk_verlassen:'WERK VERLASSEN',urlaub:'URLAUB',abgemeldet:'ABGEMELDET'};
 
-  // Heutige Werte
-  const today=new Date().toISOString().split('T')[0];
-  const todayStats=statsAll[today]||{};
-  document.getElementById('st-interactions-today').textContent=todayStats.interactions||0;
-  document.getElementById('st-active-today').textContent=Object.keys(todayStats.sessions||{}).length;
-
-  // Zeitreihen aufbauen
-  const interactions=dates.map(d=>(statsAll[d]?.interactions)||0);
-  const sessions=dates.map(d=>Object.keys((statsAll[d]?.sessions)||{}).length);
-  const labels=dates.map(d=>{const dt=new Date(d);return `${dt.getDate()}.${dt.getMonth()+1}.`;});
-
-  // Durchschnitt und Peak
-  const sum=interactions.reduce((a,b)=>a+b,0);
-  document.getElementById('st-avg-daily').textContent=Math.round(sum/days)||'–';
-  document.getElementById('st-peak-day').textContent=Math.max(...interactions,0);
-
-  // Charts rendern
-  renderChart('chart-interactions',labels,interactions,'Interaktionen','#22c55e');
-  renderChart('chart-sessions',labels,sessions,'Sessions','#60a5fa');
-
-  // Rohdaten
-  const rawDates=dates.slice(-7).reverse();
-  const rawHtml=rawDates.map(d=>{
-    const s=statsAll[d]||{};
-    const sess=Object.keys(s.sessions||{}).length;
-    return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #222;font-size:12px">
-      <span style="color:#888">${d}</span>
-      <span>Interaktionen: <strong style="color:#22c55e">${s.interactions||0}</strong></span>
-      <span>Sessions: <strong style="color:#60a5fa">${sess}</strong></span>
-    </div>`;
-  }).join('');
-  document.getElementById('raw-data').innerHTML=rawHtml||'<div class="loading">Keine Daten</div>';
+  document.getElementById('user-list').innerHTML=entries.length?entries
+    .sort((a,b)=>(b[1].t||0)-(a[1].t||0))
+    .map(([uid,d])=>{
+      const col=presColors[d.presence]||'#555';
+      const devCount=devices[uid]?.count||1;
+      const connCount=Object.keys(watching[uid]||{}).length;
+      const os=d.ortStatus||'am_platz';
+      const ws=d.workStatus||'verfuegbar';
+      const workLbls={verfuegbar:'Verfügbar',nicht_stoeren:'Nicht stören',pause:'Pause'};
+      const ortLbls={am_platz:'Am Platz',unterwegs:'Im Werk unterwegs',nicht_am_platz:'Nicht am Platz'};
+      const subStatus=os!=='am_platz'?(ortLbls[os]||os):(workLbls[ws]||ws);
+      return`<div class="card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <div style="width:9px;height:9px;border-radius:50%;background:${col};box-shadow:0 0 6px ${col};flex-shrink:0"></div>
+          <div class="B" style="font-size:16px;letter-spacing:2px;color:${col}">${d.name||uid}</div>
+          <div class="B" style="font-size:12px;color:${col};opacity:.7">${presLabels[d.presence]||d.presence||'?'}</div>
+          ${['im_werk','mobil'].includes(d.presence)?`<div style="font-size:11px;color:#666">· ${subStatus}</div>`:''}
+        </div>
+        <div style="font-size:11px;color:var(--dim);display:flex;gap:14px;flex-wrap:wrap">
+          <span>Zuletzt aktiv: ${fmtDate(d.t)}</span>
+          <span>Verbindungen: ${connCount}</span>
+          <span>Geräte: ${devCount}</span>
+          ${d.bisZeit?`<span style="color:#a78bfa">Im Werk bis ${d.bisZeit}</span>`:''}
+        </div>
+      </div>`;
+    }).join('')
+    :'<div class="empty">Keine Nutzer gefunden.</div>';
 }
 
-function renderChart(id,labels,data,label,color){
-  const ctx=document.getElementById(id);
-  if(charts[id]){charts[id].destroy();}
-  charts[id]=new Chart(ctx,{
+// ── STATISTIK ────────────────────────────────────────────
+let _chart=null;
+async function loadStats(){
+  const stats=await fbGet('/flowapp/stats')||{};
+  const rooms=await fbGet('/flowapp/rooms')||{};
+  const entries=Object.entries(rooms);
+  const support_errors=await fbGet('/flowapp/support/errors')||{};
+  const support_suggestions=await fbGet('/flowapp/support/suggestions')||{};
+  const openBugs=Object.values(support_errors).filter(v=>!v.handled).length;
+  const openSugg=Object.values(support_suggestions).filter(v=>!v.handled).length;
+
+  document.getElementById('global-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-val">${entries.length}</div><div class="stat-lbl">Nutzer gesamt</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#f87171">${openBugs}</div><div class="stat-lbl">Offene Fehler</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#60a5fa">${openSugg}</div><div class="stat-lbl">Offene Anregungen</div></div>
+    <div class="stat-card"><div class="stat-val">${Object.keys(stats).length}</div><div class="stat-lbl">Tage mit Aktivität</div></div>`;
+
+  // Chart: letzte 14 Tage
+  const days=[];const vals=[];
+  for(let i=13;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const key=d.toISOString().split('T')[0];
+    days.push(key.substring(5));
+    vals.push(stats[key]?.interactions||0);
+  }
+  if(_chart)_chart.destroy();
+  const ctx=document.getElementById('chart-interactions').getContext('2d');
+  _chart=new Chart(ctx,{
     type:'bar',
-    data:{
-      labels,
-      datasets:[{label,data,backgroundColor:color+'33',borderColor:color,borderWidth:1.5,borderRadius:4}]
-    },
-    options:{
-      responsive:true,
-      plugins:{legend:{display:false}},
-      scales:{
-        x:{grid:{color:'#1a1a1a'},ticks:{color:'#666',font:{size:11}}},
-        y:{grid:{color:'#1a1a1a'},ticks:{color:'#666',font:{size:11}},beginAtZero:true}
-      }
-    }
+    data:{labels:days,datasets:[{label:'Interaktionen',data:vals,backgroundColor:'#22c55e44',borderColor:'#22c55e',borderWidth:1,borderRadius:4}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#666'}},y:{ticks:{color:'#666'},beginAtZero:true}},responsive:true,maintainAspectRatio:true}
   });
 }
 
-loadData();
+// ── VERSION ──────────────────────────────────────────────
+async function loadVersion(){
+  const v=await fbGet('/flowapp/meta/version');
+  document.getElementById('cur-ver').textContent=v||'(nicht gesetzt)';
+  if(v)document.getElementById('ver-input').placeholder=v;
+}
+
+async function setVersion(){
+  const v=document.getElementById('ver-input').value.trim();
+  if(!v){alert('Bitte eine Versionsnummer eingeben.');return;}
+  await fbPut('/flowapp/meta/version',v);
+  document.getElementById('cur-ver').textContent=v;
+  alert(`✓ Version auf "${v}" gesetzt. Nutzer mit abweichender App-Version sehen jetzt den Update-Banner.`);
+}
+
+loadAll();
+setInterval(loadAll,60000);
 </script>
 </body>
 </html>
