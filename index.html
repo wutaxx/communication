@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  WERKSICHT v10.1                                                              ║
+║  WERKSICHT v1.0                                                              ║
 ║  §1 Konstanten  §2 Zustand  §3 Firebase  §4 Codes  §5 Sound                ║
 ║  §6 Notifications  §7 Crypto  §8 Boot  §9 Shell/Nav                        ║
 ║  §10 Controller  §11 Display  §12 Sichtbarkeit  §13 Alarm                  ║
@@ -336,7 +336,7 @@ input[type=range]{accent-color:#f59e0b;width:100%}
           <div id="watcher-list"><div style="color:var(--mut);font-size:13px">Niemand zeigt deinen Status an.</div></div>
         </div>
 
-        <div style="font-size:10px;color:#444;text-align:center">Werksicht v10.1 · Sync alle 4 Sek.</div>
+        <div style="font-size:10px;color:#444;text-align:center">Werksicht v1.0 · Sync alle 4 Sek.</div>
       </div>
     </div>
 
@@ -764,7 +764,7 @@ input[type=range]{accent-color:#f59e0b;width:100%}
 <div class="ov" id="ov-whats-new">
   <div class="ov-box ov-lg">
     <div class="brand" style="font-size:18px">WERKSICHT</div>
-    <div class="B" style="font-size:20px;letter-spacing:3px;color:#22c55e">NEU IN VERSION 10.2</div>
+    <div class="B" style="font-size:20px;letter-spacing:3px;color:#22c55e">NEU IN VERSION 1.0</div>
     <div id="whats-new-content" style="font-size:13px;color:var(--mut);line-height:1.9;overflow-y:auto;max-height:60vh"></div>
     <button class="btn-p" style="background:#22c55e" onclick="dismissWhatsNew()">Verstanden – los geht's!</button>
   </div>
@@ -802,7 +802,7 @@ input[type=range]{accent-color:#f59e0b;width:100%}
 // ═══════════════════════════════════════════════════════════
 // §1  KONSTANTEN
 // ═══════════════════════════════════════════════════════════
-const APP_VERSION='10.2';
+const APP_VERSION='1.0';
 const DB='https://werksicht-default-rtdb.europe-west1.firebasedatabase.app';
 const PRESENCE={
   im_werk:       {lbl:'IM WERK',         a:'#22c55e',present:true },
@@ -1454,26 +1454,46 @@ function renderDisp(){
   renderOwnStrip();
 
   const sb=document.getElementById('d-sidebar');
-  if(absent.length){
+  // Sidebar: Abwesende + Mobil-Arbeitende (beide anklickbar)
+  const sidebarEntries=[...mobil,...absent];
+  if(sidebarEntries.length){
     sb.style.display='flex';
-    sb.innerHTML=`<div class="sidebar-lbl">NICHT IM WERK</div>`+absent.map(({uid})=>{
-      const d=users[uid];if(!d)return'';
-      const ac2=PRESENCE[d.presence]?.a||'#555';
-      const elapsed=d.t?Date.now()-d.t:null;
-      const fresh=elapsed!==null&&elapsed<STALE_MS;
-      // Datum-korrekte Anzeige
-      let tt='';
-      if(!elapsed){tt='–';}
-      else if(elapsed<10*60*1000){tt=`vor ${fmtMs(elapsed)}`;}
-      else{
-        const absDate=new Date(d.t);
-        const today=new Date();
-        const isToday=absDate.toDateString()===today.toDateString();
-        if(isToday){tt='heute abgemeldet';}
-        else{tt='Abmeldung veraltet';} // Datenschutz: kein konkretes Datum
-      }
-      return`<div class="absent-card"><div style="font-size:11px;color:${ac2};font-weight:600">${nickFor(uid,d.name||uid)}</div><div style="font-size:9px;color:${ac2};margin-top:1px">${PRESENCE[d.presence]?.lbl||''}</div><div style="font-size:10px;color:${fresh?'#999':'#555'};margin-top:3px">${tt}</div>${!fresh?'<div style="font-size:9px;color:#555;margin-top:2px">⚠ Ggf. nicht aktuell</div>':''}</div>`;
-    }).join('');
+    let html='';
+    if(mobil.length){
+      html+=`<div class="sidebar-lbl" style="color:#a78bfa">📱 MOBIL</div>`;
+      html+=mobil.map(({uid})=>{
+        const d=users[uid];if(!d)return'';
+        const ac='#a78bfa';
+        const ws=d.workStatus||'verfuegbar';
+        const os=d.ortStatus||'am_platz';
+        const wsLbl=os==='nicht_am_platz'?'Nicht am Platz':(WORK[ws]?.lbl||'');
+        const bisStr=d.bisZeit?`<div style="font-size:9px;color:#7c5cbf;margin-top:1px">bis ${d.bisZeit}</div>`:'';
+        return`<div class="absent-card" style="border-color:#2a1a4a;cursor:pointer" onclick="openUserAction('${uid}')">
+          <div style="font-size:11px;color:${ac};font-weight:600">${nickFor(uid,d.name||uid)} 🏠</div>
+          <div style="font-size:9px;color:#7c5cbf;margin-top:1px">${wsLbl}</div>
+          ${bisStr}
+          <div style="font-size:9px;color:#5a3a8a;margin-top:2px">→ Nachricht</div>
+        </div>`;
+      }).join('');
+    }
+    if(absent.length){
+      html+=`<div class="sidebar-lbl" style="margin-top:${mobil.length?'6px':'0'}">NICHT IM WERK</div>`;
+      html+=absent.map(({uid})=>{
+        const d=users[uid];if(!d)return'';
+        const ac2=PRESENCE[d.presence]?.a||'#555';
+        const elapsed=d.t?Date.now()-d.t:null;
+        const fresh=elapsed!==null&&elapsed<STALE_MS;
+        let tt='';
+        if(!elapsed){tt='–';}
+        else if(elapsed<10*60*1000){tt=`vor ${fmtMs(elapsed)}`;}
+        else{
+          const absDate=new Date(d.t);const today=new Date();
+          tt=absDate.toDateString()===today.toDateString()?'heute abgemeldet':'Abmeldung veraltet';
+        }
+        return`<div class="absent-card"><div style="font-size:11px;color:${ac2};font-weight:600">${nickFor(uid,d.name||uid)}</div><div style="font-size:9px;color:${ac2};margin-top:1px">${PRESENCE[d.presence]?.lbl||''}</div><div style="font-size:10px;color:${fresh?'#999':'#555'};margin-top:3px">${tt}</div>${!fresh?'<div style="font-size:9px;color:#555;margin-top:2px">⚠ Ggf. nicht aktuell</div>':''}</div>`;
+      }).join('');
+    }
+    sb.innerHTML=html;
   }else{sb.style.display='none';}
 
   const center=document.getElementById('d-center');
@@ -1498,30 +1518,19 @@ function renderDisp(){
     center.style.display='flex';center.style.flexDirection='column';
     const warnDiv=document.createElement('div');
     warnDiv.className='d-warn warnpulse';
-    warnDiv.style.flex='0 0 auto';
+    warnDiv.style.flex='1';
     warnDiv.innerHTML=`
       <div style="font-size:clamp(55px,14vw,110px)">⚠️</div>
       <div class="B" style="font-size:clamp(28px,7vw,62px);color:#f97316;letter-spacing:3px">MÖGLICHERWEISE ALLEIN!</div>
       <div style="font-size:clamp(13px,1.8vw,17px);color:#f97316;max-width:480px;line-height:1.7">Du bist möglicherweise die einzige anwesende Person.<br><strong>Vergewissere dich beim Verlassen dass niemand zurückbleibt!</strong></div>
-      <div style="font-size:11px;color:#555;margin-top:4px;max-width:400px">Da die Nutzung freiwillig ist, können nicht alle Anwesenden erfasst sein.</div>`;
+      <div style="font-size:11px;color:#555;margin-top:4px;max-width:400px">Da die Nutzung freiwillig ist, können nicht alle Anwesenden erfasst sein.<br>${mobil.length?`<span style="color:#7c5cbf">Mobil erreichbar: ${mobil.map(({uid})=>nickFor(uid,users[uid]?.name||uid)).join(', ')}</span>`:''}</div>`;
     center.appendChild(warnDiv);
-    // Mobil arbeitende trotzdem anzeigen – für Nachrichten erreichbar
-    if(mobil.length>0){
-      const mobDiv=document.createElement('div');
-      mobDiv.style.cssText='flex-shrink:0;border-top:1px solid #1a1a1a';
-      mobDiv.innerHTML='<div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;padding:6px 14px 2px">📱 MOBIL ERREICHBAR</div>';
-      const mobWrap=document.createElement('div');
-      renderList(mobil,mobWrap);
-      mobDiv.appendChild(mobWrap);
-      center.appendChild(mobDiv);
-    }
     renderPbar(active);return;
   }
 
-  // Im Werk + Mobil beide in der Hauptansicht anzeigen und anklickbar machen
   center.innerHTML='';center.style.display='flex';center.style.flexDirection='column';
-  const visible=[...inWerk,...mobil];
-  if(dispView==='timeline')renderTimeline(visible,center);else renderList(visible,center);
+  // Hauptansicht: nur physisch anwesende (im_werk)
+  if(dispView==='timeline')renderTimeline(inWerk,center);else renderList(inWerk,center);
   renderPbar(active);
 }
 
@@ -1640,7 +1649,7 @@ function renderPbar(active){
   const left=active.filter(({uid})=>users[uid]?.presence==='werk_verlassen');
   let pb='';
   if(inW.length){const names=inW.map(({uid})=>{const d=users[uid];return d?.bisZeit?`${nickFor(uid,d.name||uid)} (bis ${d.bisZeit})`:nickFor(uid,d?.name||uid);}).join(', ');pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#22c55e"></span><span>Im Werk: <strong style="color:var(--txt)">${names}</strong></span></span>`;}
-  if(mob.length){const names=mob.map(({uid})=>{const d=users[uid];return d?.bisZeit?`${nickFor(uid,d.name||uid)} (bis ${d.bisZeit})`:nickFor(uid,d?.name||uid);}).join(', ');pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#a78bfa"></span><span style="color:#a78bfa">Mobil: ${names}</span></span>`;}
+  if(mob.length){pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#a78bfa"></span><span style="color:#a78bfa">Mobil: ${mob.length} Person${mob.length!==1?'en':''}</span></span>`;}
   if(left.length){pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#f97316"></span><span>Weg: ${left.map(({uid})=>nickFor(uid,users[uid]?.name||uid)).join(', ')}</span></span>`;}
   if(!inW.length&&active.length>0)pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0;color:#f97316"><span class="pdot" style="background:#f97316"></span><span>⚠ Möglicherweise niemand im Werk</span></span>`;
   document.getElementById('pbar').innerHTML=pb;
