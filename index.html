@@ -255,7 +255,7 @@ input[type=range]{accent-color:#f59e0b;width:100%}
           </div>
           <button class="sbtn" id="btn-exit" onclick="exitPresence()" style="width:100%;margin-top:6px;opacity:.4;cursor:default" disabled>ABMELDEN</button>
           <div style="margin-top:9px">
-            <div class="lbl">Im Werk bis: <span id="bis-display" style="color:#a78bfa">–</span></div>
+            <div class="lbl" id="bis-label">Im Werk bis: <span id="bis-display" style="color:#a78bfa">–</span></div>
             <div style="display:flex;gap:6px">
               <input type="time" class="inp" id="inp-bis" style="flex:1;color-scheme:dark" oninput="onBisChange()" />
               <button class="btn-g" style="font-size:12px;padding:7px 8px" onclick="clearBis()">✕</button>
@@ -321,6 +321,13 @@ input[type=range]{accent-color:#f59e0b;width:100%}
               <div id="code-timer" style="font-size:10px;color:var(--mut)"></div>
             </div>
           </div>
+        </div>
+
+        <!-- NUTZERPROFIL -->
+        <div class="card">
+          <div class="B" style="font-size:14px;letter-spacing:2px;color:var(--mut);margin-bottom:8px">MEIN PROFIL</div>
+          <div id="ctrl-profile-preview" style="font-size:12px;color:var(--dim);margin-bottom:8px">Noch kein Profil ausgefüllt.</div>
+          <button class="btn-g" style="font-size:12px;width:100%" onclick="openProfileEdit()">✏️ Profil bearbeiten</button>
         </div>
 
         <!-- WATCHER -->
@@ -686,6 +693,35 @@ input[type=range]{accent-color:#f59e0b;width:100%}
   </div>
 </div>
 
+<!-- PROFIL BEARBEITEN -->
+<div class="ov" id="ov-profile-edit">
+  <div class="ov-box ov-lg">
+    <div class="brand" style="font-size:18px">WERKSICHT</div>
+    <div class="B" style="font-size:20px;letter-spacing:3px">MEIN PROFIL</div>
+    <div style="font-size:12px;color:var(--mut);line-height:1.6">Sichtbar für alle verbundenen Kolleginnen und Kollegen. Alle Felder freiwillig.</div>
+    <div><div class="lbl">Funktion / Rolle</div><input class="inp" id="prof-funktion" placeholder="z. B. Laboringenieur, Vertrieb" maxlength="50" /></div>
+    <div><div class="lbl">Direktdurchwahl</div><input class="inp" id="prof-tel" placeholder="z. B. +49 89 123456-42" maxlength="30" type="tel" /></div>
+    <div><div class="lbl">Qualifikationen</div><input class="inp" id="prof-quali" placeholder="z. B. Ersthelfer, Brandschutzwart" maxlength="100" /></div>
+    <div><div class="lbl">Sprachen</div><input class="inp" id="prof-sprachen" placeholder="z. B. Englisch, Spanisch" maxlength="60" /></div>
+    <div><div class="lbl">Kurzinfo</div><input class="inp" id="prof-info" placeholder="Optionale Notiz (max. 80 Zeichen)" maxlength="80" /></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-g" onclick="hov('ov-profile-edit')" style="flex:1">Abbrechen</button>
+      <button class="btn-p" style="flex:1;background:#22c55e" onclick="saveProfile()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFIL ANZEIGEN -->
+<div class="ov" id="ov-profile-view">
+  <div class="ov-box">
+    <div class="B" style="font-size:20px;letter-spacing:3px;color:var(--accent)" id="pv-name">–</div>
+    <div id="pv-presence" style="font-size:12px;color:var(--mut)"></div>
+    <div id="pv-content" style="display:flex;flex-direction:column;gap:8px"></div>
+    <button class="btn-p" style="background:#22c55e;margin-top:4px" onclick="openMsgFromProfile()">📣 Nachricht schreiben</button>
+    <button class="btn-g" onclick="hov('ov-profile-view')" style="width:100%">Schließen</button>
+  </div>
+</div>
+
 <!-- SUPPORT -->
 <div class="ov" id="ov-support">
   <div class="ov-box ov-lg">
@@ -728,7 +764,7 @@ input[type=range]{accent-color:#f59e0b;width:100%}
 <div class="ov" id="ov-whats-new">
   <div class="ov-box ov-lg">
     <div class="brand" style="font-size:18px">WERKSICHT</div>
-    <div class="B" style="font-size:20px;letter-spacing:3px;color:#22c55e">NEU IN VERSION 10.1</div>
+    <div class="B" style="font-size:20px;letter-spacing:3px;color:#22c55e">NEU IN VERSION 10.2</div>
     <div id="whats-new-content" style="font-size:13px;color:var(--mut);line-height:1.9;overflow-y:auto;max-height:60vh"></div>
     <button class="btn-p" style="background:#22c55e" onclick="dismissWhatsNew()">Verstanden – los geht's!</button>
   </div>
@@ -766,7 +802,7 @@ input[type=range]{accent-color:#f59e0b;width:100%}
 // ═══════════════════════════════════════════════════════════
 // §1  KONSTANTEN
 // ═══════════════════════════════════════════════════════════
-const APP_VERSION='10.1';
+const APP_VERSION='10.2';
 const DB='https://werksicht-default-rtdb.europe-west1.firebasedatabase.app';
 const PRESENCE={
   im_werk:       {lbl:'IM WERK',         a:'#22c55e',present:true },
@@ -838,6 +874,7 @@ function migrateState(s){
   }
   if(!WORK[s.workStatus])s.workStatus='verfuegbar';
   if(!ORT[s.ortStatus])s.ortStatus='am_platz';
+  // profile-Feld durchreichen (nicht anfassen)
   return s;
 }
 
@@ -1020,13 +1057,17 @@ async function reloadForUpdate(){
 function showWhatsNew(){
   const items=[
     '📍 Neues Statusmodell: <strong>Aufenthaltsort</strong> (Am Platz / Im Werk unterwegs) und <strong>Arbeitsstatus</strong> (Verfügbar / Nicht stören / Pause) sind jetzt zwei getrennte Bereiche.',
+    '🗺️ Arbeitsstatus auch unterwegs: Auch wer "Im Werk unterwegs" ist, kann zwischen Verfügbar, Nicht stören und Pause wechseln – z.B. im Meeting oder in der Pause zwischen zwei Terminen.',
     '🔄 Statusreset beim Verlassen: Aufenthaltsort und Arbeitsstatus werden beim Abmelden automatisch zurückgesetzt.',
-    '✓ Lesebestätigung: Wer eine Nachricht als "gelesen" markiert, gibt dem Absender eine kurze Rückmeldung.',
+    '📱 Mobil arbeitende Personen sind in der Anzeige jetzt direkt anklickbar für Nachrichten und erscheinen mit ihrer voraussichtlichen Endzeit.',
+    '👤 Nutzerprofil: Jede Person kann ein freiwilliges Profil mit Funktion, Durchwahl, Qualifikationen und Sprachen hinterlegen – sichtbar über das ℹ️-Icon in der Anzeige.',
+    '✓ Lesebestätigung: Wer eine Nachricht als gelesen markiert, gibt dem Absender eine kurze Rückmeldung.',
     '🚨 Hausalarm-Schwelle: Nur tatsächlich im Werk anwesende Personen werden für die 50%-Berechnung herangezogen.',
     '🐛 Support-Bereich: Fehler und Anregungen direkt aus der App melden – über Hilfe &amp; Support.',
     '🔔 Automatische Versionserkennung mit Update-Button.',
-    '📅 Abwesenheitsdatum: Die Anzeige unterscheidet jetzt korrekt zwischen "heute" und früheren Abwesenheiten.',
-    '⚡ Pairing-Codes: Robuster beim gleichzeitigen Verbinden mehrerer Geräte.',
+    '📅 Abwesenheitsanzeige: Ältere Abmeldungen werden datenschutzfreundlich als "Abmeldung veraltet" angezeigt.',
+    '⚡ Pairing-Codes: Robuster beim gleichzeitigen Verbinden; Code in Verbindungsliste immer sichtbar.',
+    '🛠️ Admin-Antwort-Overlay bleibt beim Antworten stabil.',
   ];
   document.getElementById('whats-new-content').innerHTML=items.map(i=>`<div style="padding:5px 0 5px 4px;border-bottom:1px solid #1e1e1e">${i}</div>`).join('');
   ov('ov-whats-new');
@@ -1126,7 +1167,10 @@ function updateTopBarStatus(){
   const workOk=pr==='im_werk'||pr==='mobil';
   let statusText=PRESENCE[pr]?.lbl||'–';
   if(workOk){
-    const subLbl=os==='am_platz'?(WORK[ws]?.lbl||''):(ORT[os]?.lbl||'');
+    let subLbl='';
+    if(os==='am_platz')subLbl=WORK[ws]?.lbl||'';
+    else if(os==='unterwegs')subLbl='UNTERWEGS'+(ws!=='verfuegbar'?' · '+(WORK[ws]?.lbl||''):'');
+    else subLbl=ORT[os]?.lbl||'';
     statusText=`${PRESENCE[pr]?.lbl} · ${subLbl}`;
   }
   document.getElementById('tbc-status').textContent=deviceCount>1?`${statusText} · ${deviceCount} Geräte`:statusText;
@@ -1160,6 +1204,7 @@ async function _openCtrl(){
   const devData=await fbGet(`/flowapp/devices/${myUid}`);
   deviceCount=(devData?.count)||1;
   renderCtrl();await refreshWatchers();
+  renderProfilePreview();
   _ivT=setInterval(()=>{renderCtrl();updateCodeTimer();},1000);
   _ivCode=setInterval(async()=>{await rotateCode();},5000);
   _ivC=setInterval(async()=>{
@@ -1189,6 +1234,7 @@ async function syncOwnStateFromRemote(){
     if(myState.bisZeit)document.getElementById('inp-bis').value=myState.bisZeit||'';
     if(myState.ort)document.getElementById('inp-ort').value=myState.ort||'';
     if(myState.ortBis)document.getElementById('inp-ort-bis').value=myState.ortBis||'';
+    renderProfilePreview();
     showSyncIndicator();
   }
 }
@@ -1255,7 +1301,7 @@ function renderCtrl(){
   if(cardUw)cardUw.style.display=showUW?'block':'none';
   if(cardNap)cardNap.style.display=showNAP?'block':'none';
 
-  const workEnabled=workOk&&os==='am_platz';
+  const workEnabled=workOk&&(os==='am_platz'||os==='unterwegs');
   document.getElementById('card-work').style.opacity=workEnabled?'1':'0.35';
   document.querySelectorAll('#card-work .sbtn').forEach(b=>b.disabled=!workEnabled);
   if(workEnabled){
@@ -1273,13 +1319,18 @@ function renderCtrl(){
   document.getElementById('c-pname').textContent=PRESENCE[pr]?.lbl||'';
   let wlbl='';
   if(workOk){
-    if(os==='unterwegs')wlbl=`IM WERK UNTERWEGS${myState.ort?' · '+myState.ort:''}`;
+    if(os==='unterwegs'){
+      wlbl=`IM WERK UNTERWEGS${myState.ort?' · '+myState.ort:''}`;
+      if(ws!=='verfuegbar')wlbl+=` · ${WORK[ws]?.lbl||''}`;
+    }
     else if(os==='nicht_am_platz')wlbl='NICHT AM PLATZ';
     else wlbl=WORK[ws]?.lbl||'';
   }
   document.getElementById('c-wname').style.color=workOk?ac:'#555';
   document.getElementById('c-wname').textContent=wlbl;
   document.getElementById('bis-display').textContent=myState.bisZeit||'–';
+  const bisLbl=document.getElementById('bis-label');
+  if(bisLbl)bisLbl.firstChild.textContent=(pr==='mobil'?'Mobiles Arbeiten voraussichtlich bis: ':'Im Werk bis: ');
   document.getElementById('c-timers').innerHTML='';
 }
 
@@ -1308,12 +1359,16 @@ function clickOrtB(){if(myState.presence==='im_werk')clickUnterwegs();else setOr
 async function setOrtStatus(os){
   if(myState.presence!=='im_werk'&&myState.presence!=='mobil')return;
   const ns={...myState,ortStatus:os,t:Date.now()};
-  if(os!=='am_platz'){ns.workStatus='verfuegbar';}
+  // Nur bei "Nicht am Platz" (mobil, keine Interaktion) workStatus zurücksetzen
+  if(os==='nicht_am_platz'){ns.workStatus='verfuegbar';}
+  // Bei "unterwegs": workStatus beibehalten (z.B. "Nicht stören" im Meeting)
+  if(os==='am_platz'){ns.ort='';ns.ortBis='';}
   myState=ns;await pushState();renderCtrl();
 }
 async function setWorkStatus(ws){
   if(myState.presence!=='im_werk'&&myState.presence!=='mobil')return;
-  if((myState.ortStatus||'am_platz')!=='am_platz')return;
+  const os=myState.ortStatus||'am_platz';
+  if(os==='nicht_am_platz')return; // Nicht am Platz: kein Arbeitsstatus
   const ns={...myState,workStatus:ws,t:Date.now()};
   myState=ns;await pushState();renderCtrl();trackEvent('status_changed');
 }
@@ -1323,8 +1378,8 @@ function clearBis(){document.getElementById('inp-bis').value='';myState.bisZeit=
 function onNapBisChange(){myState.napBis=document.getElementById('inp-nap-bis').value||'';pushState();}
 
 function clickUnterwegs(){if(myState.presence!=='im_werk')return;document.getElementById('inp-ort-pop').value=myState.ort||'';document.getElementById('inp-ort-bis-pop').value=myState.ortBis||'';renderLocTiles('pop');ov('ov-unterwegs');}
-async function confirmUnterwegs(){const ort=(document.getElementById('inp-ort-pop').value||'').trim();const ortBis=document.getElementById('inp-ort-bis-pop').value||'';if(ort&&!savedLocs.includes(ort)){savedLocs.unshift(ort);if(savedLocs.length>8)savedLocs=savedLocs.slice(0,8);ls(LS.locs,JSON.stringify(savedLocs));}hov('ov-unterwegs');const ns={...myState,ortStatus:'unterwegs',workStatus:'verfuegbar',ort,ortBis,t:Date.now()};myState=ns;await pushState();renderCtrl();renderLocTiles('ctrl');}
-async function confirmUnterwegsFree(){hov('ov-unterwegs');const ns={...myState,ortStatus:'unterwegs',workStatus:'verfuegbar',ort:'',ortBis:'',t:Date.now()};myState=ns;await pushState();renderCtrl();}
+async function confirmUnterwegs(){const ort=(document.getElementById('inp-ort-pop').value||'').trim();const ortBis=document.getElementById('inp-ort-bis-pop').value||'';if(ort&&!savedLocs.includes(ort)){savedLocs.unshift(ort);if(savedLocs.length>8)savedLocs=savedLocs.slice(0,8);ls(LS.locs,JSON.stringify(savedLocs));}hov('ov-unterwegs');const ns={...myState,ortStatus:'unterwegs',ort,ortBis,t:Date.now()};myState=ns;await pushState();renderCtrl();renderLocTiles('ctrl');}
+async function confirmUnterwegsFree(){hov('ov-unterwegs');const ns={...myState,ortStatus:'unterwegs',ort:'',ortBis:'',t:Date.now()};myState=ns;await pushState();renderCtrl();}
 
 async function pushState(){
   myState.name=myName;myState.t=Date.now();myLastPushT=myState.t;
@@ -1412,11 +1467,7 @@ function renderDisp(){
         const today=new Date();
         const isToday=absDate.toDateString()===today.toDateString();
         if(isToday){tt='heute abgemeldet';}
-        else{
-          const dd=String(absDate.getDate()).padStart(2,'0');
-          const mm=String(absDate.getMonth()+1).padStart(2,'0');
-          tt=`abgemeldet am ${dd}.${mm}.`;
-        }
+        else{tt='Abmeldung veraltet';} // Datenschutz: kein konkretes Datum
       }
       return`<div class="absent-card"><div style="font-size:11px;color:${ac2};font-weight:600">${nickFor(uid,d.name||uid)}</div><div style="font-size:9px;color:${ac2};margin-top:1px">${PRESENCE[d.presence]?.lbl||''}</div><div style="font-size:10px;color:${fresh?'#999':'#555'};margin-top:3px">${tt}</div>${!fresh?'<div style="font-size:9px;color:#555;margin-top:2px">⚠ Ggf. nicht aktuell</div>':''}</div>`;
     }).join('');
@@ -1449,6 +1500,7 @@ function renderDisp(){
     renderPbar(active);return;
   }
 
+  // Im Werk + Mobil beide in der Hauptansicht anzeigen und anklickbar machen
   center.innerHTML='';center.style.display='flex';center.style.flexDirection='column';
   const visible=[...inWerk,...mobil];
   if(dispView==='timeline')renderTimeline(visible,center);else renderList(visible,center);
@@ -1469,7 +1521,11 @@ function renderOwnStrip(){
     else if(os==='nicht_am_platz'&&myState.napBis)det=`· zurück: ${myState.napBis}`;
   }
   const bis=(!pw&&myState.bisZeit)?`· <span style="color:#a78bfa">bis ${myState.bisZeit}</span>`:'';
-  const subLbl=!pw?(os==='am_platz'?(WORK[ws]?.lbl||''):(ORT[os]?.lbl||'')):'';
+  const subLbl=!pw?(
+    os==='am_platz'?(WORK[ws]?.lbl||'')
+    :os==='unterwegs'?('IM WERK UNTERWEGS'+(myState.ort?' · '+myState.ort:'')+(ws!=='verfuegbar'?' · '+(WORK[ws]?.lbl||''):''))
+    :(ORT[os]?.lbl||'')
+  ):'';
   el.innerHTML=`<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;overflow:hidden">
     <div style="width:8px;height:8px;border-radius:50%;background:${pa};box-shadow:0 0 5px ${pa};flex-shrink:0"></div>
     <span class="B" style="font-size:15px;letter-spacing:2px;color:${pa}">${PRESENCE[pr]?.lbl||''}</span>
@@ -1490,11 +1546,14 @@ function renderList(active,wrap){
     const os=d.ortStatus||'am_platz';
     const ws=d.workStatus||'verfuegbar';
     const presLbl=PRESENCE[d.presence]?.lbl||'';
-    const subLbl=os==='am_platz'?(WORK[ws]?.lbl||''):(ORT[os]?.lbl||'');
+    const subLbl=os==='am_platz'?(WORK[ws]?.lbl||'')
+      :os==='unterwegs'?('IM WERK UNTERWEGS'+(ws!=='verfuegbar'?' · '+(WORK[ws]?.lbl||''):''))
+      :(ORT[os]?.lbl||'');
     const row=document.createElement('div');row.className='user-row';
     if(hasHelp){row.style.borderColor='#22c55e55';row.style.boxShadow='0 0 10px #22c55e22';}
     row.onclick=()=>openUserAction(uid);
     const detLine=buildDetailLine(d,ac);
+    const hasProfile=!!(d.profile&&(d.profile.funktion||d.profile.quali||d.profile.tel||d.profile.sprachen||d.profile.info));
     row.innerHTML=`
       <div class="user-row-dot" style="background:${ac};box-shadow:0 0 8px ${ac}66"></div>
       <div class="user-row-info">
@@ -1505,8 +1564,9 @@ function renderList(active,wrap){
           ${presLbl}<span style="font-size:0.6em;color:${ac}88"> · ${subLbl}</span>
         </div>
         ${detLine?`<div class="user-row-detail">${detLine}</div>`:''}
-        ${(!['werk_verlassen','abgemeldet','urlaub'].includes(d.presence)&&d.bisZeit)?`<div class="user-row-badge">📍 Im Werk bis ${d.bisZeit}</div>`:''}
-      </div>`;
+        ${(!['werk_verlassen','abgemeldet','urlaub'].includes(d.presence)&&d.bisZeit)?`<div class="user-row-badge">${d.presence==='mobil'?'📱 Mobil bis':'📍 Im Werk bis'} ${d.bisZeit}</div>`:''}
+      </div>
+      ${hasProfile?`<div onclick="event.stopPropagation();openProfileView('${uid}')" style="font-size:16px;padding:4px 6px;cursor:pointer;opacity:.6;flex-shrink:0" title="Profil anzeigen">ℹ️</div>`:''}`;
     list.appendChild(row);
   });
   wrap.appendChild(list);
@@ -1516,7 +1576,12 @@ function buildDetailLine(d,ac){
   const pw=['werk_verlassen','abgemeldet','urlaub'].includes(d.presence);if(pw)return'';
   const os=d.ortStatus||'am_platz';
   const ws=d.workStatus||'verfuegbar';
-  if(os==='unterwegs')return`<span style="color:#aaa">Unterwegs${d.ort?` · <strong style="color:#eee">${d.ort}</strong>`:''}</span>${d.ortBis?` <span style="color:var(--mut)">bis <strong>${d.ortBis}</strong></span>`:''}`;
+  if(os==='unterwegs'){
+    let s=`<span style="color:#aaa">Unterwegs${d.ort?` · <strong style="color:#eee">${d.ort}</strong>`:''}</span>${d.ortBis?` <span style="color:var(--mut)">bis <strong>${d.ortBis}</strong></span>`:''}`;
+    if(ws==='nicht_stoeren')s+=` <span style="color:#ef4444;font-size:10px">· Nicht stören</span>`;
+    else if(ws==='pause')s+=` <span style="color:#f59e0b;font-size:10px">· Pause</span>`;
+    return s;
+  }
   if(os==='nicht_am_platz')return`<span style="color:#aaa">Nicht am Platz${d.napBis?` · zurück: <strong>${d.napBis}</strong>`:''}</span>`;
   if(ws==='verfuegbar')return`<span style="color:#aaa">Verfügbar – sprich mich ruhig an</span>`;
   if(ws==='nicht_stoeren')return`<span style="color:#aaa">Bitte nicht stören</span>`;
@@ -1534,7 +1599,9 @@ function renderTimeline(active,wrap){
     const d=users[uid];if(!d)return;
     const ac=effColor(d),stale=d.t&&Date.now()-d.t>STALE_MS,isLast=i===sorted.length-1,isMobil=d.presence==='mobil';
     const os=d.ortStatus||'am_platz';const ws=d.workStatus||'verfuegbar';
-    const subLbl=os==='am_platz'?(WORK[ws]?.lbl||''):(ORT[os]?.lbl||'');
+    const subLbl=os==='am_platz'?(WORK[ws]?.lbl||'')
+      :os==='unterwegs'?('IM WERK UNTERWEGS'+(ws!=='verfuegbar'?' · '+(WORK[ws]?.lbl||''):''))
+      :(ORT[os]?.lbl||'');
     const row=document.createElement('div');row.className='tl-row';row.onclick=()=>openUserAction(uid);
     row.innerHTML=`
       <div class="tl-tc"><div class="tl-tl" style="color:${d.bisZeit?'#a78bfa':'#555'}">${d.bisZeit||'–'}</div>${!isLast?`<div class="tl-vl" style="background:${d.bisZeit?'#a78bfa33':'#222'}"></div>`:''}</div>
@@ -1542,7 +1609,7 @@ function renderTimeline(active,wrap){
       <div class="tl-cc" style="opacity:${stale?'0.5':'1'}">
         <div class="tl-nm" style="color:${ac}">${nickFor(uid,d.name||uid)}${isMobil?' 🏠':''}${stale?' (nicht aktuell)':''}</div>
         <div class="tl-st B" style="font-size:clamp(14px,2.6vw,24px);color:${ac}">${PRESENCE[d.presence]?.lbl||''} · ${subLbl}</div>
-        <div class="tl-sb">${buildDetailLine(d,ac)}${d.bisZeit?`<span style="color:#a78bfa">Im Werk bis ${d.bisZeit}</span>`:''}</div>
+        <div class="tl-sb">${buildDetailLine(d,ac)}${d.bisZeit?`<span style="color:#a78bfa">${d.presence==='mobil'?'Mobil bis':'Im Werk bis'} ${d.bisZeit}</span>`:''}</div>
       </div>`;
     tl.appendChild(row);
   });
@@ -1555,7 +1622,7 @@ function renderPbar(active){
   const left=active.filter(({uid})=>users[uid]?.presence==='werk_verlassen');
   let pb='';
   if(inW.length){const names=inW.map(({uid})=>{const d=users[uid];return d?.bisZeit?`${nickFor(uid,d.name||uid)} (bis ${d.bisZeit})`:nickFor(uid,d?.name||uid);}).join(', ');pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#22c55e"></span><span>Im Werk: <strong style="color:var(--txt)">${names}</strong></span></span>`;}
-  if(mob.length){pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#a78bfa"></span><span style="color:#a78bfa">Mobil: ${mob.map(({uid})=>nickFor(uid,users[uid]?.name||uid)).join(', ')}</span></span>`;}
+  if(mob.length){const names=mob.map(({uid})=>{const d=users[uid];return d?.bisZeit?`${nickFor(uid,d.name||uid)} (bis ${d.bisZeit})`:nickFor(uid,d?.name||uid);}).join(', ');pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#a78bfa"></span><span style="color:#a78bfa">Mobil: ${names}</span></span>`;}
   if(left.length){pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0"><span class="pdot" style="background:#f97316"></span><span>Weg: ${left.map(({uid})=>nickFor(uid,users[uid]?.name||uid)).join(', ')}</span></span>`;}
   if(!inW.length&&active.length>0)pb+=`<span style="display:flex;align-items:center;gap:4px;flex-shrink:0;color:#f97316"><span class="pdot" style="background:#f97316"></span><span>⚠ Möglicherweise niemand im Werk</span></span>`;
   document.getElementById('pbar').innerHTML=pb;
@@ -1925,8 +1992,10 @@ async function addRoom(){
 async function saveContactName(){const nick=(document.getElementById('inp-contact-name').value||'').trim();if(nick&&newContactCb){nicks[newContactCb]=nick;ls(LS.nicks,JSON.stringify(nicks));}hov('ov-new-contact');newContactCb=null;}
 async function removeRoom(uid2){if(!confirm(`Entfernen?`))return;await mutualRemove(myUid,uid2);await loadWatchingData();renderDisp();}
 
-function showContacts(){
-  document.getElementById('contacts-my-code').textContent=myCode;
+async function showContacts(){
+  await rotateCode(); // Code sicherstellen bevor Anzeige
+  document.getElementById('contacts-my-code').textContent=myCode||'–';
+  document.getElementById('contacts-code-timer').textContent=myCode?`Neu in ${Math.max(0,60-Math.floor((Date.now()-codeTime)/1000))}s`:'';
   const allUids=new Set([...watching.map(w=>w.uid),...Object.keys(watchers)]);
   const el=document.getElementById('contact-list');
   if(!allUids.size){el.innerHTML=`<div style="color:var(--mut);padding-top:8px">Keine Verbindungen vorhanden.</div>`;}
@@ -2000,7 +2069,7 @@ function buildHelp(){
     ['📡 Codes & Sicherheit','Pairing-Codes rotieren jede Minute. Nur zum einmaligen Verbinden. Intern wird eine permanente UID genutzt.\n\nNachrichten sind Ende-zu-Ende verschlüsselt (AES-256-GCM). Firebase sieht nur verschlüsselte Daten. Der Schlüssel wird aus beiden UIDs abgeleitet – kein Schlüssel wird übertragen.'],
     ['👤 Anwesenheit','IM WERK und MOBILES ARBEITEN schließen sich gegenseitig aus.\n\n"Im Werk bis": Bleibt über alle Statuswechsel erhalten.\n\n10 Minuten Gnadenfrist nach Abmeldung – auf dem Heimweg noch prüfen ob jemand allein blieb.\n\nAlle Status-Anzeigen sind freiwillig und unverbindlich!'],
     ['📍 Aufenthaltsort','AM PLATZ: Du bist an deinem üblichen Platz erreichbar.\n\nIM WERK UNTERWEGS (nur bei "Im Werk"): Du bist gerade woanders – Ort und Rückkehrzeit können angegeben werden.\n\nNICHT AM PLATZ (nur bei "Mobiles Arbeiten"): Du bist nicht an deinem gewohnten Platz.'],
-    ['💼 Arbeitsstatus','Nur aktiv wenn du AM PLATZ bist.\n\nVERFÜGBAR: Sprich mich ruhig an.\n\nNICHT STÖREN: Bitte nur bei Dringendem.\n\nPAUSE: Kurze Auszeit.\n\nBeim Wechsel zu "Im Werk unterwegs" oder beim Abmelden wird der Arbeitsstatus automatisch zurückgesetzt.'],
+    ['💼 Arbeitsstatus','Wählbar sowohl wenn du AM PLATZ bist als auch IM WERK UNTERWEGS.\n\nVERFÜGBAR: Sprich mich ruhig an – auch unterwegs erreichbar.\n\nNICHT STÖREN: Bitte nur bei Dringendem – z.B. in einem Meeting.\n\nPAUSE: Kurze Auszeit, auch zwischen zwei Terminen.\n\nBeim Abmelden wird der Arbeitsstatus automatisch zurückgesetzt.'],
     ['📣 Nachrichten','In der Anzeige auf eine Zeile klicken → Nachrichtendialog öffnet sich.\n\nEmpfangene Nachrichten erscheinen als Toast (Einblendung) oben rechts mit Ton.\n\nOptionen: Antworten · Als gelesen markieren · Schließen.\n\n"Als gelesen" markieren sendet dem Absender eine kurze Rückmeldung.\n\nNachrichten sind Ende-zu-Ende verschlüsselt (AES-256-GCM).'],
     ['⚠️ Unterstützung anfordern','🤝 HELFENDE HAND: Stiller Hinweis mit Beschreibung und Ort. Sehr kurzer Soft-Ton.\n\n⚠️ PERSÖNLICHE NOTLAGE: Sofortmeldung, Details danach nachreichen.\n\n🚨 HAUSALARM: Evakuierung! Sammelplatz aufsuchen. In Sicherheit melden über Evakuierungsliste.\n\nWICHTIG: App-Alarm ersetzt NIEMALS den Notruf (112)!'],
     ['🔒 Datenschutz & Recht','Nur selbst gewählter Name + Status. Firebase, Belgien. Kein öffentliches Angebot, kein kommerzieller Dienst.\n\nNachrichten: Ende-zu-Ende verschlüsselt.\n\nInaktive Nutzer nach 90 Tagen automatisch gelöscht.\n\nVollständig löschbar: Einstellungen → Nutzer vollständig löschen.'],
@@ -2057,12 +2126,15 @@ async function sendSupport(anon){
 // Polling: Admin-Antworten anzeigen
 async function pollAdminReplies(){
   if(!myUid)return;
+  // Nicht aufpoppen wenn Overlay gerade sichtbar ist (Nutzer tippt ggf. gerade)
+  if(document.getElementById('ov-admin-reply').classList.contains('show'))return;
   for(const cat of['errors','suggestions']){
     const items=await fbGet(`/flowapp/support/${cat}`)||{};
     for(const [id,item] of Object.entries(items)){
       if(item.uid!==myUid)continue;
       if(!item.reply||item.replyRead)continue;
       showAdminReplyToast(id,cat,item);
+      return; // Nur eine Antwort auf einmal zeigen
     }
   }
 }
@@ -2103,6 +2175,79 @@ async function dismissAdminReply(){
   const cat=document.getElementById('ar-category').value;
   if(itemId&&cat)await fbPut(`/flowapp/support/${cat}/${itemId}/replyRead`,true);
   hov('ov-admin-reply');
+}
+
+// ═══════════════════════════════════════════════════════════
+// NUTZERPROFIL
+// ═══════════════════════════════════════════════════════════
+let _profileViewUid=null;
+
+async function openProfileEdit(){
+  const prof=myState.profile||{};
+  document.getElementById('prof-funktion').value=prof.funktion||'';
+  document.getElementById('prof-tel').value=prof.tel||'';
+  document.getElementById('prof-quali').value=prof.quali||'';
+  document.getElementById('prof-sprachen').value=prof.sprachen||'';
+  document.getElementById('prof-info').value=prof.info||'';
+  ov('ov-profile-edit');
+}
+
+async function saveProfile(){
+  const prof={
+    funktion:(document.getElementById('prof-funktion').value||'').trim(),
+    tel:(document.getElementById('prof-tel').value||'').trim(),
+    quali:(document.getElementById('prof-quali').value||'').trim(),
+    sprachen:(document.getElementById('prof-sprachen').value||'').trim(),
+    info:(document.getElementById('prof-info').value||'').trim(),
+  };
+  myState.profile=prof;
+  await pushState();
+  renderProfilePreview();
+  hov('ov-profile-edit');
+}
+
+function renderProfilePreview(){
+  const prof=myState.profile||{};
+  const el=document.getElementById('ctrl-profile-preview');if(!el)return;
+  const parts=[];
+  if(prof.funktion)parts.push(prof.funktion);
+  if(prof.quali)parts.push(prof.quali);
+  if(prof.sprachen)parts.push(`🌐 ${prof.sprachen}`);
+  el.textContent=parts.length?parts.join(' · '):'Noch kein Profil ausgefüllt.';
+  el.style.color=parts.length?'var(--mut)':'var(--dim)';
+}
+
+function openProfileView(uid){
+  const d=users[uid];
+  if(!d)return;
+  _profileViewUid=uid;
+  const nick=nickFor(uid,d.name||uid);
+  const ac=effColor(d);
+  document.getElementById('pv-name').textContent=nick;
+  document.getElementById('pv-name').style.color=ac;
+  const pr=PRESENCE[d.presence]?.lbl||'';
+  const os=d.ortStatus||'am_platz';
+  const ws=d.workStatus||'verfuegbar';
+  const subLbl=os==='am_platz'?(WORK[ws]?.lbl||''):(ORT[os]?.lbl||'');
+  document.getElementById('pv-presence').textContent=pr+(subLbl?` · ${subLbl}`:'');
+  document.getElementById('pv-presence').style.color=ac;
+  const prof=d.profile||{};
+  const rows=[];
+  if(prof.funktion)rows.push(['💼 Funktion',prof.funktion]);
+  if(prof.tel)rows.push(['📞 Durchwahl',prof.tel]);
+  if(prof.quali)rows.push(['🎓 Qualifikationen',prof.quali]);
+  if(prof.sprachen)rows.push(['🌐 Sprachen',prof.sprachen]);
+  if(prof.info)rows.push(['ℹ️',prof.info]);
+  document.getElementById('pv-content').innerHTML=rows.length
+    ?rows.map(([lbl,val])=>`<div style="display:flex;gap:8px;font-size:12px;padding:5px 0;border-bottom:1px solid var(--brd)"><span style="color:var(--dim);flex-shrink:0;min-width:110px">${lbl}</span><span style="color:var(--txt)">${val}</span></div>`).join('')
+    :'<div style="font-size:12px;color:var(--dim);padding:8px 0">Kein Profil ausgefüllt.</div>';
+  ov('ov-profile-view');
+}
+
+function openMsgFromProfile(){
+  if(!_profileViewUid)return;
+  hov('ov-profile-view');
+  openUserAction(_profileViewUid);
 }
 </script>
 </body>
