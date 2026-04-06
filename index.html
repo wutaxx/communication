@@ -1330,7 +1330,10 @@ function renderCtrl(){
   document.getElementById('c-wname').textContent=wlbl;
   document.getElementById('bis-display').textContent=myState.bisZeit||'–';
   const bisLbl=document.getElementById('bis-label');
-  if(bisLbl)bisLbl.firstChild.textContent=(pr==='mobil'?'Mobiles Arbeiten voraussichtlich bis: ':'Im Werk bis: ');
+  if(bisLbl){
+    const ltext=pr==='mobil'?'Mobiles Arbeiten bis: ':'Im Werk bis: ';
+    bisLbl.innerHTML=`${ltext}<span id="bis-display" style="color:#a78bfa">${myState.bisZeit||'–'}</span>`;
+  }
   document.getElementById('c-timers').innerHTML='';
 }
 
@@ -1491,12 +1494,27 @@ function renderDisp(){
 
   // Allein-Warnung (abgeschwächt)
   if(othersInWerk===0&&myState.presence==='im_werk'&&active.length>0){
-    center.innerHTML=`<div class="d-warn warnpulse">
+    center.innerHTML='';
+    center.style.display='flex';center.style.flexDirection='column';
+    const warnDiv=document.createElement('div');
+    warnDiv.className='d-warn warnpulse';
+    warnDiv.style.flex='0 0 auto';
+    warnDiv.innerHTML=`
       <div style="font-size:clamp(55px,14vw,110px)">⚠️</div>
       <div class="B" style="font-size:clamp(28px,7vw,62px);color:#f97316;letter-spacing:3px">MÖGLICHERWEISE ALLEIN!</div>
-      <div style="font-size:clamp(13px,1.8vw,17px);color:#f97316;max-width:480px;line-height:1.7">Du bist möglicherweise die einzige anwesende Person.<br><strong>Vergewissere dich beim Verlassen dass niemand zurückbleibt – auch Personen die die App nicht nutzen!</strong></div>
-      <div style="font-size:11px;color:#555;margin-top:4px;max-width:400px">Da die Nutzung freiwillig ist, können nicht alle Anwesenden erfasst sein.</div>
-    </div>`;
+      <div style="font-size:clamp(13px,1.8vw,17px);color:#f97316;max-width:480px;line-height:1.7">Du bist möglicherweise die einzige anwesende Person.<br><strong>Vergewissere dich beim Verlassen dass niemand zurückbleibt!</strong></div>
+      <div style="font-size:11px;color:#555;margin-top:4px;max-width:400px">Da die Nutzung freiwillig ist, können nicht alle Anwesenden erfasst sein.</div>`;
+    center.appendChild(warnDiv);
+    // Mobil arbeitende trotzdem anzeigen – für Nachrichten erreichbar
+    if(mobil.length>0){
+      const mobDiv=document.createElement('div');
+      mobDiv.style.cssText='flex-shrink:0;border-top:1px solid #1a1a1a';
+      mobDiv.innerHTML='<div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;padding:6px 14px 2px">📱 MOBIL ERREICHBAR</div>';
+      const mobWrap=document.createElement('div');
+      renderList(mobil,mobWrap);
+      mobDiv.appendChild(mobWrap);
+      center.appendChild(mobDiv);
+    }
     renderPbar(active);return;
   }
 
